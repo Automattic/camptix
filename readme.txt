@@ -3,7 +3,7 @@ Contributors: kovshenin, andreamiddleton
 Tags: events, ticketing
 Requires at least: 3.4
 Tested up to: 3.4.1
-Stable tag: 1.0
+Stable tag: 0.1
 
 Hang in there!
 
@@ -31,10 +31,10 @@ Answer.
 
 == Upgrade Notice ==
 
-= 1.0 =
+= 0.1 =
 Upgrades are fun.
 
 == Changelog ==
 
-= 1.0 =
-* Initial release
+= 0.1 =
+* I'm fake
