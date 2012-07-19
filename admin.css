@@ -1,0 +1,226 @@
+.tix-clear {
+	height: 0;
+	line-height: 0;
+	display: block;
+	font-size: 0;
+	clear: both;
+}
+
+.tix-table {
+	width: 100%;
+	border-spacing: 0;
+}
+.tix-table span {
+	display: inline-block;
+	padding: 4px 0px;
+}
+
+#tix_ticket_options input,
+#tix_ticket_availability input {
+	margin: 0;
+}
+
+#tix_ticket_options .inside,
+#tix_ticket_availability .inside {
+	margin: 0;
+	padding: 0;
+}
+#tix_ticket_options .misc-pub-section span.left,
+#tix_ticket_availability .misc-pub-section span.left {
+	display: inline-block;
+	width: 70px;
+}
+
+#tix_ticket_availability .date {
+	width: 80px;
+}
+
+#postexcerpt p {
+	display: none;
+}
+
+.tix-ticket-questions span,
+.tix-ticket-reservations span {
+	display: inline-block;
+	padding: 8px 0 8px 0px;
+	margin: 0 0px;
+}
+
+.tix-ticket-questions-v1 span {
+	margin: 8px 0 8px 8px;
+	padding: 0 4px;
+}
+
+.tix-ticket-questions span.tix-field-type {
+	padding-left: 8px;
+	display: inline-block;
+	width: 50px;
+	font-size: 8px;
+	font-weight: 600;
+	text-align: right;
+	text-transform: uppercase;
+	color: #999;
+}
+.tix-ticket-questions .tix-item-sortable span.tix-field-type {
+	cursor: move;
+}
+.tix-ui-state-highlight {
+	background: white;
+}
+.tix-ticket-questions span.tix-field-name {
+	padding-left: 8px;
+}
+.tix-ticket-questions span.tix-field-values {
+	color: #999;
+}
+.tix-ticket-questions .tix-item {
+	border-bottom: solid 1px #DFDFDF;
+	border-top: solid 1px white;
+	background-color: whiteSmoke;
+}
+.tix-ticket-questions .tix-item-highlight {
+	background: white;
+	height: 36px;
+	width: 100%;
+}
+
+.tix-ticket-questions .tix-item-inner {
+	margin-right: 32px;
+}
+
+.tix-ticket-questions .tix-field-delete {
+	float: right;
+	margin-right: 12px;
+	margin-top: -2px;
+}
+
+.tix-item.tix-prototype {
+	display: none;
+}
+#tix-add-question-existing-list {
+	width: 90%;
+}
+.tix-item .tix-field-required-star {
+	display: none;
+}
+.tix-item.tix-item-required .tix-field-required-star {
+	display: inline-block;
+	color: #DD0000;
+	font-size: 14px;
+}
+.tix-item-inner {
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+#tix-add-question-new-form,
+#tix-add-question-existing-form {
+	display: none;
+}
+
+.tix-ticket-questions .column-required,
+.tix-ticket-reservations .column-quantity,
+.tix-ticket-reservations .column-used,
+.tix-ticket-reservations .column-token,
+.tix-ticket-reservations .column-actions {
+	text-align: center;
+}
+
+.tix-ticket-reservations .column-actions input.button {
+	width: auto !important;
+}
+
+.tix-ticket-questions input[type="checkbox"] {
+	width: auto !important;
+}
+
+.tix-ticket-reservations span {
+	display: inline-block;
+	margin: 0px 8px 0px 8px;
+	padding: 0 4px;
+}
+
+#tix_coupon_options input,
+#tix_coupon_availability input {
+	margin: 0;
+}
+#tix_coupon_options .inside,
+#tix_coupon_availability .inside {
+	margin: 0;
+	padding: 0;
+}
+#tix_coupon_options .misc-pub-section span.left,
+#tix_coupon_availability .misc-pub-section span.left {
+	display: block;
+	width: 70px;
+	float: left;
+}
+
+#tix_coupon_options .date,
+#tix_coupon_availability .date {
+	width: 80px;
+}
+
+.tix-checkbox-group {
+	display: block;
+	margin-left: 72px;
+}
+
+.tix-checkbox-group label {
+	display: block;
+}
+
+#tix_attendee_info .inside,
+#tix_log .inside {
+	margin: 0;
+	padding: 0;
+}
+
+.tix-revenue-summary .tix-sold,
+.tix-revenue-summary .tix-remaining,
+.tix-revenue-summary .tix-sub-total,
+.tix-revenue-summary .tix-discounted,
+.tix-revenue-summary .tix-revenue {
+	text-align: right;
+}
+
+.tix-revenue-summary .tix-row-total {
+	font-weight: bold;
+}
+
+.tix-log-table td.tix-0 {
+	width: 120px;
+	vertical-align: top;
+}
+
+.tix-attendees-info td,
+.tix-log-table td {
+	padding-left: 8px;
+	padding-right: 8px;
+	border-top: solid 1px white;
+	border-bottom: solid 1px #DFDFDF;
+}
+.tix-attendees-info tr.tix-row-general td,
+.tix-attendees-info tr.tix-row-transaction td,
+.tix-attendees-info tr.tix-row-questions td {
+	font-weight: bold;
+}
+
+abbr.tix-column-label {
+	cursor: pointer;
+}
+
+#tix-notify-preview {
+	background: #F5EFC6;
+	width: 500px;
+	padding: 20px;
+	overflow: hidden;
+}
+
+label.tix-yes-no {
+	margin-right: 20px;
+}
+
+.tix-setup-form {
+	max-width: 650px;
+}
