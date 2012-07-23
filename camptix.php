@@ -385,6 +385,12 @@ class Camptix_Plugin {
 				wp_dequeue_script( 'autosave' );
 			}
 		}
+
+		$screen = get_current_screen();
+		if ( 'tix_ticket_page_camptix_options' == $screen->id ) {
+			wp_enqueue_script( 'jquery-ui-datepicker' );
+			wp_enqueue_style( 'jquery-ui', plugins_url( '/external/jquery-ui.css', __FILE__ ), array(), $this->version );
+		}
 	}
 
 	/**
@@ -932,6 +938,7 @@ class Camptix_Plugin {
 			'version' => $this->version,
 			'reservations_enabled' => false,
 			'refunds_enabled' => false,
+			'refund_all_enabled' => false,
 			'questions_v2' => false,
 			'archived' => false,
 		) ), get_option( 'camptix_options', array() ) );
@@ -1023,6 +1030,7 @@ class Camptix_Plugin {
 				'version' => $this->version,
 				'reservations_enabled' => false,
 				'refunds_enabled' => false,
+				'refund_all_enabled' => false,
 				'questions_v2' => false,
 			) ), get_option( 'camptix_options', array() ) );
 
@@ -1090,6 +1098,7 @@ class Camptix_Plugin {
 	}
 	
 	function menu_setup_controls() {
+		wp_enqueue_script( 'jquery-ui' );
 		$section = $this->get_setup_section();
 
 		switch ( $section ) {
@@ -1115,8 +1124,12 @@ class Camptix_Plugin {
 					"Reservations is a way to make sure that a certain group of people, can always purchase their tickets, even if you sell out fast. <a href='#'>Learn more</a>."
 				);
 
-				$this->add_settings_field_helper( 'refunds_enabled', 'Enable Refunds', 'field_yesno', false,
+				$this->add_settings_field_helper( 'refunds_enabled', 'Enable Refunds', 'field_enable_refunds', false,
 					"This will allows your customers to refund their tickets purchase by filling out a simple refund form. <a href='#'>Learn more</a>."
+				);
+
+				$this->add_settings_field_helper( 'refund_all_enabled', 'Enable Refund All', 'field_yesno', false,
+					"Allows to refund all purchased tickets by an admin via the Tools menu. <a href='#'>Learn more</a>."
 				);
 				$this->add_settings_field_helper( 'questions_v2', 'Enable Questions v2', 'field_yesno', false,
 					"A new interface for managing questions, allows sorting, adding existing questions and more. <a href='#'>Learn more</a>."
@@ -1189,6 +1202,9 @@ class Camptix_Plugin {
 		if ( isset( $input[$field] ) )
 			$output[$field] = (bool) $input[$field];
 
+		if ( isset( $input['refunds_date_end'], $input['refunds_enabled'] ) && (bool) $input['refunds_enabled'] && strtotime( $input['refunds_date_end'] ) )
+			$output['refunds_date_end'] = $input['refunds_date_end'];
+
 		if ( isset( $input['version'] ) )
 			$output['version'] = $input['version'];
 
@@ -1199,6 +1215,7 @@ class Camptix_Plugin {
 		return array(
 			'reservations_enabled',
 			'refunds_enabled',
+			'refund_all_enabled',
 			'questions_v2',
 			'archived',
 		);
@@ -1230,6 +1247,38 @@ class Camptix_Plugin {
 		?>
 		<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="1" <?php checked( $args['value'], true ); ?>> Yes</label>
 		<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="0" <?php checked( $args['value'], false ); ?>> No</label>
+
+		<?php if ( isset( $args['description'] ) ) : ?>
+		<p class="description"><?php echo $args['description']; ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	function field_enable_refunds( $args ) {
+		$refunds_enabled = (bool) $this->options['refunds_enabled'];
+		$refunds_date_end = isset( $this->options['refunds_date_end'] ) && strtotime( $this->options['refunds_date_end'] ) ? $this->options['refunds_date_end'] : date( 'Y-m-d' );
+		?>
+		<div id="tix-refunds-enabled-radios">
+			<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="1" <?php checked( $args['value'], true ); ?>> Yes</label>
+			<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="0" <?php checked( $args['value'], false ); ?>> No</label>
+		</div>
+
+		<div id="tix-refunds-date" class="<?php if ( ! $refunds_enabled ) echo 'hide-if-js'; ?>" style="margin: 20px 0;">
+			<label>Allow refunds until:</label>
+			<input type="text" name="camptix_options[refunds_date_end]" value="<?php echo esc_attr( $refunds_date_end ); ?>" class="tix-date-field" />
+		</div>
+		<script>
+		jQuery(document).ready(function($){
+			var dates = $( ".tix-date-field" ).datepicker({
+				dateFormat: 'yy-mm-dd',
+				firstDay: 1,
+			});
+
+			$('#tix-refunds-enabled-radios input').change(function() {
+				( $(this).val() > 0 ) ? $('#tix-refunds-date').show() : $('#tix-refunds-date').hide();
+			});
+		});
+		</script>
 
 		<?php if ( isset( $args['description'] ) ) : ?>
 		<p class="description"><?php echo $args['description']; ?></p>
@@ -1423,7 +1472,7 @@ class Camptix_Plugin {
 			'notify' => 'Notify',
 		);
 
-		if ( current_user_can( $this->caps['manage_options'] ) && ! $this->options['archived'] )
+		if ( current_user_can( $this->caps['manage_options'] ) && ! $this->options['archived'] && $this->options['refund_all_enabled'] )
 			$sections['refund'] = 'Refund';
 
 		foreach ( $sections as $section_key => $section_caption ) {
@@ -2261,6 +2310,9 @@ class Camptix_Plugin {
 	}
 
 	function menu_tools_refund() {
+		if ( ! $this->options['refund_all_enabled'] )
+			return;
+
 		if ( get_option( 'camptix_doing_refunds', false ) )
 			return $this->menu_tools_refund_busy();
 		?>
@@ -4369,7 +4421,7 @@ class Camptix_Plugin {
 						$first_name = get_post_meta( $attendee->ID, 'tix_first_name', true );
 						$last_name = get_post_meta( $attendee->ID, 'tix_last_name', true );
 
-						if ( $attendee->post_status == 'publish' && (float) get_post_meta( $attendee->ID, 'tix_order_total', true ) > 0 && get_post_meta( $attendee->ID, 'tix_paypal_transaction_id', true ) )
+						if ( $this->is_refundable( $attendee->ID ) )
 							$is_refundable = true;
 					?>
 					<tr>
@@ -4397,7 +4449,7 @@ class Camptix_Plugin {
 
 			</tbody>
 		</table>
-		<?php if ( $is_refundable && $this->options['refunds_enabled'] ) : ?>
+		<?php if ( $is_refundable ) : ?>
 		<p>Change of plans? Made a mistake? Don't worry, you can <a href="<?php echo esc_url( $this->get_refund_tickets_link( $access_token ) ); ?>">request a refund</a>.</p>
 		<?php endif; ?>
 		</div><!-- #tix -->
@@ -4576,6 +4628,14 @@ class Camptix_Plugin {
 			$this->redirect_with_error_flags();
 			die();
 		}
+		
+		$today = date( 'Y-m-d' );
+		$refunds_until = $this->options['refunds_date_end'];
+		if ( ! strtotime( $refunds_until ) || strtotime( $refunds_until ) < strtotime( $today ) ) {
+			$this->error_flags['cannot_refund'] = true;
+			$this->redirect_with_error_flags();
+			die();
+		}
 
 		$access_token = $_REQUEST['tix_access_token'];
 
@@ -4654,7 +4714,7 @@ class Camptix_Plugin {
 					$refund_txn_id = $txn['REFUNDTRANSACTIONID'];
 					foreach ( $attendees as $attendee ) {
 						$this->log( sprintf( 'Refunded %s by user request in %s.', $transaction['TRANSACTIONID'], $refund_txn_id ), $attendee->ID, $txn, 'refund' );
-						$this->log( 'Refund reason attached with data.', $attendee->id, $reason, 'refund' );
+						$this->log( 'Refund reason attached with data.', $attendee->ID, $reason, 'refund' );
 						$attendee->post_status = 'refund';
 						wp_update_post( $attendee );
 					}
@@ -4734,6 +4794,29 @@ class Camptix_Plugin {
 		$contents = ob_get_contents();
 		ob_end_clean();
 		return $contents;
+	}
+
+	/**
+	 * Return true if an attendee_id is refundable.
+	 */
+	function is_refundable( $attendee_id ) {
+		if ( ! $this->options['refunds_enabled'] )
+			return false;
+
+		$today = date( 'Y-m-d' );
+		$refunds_until = $this->options['refunds_date_end'];
+
+		if ( ! strtotime( $refunds_until ) )
+			return false;
+
+		if ( strtotime( $refunds_until ) < strtotime( $today ) )
+			return false;
+
+		$attendee = get_post( $attendee_id );
+		if ( $attendee->post_status == 'publish' && (float) get_post_meta( $attendee->ID, 'tix_order_total', true ) > 0 && get_post_meta( $attendee->ID, 'tix_paypal_transaction_id', true ) )
+			return true;
+
+		return false;
 	}
 
 	/**

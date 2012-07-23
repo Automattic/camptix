@@ -31,7 +31,8 @@
 	width: 70px;
 }
 
-#tix_ticket_availability .date {
+#tix_ticket_availability .date,
+.tix-date-field {
 	width: 80px;
 }
 
