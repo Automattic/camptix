@@ -17,7 +17,7 @@ class Camptix_Plugin {
 	public $debug;
 	public $beta_features_enabled;
 	public $version = 20120703;
-	public $css_version = 20120719;
+	public $css_version = 20120723;
 	public $caps;
 
 	protected $tickets;
@@ -67,6 +67,7 @@ class Camptix_Plugin {
 			'manage_coupons' => 'manage_options',
 			'manage_tools' => 'manage_options',
 			'manage_options' => 'manage_options',
+			'delete_attendees' => 'manage_options',
 		) );
 
 		// Explicitly disable all beta features if beta features is off.
@@ -788,11 +789,11 @@ class Camptix_Plugin {
 				'publish_posts' => $this->caps['manage_attendees'],
 				'edit_posts' => $this->caps['manage_attendees'],
 				'edit_others_posts' => $this->caps['manage_attendees'],
-				'delete_posts' => $this->caps['manage_attendees'],
-				'delete_others_posts' => $this->caps['manage_attendees'],
+				'delete_posts' => $this->caps['delete_attendees'],
+				'delete_others_posts' => $this->caps['delete_attendees'],
 				'read_private_posts' => $this->caps['manage_attendees'],
 				'edit_post' => $this->caps['manage_attendees'],
-				'delete_post' => $this->caps['manage_attendees'],
+				'delete_post' => $this->caps['delete_attendees'],
 				'read_post' => $this->caps['manage_attendees'],
 			),
 		) );
@@ -2548,10 +2549,85 @@ class Camptix_Plugin {
 		add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_coupon', 'normal' );
 		add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_email', 'normal' );
 
-		if ( ! $this->debug || ! current_user_can( $this->caps['manage_options'] ) ) {
-			remove_meta_box( 'submitdiv', 'tix_attendee', 'side' );
-			remove_meta_box( 'slugdiv', 'tix_attendee', 'normal' );
-		}
+		add_meta_box( 'tix_attendee_submitdiv', 'Publish', array( $this, 'metabox_attendee_submitdiv' ), 'tix_attendee', 'side' );
+		remove_meta_box( 'submitdiv', 'tix_attendee', 'side' );
+	}
+
+	function metabox_attendee_submitdiv() {
+			global $action, $post;
+
+			$post_type = $post->post_type;
+			$post_type_object = get_post_type_object( $post_type );
+			$post_status_object = get_post_status_object( $post->post_status );
+			$can_publish = current_user_can( $post_type_object->cap->publish_posts );
+			$email = get_post_meta( $post->ID, 'tix_email', true );
+		?>
+		<div class="submitbox" id="submitpost">
+
+			<div id="minor-publishing">
+				<div style="display:none;">
+				<?php submit_button( __( 'Save' ), 'button', 'save' ); ?>
+				</div>
+
+				<div id="misc-publishing-actions">
+					<div class="misc-pub-section">
+						<div style="text-align: center;">
+						<?php echo get_avatar( $email, 100 ); ?>
+						</div>
+					</div>
+
+					<div class="misc-pub-section">
+						<label for="post_status"><?php _e('Status:') ?></label>
+						<span id="post-status-display">
+							<?php if ( $post_status_object ) : ?>
+							<?php echo $post_status_object->label; ?>
+							<?php else: ?>
+								Unknown status
+							<?php endif; ?>
+						</span>
+					</div>
+
+					<?php
+					$datef = __( 'M j, Y @ G:i' );
+					if ( 0 != $post->ID ) {
+						$stamp = __( 'Created: <b>%1$s</b>' );
+						$date = date_i18n( $datef, strtotime( $post->post_date ) );
+					} else {
+						$stamp = __('Publish <b>immediately</b>');
+						$date = date_i18n( $datef, strtotime( current_time('mysql') ) );
+					}
+					?>
+					
+					<?php if ( $can_publish ) : ?>
+					<div class="misc-pub-section curtime">
+						<span id="timestamp"><?php printf( $stamp, $date ); ?></span>
+					</div>
+					<?php endif; // $can_publish ?>
+
+				</div><!-- #misc-publishing-actions -->
+				<div class="clear"></div>
+			</div><!-- #minor-publishing -->
+
+			<div id="major-publishing-actions">
+				<div id="delete-action">
+				<?php
+				if ( current_user_can( 'delete_post', $post->ID ) ) {
+					if ( !EMPTY_TRASH_DAYS )
+						$delete_text = __( 'Delete Permanently' );
+					else
+						$delete_text = __( 'Move to Trash' );
+					?>
+				<a class="submitdelete deletion" href="<?php echo get_delete_post_link( $post->ID ); ?>"><?php echo $delete_text; ?></a><?php
+				} ?>
+				</div>
+
+				<div id="publishing-action">
+					<?php submit_button( __( 'Save Attendee' ), 'primary', 'save', false, array( 'tabindex' => '5', 'accesskey' => 'p' ) ); ?>
+				</div>
+				<div class="clear"></div>
+			</div>
+		</div><!-- #submitpost -->
+		<?php
 	}
 
 	/**
@@ -3480,14 +3556,6 @@ class Camptix_Plugin {
 			}
 		}
 		$this->table( $rows, 'tix-attendees-info' );
-		?>
-		<?php if ( ! ( $this->debug && current_user_can( $this->caps['manage_options'] ) ) ) : ?>
-		<script>
-		// No form submits please.
-		jQuery( '#post' ).submit( function() { return false; } );
-		</script>
-		<?php endif; ?>
-		<?
 	}
 
 	/**
@@ -6458,29 +6526,6 @@ add_action( 'camptix_attendees_shortcode_init', function() {
 		}
 	}
 });
-
-// Hide bulk actions.
-add_filter( 'bulk_actions-edit-tix_attendee', function( $actions ) {
-	if ( $GLOBALS['camptix']->debug && current_user_can( $GLOBALS['camptix']->caps['manage_options'] ) )
-		return $actions;
-
-	return array();
-});
-
-add_filter( 'post_row_actions', function( $actions, $post ) {
-	if ( $GLOBALS['camptix']->debug && current_user_can( $GLOBALS['camptix']->caps['manage_options'] ) )
-		return $actions;
-
-	if ( $post->post_type == 'tix_attendee' ) {
-		unset( $actions['inline hide-if-no-js'] );
-		unset( $actions['trash'] );
-		unset( $actions['edit'] );
-
-		$edit_post_link = get_edit_post_link( $post->ID );
-		$actions['details'] = '<a href="' . $edit_post_link . '" title="Details">Details</a>';
-	}
-	return $actions;
-}, 10, 2 );
 
 add_action( 'admin_head', function() {
 	if ( $GLOBALS['camptix']->debug && current_user_can( $GLOBALS['camptix']->caps['manage_options'] ) )

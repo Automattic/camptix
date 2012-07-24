@@ -21,7 +21,8 @@
 }
 
 #tix_ticket_options .inside,
-#tix_ticket_availability .inside {
+#tix_ticket_availability .inside,
+#tix_attendee_submitdiv .inside {
 	margin: 0;
 	padding: 0;
 }
