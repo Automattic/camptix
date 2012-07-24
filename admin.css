@@ -173,7 +173,8 @@
 }
 
 #tix_attendee_info .inside,
-#tix_log .inside {
+#tix_log .inside,
+#tix_db_log .inside {
 	margin: 0;
 	padding: 0;
 }

@@ -2542,13 +2542,15 @@ class Camptix_Plugin {
 
 		add_meta_box( 'tix_attendee_info', 'Attendee Information', array( $this, 'metabox_attendee_info' ), 'tix_attendee', 'normal' );
 
-		add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_attendee', 'normal' );
+		/*add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_attendee', 'normal' );
 		add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_ticket', 'normal' );
 		add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_coupon', 'normal' );
-		add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_email', 'normal' );
+		add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_email', 'normal' );*/
 
 		add_meta_box( 'tix_attendee_submitdiv', 'Publish', array( $this, 'metabox_attendee_submitdiv' ), 'tix_attendee', 'side' );
 		remove_meta_box( 'submitdiv', 'tix_attendee', 'side' );
+		
+		do_action( 'camptix_add_meta_boxes' );
 	}
 
 	function metabox_attendee_submitdiv() {
