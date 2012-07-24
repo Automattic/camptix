@@ -6391,6 +6391,7 @@ class Camptix_Plugin {
 		}
 
 		do_action( 'camptix_log', $entry );
+		do_action( 'camptix_log_raw', $message, $post_id, $data, $module );
 	}
 
 	function __destruct() {
