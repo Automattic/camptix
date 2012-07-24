@@ -246,8 +246,6 @@ class Camptix_Plugin {
 						$email_content = do_shortcode( $email->post_content );
 						$email_title = do_shortcode( $email->post_title );
 
-						$this->log( $email_content );
-
 						// Attempt to send an e-mail. @todo replace [first_name] etc here.
 						if ( $this->wp_mail( $attendee_email, $email_title, $email_content ) ) {
 							$this->log( sprintf( 'E-mail successfully sent to %s', $attendee_email ), $email->ID, $data, 'notify' );
