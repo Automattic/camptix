@@ -483,7 +483,7 @@ class Camptix_Plugin {
 		$columns['tix_ticket'] = 'Ticket';
 		$columns['tix_coupon'] = 'Coupon';
 
-		$questions = $this->get_all_questions();
+		/*$questions = $this->get_all_questions();
 		foreach ( $questions as $key => $question ) {
 
 			// Trim the label if it's too long.
@@ -493,7 +493,7 @@ class Camptix_Plugin {
 
 			$label = sprintf( '<abbr class="tix-column-label" title="%s">%s</abbr>', esc_attr( $question['field'] ), esc_html( $label ) );
 			$columns['tix_q_' . md5( $key )] = $label;
-		}
+		}*/
 
 		if ( $this->options['reservations_enabled'] )
 			$columns['tix_reservation'] = 'Reservation';
@@ -542,7 +542,7 @@ class Camptix_Plugin {
 				break;
 		}
 
-		if ( substr( $column, 0, 6 ) == 'tix_q_' ) {
+		/*if ( substr( $column, 0, 6 ) == 'tix_q_' ) {
 			$answers = (array) get_post_meta( $post_id, 'tix_questions', true );
 
 			$md5_answers = array();
@@ -555,7 +555,7 @@ class Camptix_Plugin {
 					$md5_answers[$key] = implode( ', ', (array) $md5_answers[$key] );
 				echo esc_html( $md5_answers[$key] );
 			}
-		}
+		}*/
 	}
 
 	/**
