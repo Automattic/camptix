@@ -4,8 +4,9 @@
  * Plugin URI: http://wordcamp.org
  * Description: Simple and flexible event ticketing for WordPress.
  * Version: 1.0
- * Author: Konstantin Kovshenin, Andrea Middleton
+ * Author: Automattic
  * Author URI: http://wordcamp.org
+ * License: GPLv2
  */
 
 class Camptix_Plugin {
