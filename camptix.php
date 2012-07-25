@@ -41,9 +41,12 @@ class Camptix_Plugin {
 	function __construct() {
 		do_action( 'camptix_pre_init' );
 
-		add_action( 'init', array( $this, 'load_addons' ), 9 );
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'shutdown', array( $this, 'shutdown' ) );
+
+		// Addons
+		add_action( 'init', array( $this, 'load_addons' ), 9 );
+		add_action( 'camptix_load_addons', array( $this, 'load_default_addons' ) );
 
 		// Schedules are run before 'init'
 		$this->schedule_events();
@@ -6453,9 +6456,23 @@ class Camptix_Plugin {
 	 * Fired before $this->init()
 	 */
 	function load_addons() {
+		do_action( 'camptix_load_addons' );
 		foreach ( $this->addons as $classname )
 			if ( class_exists( $classname ) )
 				$addons_loaded[] = new $classname;
+	}
+
+	/**
+	 * Runs during camptix_load_addons, includes the necessary files to register default addons.
+	 */
+	function load_default_addons() {
+		$default_addons = apply_filters( 'camptix_default_addons', array(
+			'field-twitter' => plugin_dir_path( __FILE__ ) . 'addons/field-twitter.php',
+			'field-url'     => plugin_dir_path( __FILE__ ) . 'addons/field-url.php',
+		) );
+
+		foreach ( $default_addons as $filename )
+			include_once $filename;
 	}
 
 	/**
@@ -6492,110 +6509,3 @@ abstract class Camptix_Addon {
 	}
 	function camptix_init() {}
 }
-
-/**
- * Let's add a couple of new field types.
- *
- * There are three main steps to adding some public field for CampTix. The first
- * step is to filter the field types and add your own type. The second step is to
- * add a control action for that type, you can use existing CampTix controls, or
- * define your own. The third and (optional) final step would be to add the field
- * value to your attendees shortcode output.
- */
-class Camptix_Addon_Twitter_Field extends Camptix_Addon {
-
-	function camptix_init() {
-		global $camptix;
-		add_filter( 'camptix_question_field_types', array( $this, 'question_field_types' ) );
-		add_action( 'camptix_attendees_shortcode_init', array( $this, 'attendees_shortcode_init' ) );
-		add_action( 'camptix_question_field_twitter', array( $camptix, 'question_field_text' ), 10, 2 );
-		add_action( 'camptix_attendees_shortcode_item', array( $this, 'attendees_shortcode_item' ), 10, 1 );
-	}
-
-	function question_field_types( $types ) {
-		return array_merge( $types, array(
-			'twitter' => 'Twitter (public)',
-		) );
-	}
-
-	function attendees_shortcode_init() {
-		global $camptix;
-		$this->questions = $camptix->get_all_questions();
-	}
-
-	function attendees_shortcode_item( $attendee_id ) {
-		foreach ( $this->questions as $question ) {
-			if ( $question['type'] != 'twitter' )
-				continue;
-
-			$question_key = sanitize_title_with_dashes( $question['field'] );
-			$answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
-			if ( ! isset( $answers[$question_key] ) )
-				continue;
-
-			$value = trim( $answers[$question_key] );
-			$matches = array();
-			$screen_name = false;
-
-			// We allow "username", "@username" and "http://twitter.com/username" values.
-			if ( preg_match( '#^@?([a-z0-9_]+)$#i', $value, $matches ) )
-				$screen_name = $matches[1];
-			elseif ( preg_match( '#^(https?://)?(www\.)?twitter\.com/(\#!/)?([a-z0-9]+)$#i', $value, $matches ) )
-				$screen_name = $matches[4];
-
-			if ( $screen_name ) {
-				$url = 'http://twitter.com/' . $screen_name;
-				printf( '<a class="tix-field tix-attendee-twitter" href="%s">%s</a>', esc_url( $url ), esc_html( $screen_name ) );
-			}
-		}
-	}
-}
-camptix_register_addon( 'Camptix_Addon_Twitter_Field' );
-
-class Camptix_Addon_URL_Field extends Camptix_Addon {
-
-	function camptix_init() {
-		global $camptix;
-		add_filter( 'camptix_question_field_types', array( $this, 'question_field_types' ) );
-		add_action( 'camptix_attendees_shortcode_init', array( $this, 'attendees_shortcode_init' ) );
-		add_action( 'camptix_question_field_url', array( $camptix, 'question_field_text' ), 10, 2 );
-		add_action( 'camptix_attendees_shortcode_item', array( $this, 'attendees_shortcode_item' ), 10, 1 );
-	}
-
-	function question_field_types( $types ) {
-		return array_merge( $types, array(
-			'url' => 'URL (public)',
-		) );
-	}
-
-	function attendees_shortcode_init() {
-		global $camptix;
-		$this->questions = $camptix->get_all_questions();
-	}
-
-	function attendees_shortcode_item( $attendee_id ) {
-		foreach ( $this->questions as $question ) {
-			if ( $question['type'] != 'url' )
-				continue;
-
-			$question_key = sanitize_title_with_dashes( $question['field'] );
-			$answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
-			if ( ! isset( $answers[$question_key] ) )
-				continue;
-
-			$url = esc_url_raw( trim( $answers[$question_key] ) );
-			if ( $url ) {
-				$parsed = parse_url( $url );
-				$label = $parsed['host'];
-				if ( isset( $parsed['path'] ) )
-					$label .= untrailingslashit( $parsed['path'] );
-
-				if ( substr( $label, 0, 4 ) == 'www.' )
-					$label = substr( $label, 4 );
-
-				printf( '<a class="tix-field tix-attendee-url" href="%s">%s</a>', esc_url( $url ), esc_html( $label ) );
-			}
-		}
-	}
-}
-camptix_register_addon( 'Camptix_Addon_URL_Field' );
