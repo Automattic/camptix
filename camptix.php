@@ -21,6 +21,9 @@ class Camptix_Plugin {
 	public $css_version = 20120723;
 	public $caps;
 
+	public $addons = array();
+	public $addons_loaded = array();
+
 	protected $tickets;
 	protected $tickets_selected;
 	protected $tickets_selected_count;
@@ -38,6 +41,7 @@ class Camptix_Plugin {
 	function __construct() {
 		do_action( 'camptix_pre_init' );
 
+		add_action( 'init', array( $this, 'load_addons' ), 9 );
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'shutdown', array( $this, 'shutdown' ) );
 
@@ -6444,10 +6448,50 @@ class Camptix_Plugin {
 
 		return wp_mail( $to, $subject, $message, $headers, $attachments );
 	}
+
+	/**
+	 * Fired before $this->init()
+	 */
+	function load_addons() {
+		foreach ( $this->addons as $classname )
+			if ( class_exists( $classname ) )
+				$addons_loaded[] = new $classname;
+	}
+
+	/**
+	 * Registers an addon class which is later loaded in $this->load_addons.
+	 */
+	public function register_addon( $classname ) {
+		if ( did_action( 'camptix_init' ) ) {
+			trigger_error( 'Please register your CampTix addons before CampTix is initialized.' );
+			return false;
+		}
+
+		if ( ! class_exists( $classname ) ) {
+			trigger_error( 'The CampTix addon you are trying to register does not exist.' );
+			return false;
+		}
+
+		$this->addons[] = $classname;
+	}
 }
 
 // Initialize the $camptix global.
 $GLOBALS['camptix'] = new Camptix_Plugin;
+
+function camptix_register_addon( $classname ) {
+	return $GLOBALS['camptix']->register_addon( $classname );
+}
+
+/**
+ * If you're writing an addon, make sure you extend from this class.
+ */
+abstract class Camptix_Addon {
+	function __construct() {
+		add_action( 'camptix_init', array( $this, 'camptix_init' ) );
+	}
+	function camptix_init() {}
+}
 
 /**
  * Let's add a couple of new field types.
@@ -6458,12 +6502,9 @@ $GLOBALS['camptix'] = new Camptix_Plugin;
  * define your own. The third and (optional) final step would be to add the field
  * value to your attendees shortcode output.
  */
-class Camptix_Addon_Twitter_Field {
-	function __construct() {
-		add_action( 'init', array( $this, 'init' ) );
-	}
+class Camptix_Addon_Twitter_Field extends Camptix_Addon {
 
-	function init() {
+	function camptix_init() {
 		global $camptix;
 		add_filter( 'camptix_question_field_types', array( $this, 'question_field_types' ) );
 		add_action( 'camptix_attendees_shortcode_init', array( $this, 'attendees_shortcode_init' ) );
@@ -6509,14 +6550,11 @@ class Camptix_Addon_Twitter_Field {
 		}
 	}
 }
-new Camptix_Addon_Twitter_Field;
+camptix_register_addon( 'Camptix_Addon_Twitter_Field' );
 
-class Camptix_Addon_URL_Field {
-	function __construct() {
-		add_action( 'init', array( $this, 'init' ) );
-	}
+class Camptix_Addon_URL_Field extends Camptix_Addon {
 
-	function init() {
+	function camptix_init() {
 		global $camptix;
 		add_filter( 'camptix_question_field_types', array( $this, 'question_field_types' ) );
 		add_action( 'camptix_attendees_shortcode_init', array( $this, 'attendees_shortcode_init' ) );
@@ -6560,4 +6598,4 @@ class Camptix_Addon_URL_Field {
 		}
 	}
 }
-new Camptix_Addon_URL_Field;
+camptix_register_addon( 'Camptix_Addon_URL_Field' );
