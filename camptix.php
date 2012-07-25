@@ -111,7 +111,7 @@ class Camptix_Plugin {
 		add_action( 'transition_post_status', array( $this, 'transition_post_status' ), 10, 3 );
 
 		// Notices, errors and infos, all in one.
-		add_action( 'tix_notices', array( $this, 'do_notices' ) );
+		add_action( 'camptix_notices', array( $this, 'do_notices' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -4084,7 +4084,7 @@ class Camptix_Plugin {
 		ob_start();
 		?>
 		<div id="tix">
-			<?php do_action( 'tix_notices' ); ?>
+			<?php do_action( 'camptix_notices' ); ?>
 			<?php if ( $available_tickets ) : ?>
 			<form action="<?php echo esc_url( add_query_arg( 'tix_action', 'attendee_info', $this->get_tickets_url() ) ); ?>#tix" method="POST">
 
@@ -4237,7 +4237,7 @@ class Camptix_Plugin {
 		$i = 1;
 		?>
 		<div id="tix" class="tix-has-dynamic-receipts">
-			<?php do_action( 'tix_notices' ); ?>
+			<?php do_action( 'camptix_notices' ); ?>
 			<form action="<?php echo esc_url( add_query_arg( 'tix_action', 'checkout' ), $this->get_tickets_url() ); ?>#tix" method="POST">
 
 				<?php if ( $this->coupon ) : ?>
@@ -4442,7 +4442,7 @@ class Camptix_Plugin {
 			$this->notice( 'Please note that the payment for this set of tickets is still pending.' );
 		?>
 		<div id="tix">
-		<?php do_action( 'tix_notices' ); ?>
+		<?php do_action( 'camptix_notices' ); ?>
 		<table class="tix-ticket-form">
 			<thead>
 				<tr>
@@ -4636,7 +4636,7 @@ class Camptix_Plugin {
 		}
 		?>
 		<div id="tix">
-			<?php do_action( 'tix_notices' ); ?>
+			<?php do_action( 'camptix_notices' ); ?>
 			<form action="<?php echo esc_url( add_query_arg( 'tix_action', 'edit_attendee' ) ); ?>#tix" method="POST">
 				<input type="hidden" name="tix_attendee_save" value="1" />
 
@@ -4800,7 +4800,7 @@ class Camptix_Plugin {
 		ob_start();
 		?>
 		<div id="tix">
-			<?php do_action( 'tix_notices' ); ?>
+			<?php do_action( 'camptix_notices' ); ?>
 			<form action="<?php echo esc_url( add_query_arg( 'tix_action', 'refund_request' ) ); ?>#tix" method="POST">
 				<input type="hidden" name="tix_refund_request_submit" value="1" />
 
@@ -4857,7 +4857,7 @@ class Camptix_Plugin {
 		ob_start();
 		?>
 		<div id="tix">
-			<?php do_action( 'tix_notices' ); ?>
+			<?php do_action( 'camptix_notices' ); ?>
 		</div>
 		<?php
 		$contents = ob_get_contents();
@@ -6204,7 +6204,7 @@ class Camptix_Plugin {
 		ob_start();
 		?>
 		<div id="tix">
-			<?php do_action( 'tix_notices' ); ?>
+			<?php do_action( 'camptix_notices' ); ?>
 			<form method="POST" action="<?php add_query_arg( null, null ); ?>#tix">
 				<input type="hidden" name="tix_private_shortcode_submit" value="1" />
 				<input type="hidden" name="tix_post_id" value="<?php the_ID(); ?>" />
@@ -6241,7 +6241,7 @@ class Camptix_Plugin {
 	function shortcode_private_display_content( $atts, $content ) {
 		ob_start();
 		echo '<div id="tix">';
-		do_action( 'tix_notices' );
+		do_action( 'camptix_notices' );
 
 		echo $content;
 
