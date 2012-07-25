@@ -5,21 +5,24 @@
 .tix-error, .tix-notice, .tix-info {
 	margin: 2px 0;
 	padding: 4px 8px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
 }
 
 .tix-error {
-	background: #FFD9C8;
-	border: solid 1px #F0BAA2;
+	background: #FFEBE8;
+	border: solid 1px #C00;
 }
 
 .tix-notice {
-	background: #FEF6D2;
-	border: solid 1px #EFE3AE;
+	background: lightYellow;
+	border: solid 1px #E6DB55;
 }
 
 .tix-info {
-	background: #EDFCD5;
-	border: solid 1px #D4EBAF;
+	background: #EFF8DF;
+	border: solid 1px #B2D37D;
 }
 
 .tix-clear {
