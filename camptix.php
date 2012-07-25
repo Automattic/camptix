@@ -6528,11 +6528,3 @@ add_action( 'camptix_attendees_shortcode_init', function() {
 		}
 	}
 });
-
-add_action( 'admin_head', function() {
-	if ( $GLOBALS['camptix']->debug && current_user_can( $GLOBALS['camptix']->caps['manage_options'] ) )
-		return;
-
-	if ( 'tix_attendee' == get_post_type() )
-		echo '<style>.add-new-h2 { display: none; }</style>';
-});
