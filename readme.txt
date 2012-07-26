@@ -8,4 +8,4 @@ Hang in there!
 
 == Description ==
 
-Please don't use this plugin yet :)
+Please don't use this plugin yet :) hosted on github too.
