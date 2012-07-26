@@ -8,10 +8,10 @@
  * define your own. The third and (optional) final step would be to add the field
  * value to your attendees shortcode output.
  */
-class Camptix_Addon_Twitter_Field extends Camptix_Addon {
+class CampTix_Addon_Twitter_Field extends CampTix_Addon {
 
 	/**
-	 * Runs during camptix_init, see Camptix_Addon
+	 * Runs during camptix_init, see CampTix_Addon
 	 */
 	function camptix_init() {
 		global $camptix;
@@ -61,4 +61,4 @@ class Camptix_Addon_Twitter_Field extends Camptix_Addon {
 }
 
 // Register this addon, creates an instance of this class when necessary.
-camptix_register_addon( 'Camptix_Addon_Twitter_Field' );
+camptix_register_addon( 'CampTix_Addon_Twitter_Field' );

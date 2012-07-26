@@ -9,7 +9,7 @@
  * License: GPLv2
  */
 
-class Camptix_Plugin {
+class CampTix_Plugin {
 	protected $options;
 	protected $notices;
 	protected $errors;
@@ -323,7 +323,7 @@ class Camptix_Plugin {
 
 	/**
 	 * This is taken out here to illustrate how a third-party plugin or
-	 * theme can hook into Camptix to add their own Summarize fields. This method
+	 * theme can hook into CampTix to add their own Summarize fields. This method
 	 * grabs all the available tickets questions and adds them to Summarize.
 	 */
 	function summarize_extra_fields() {
@@ -961,13 +961,13 @@ class Camptix_Plugin {
 					update_option( 'camptix_options', $options );
 
 					add_action( 'admin_notices', function() use ( $new_version ) {
-						printf( '<div class="updated"><p>Camptix upgrade successful. Current version: %s.</p></div>', $new_version );
+						printf( '<div class="updated"><p>CampTix upgrade successful. Current version: %s.</p></div>', $new_version );
 					});
 				}
 			} else {
 				add_action( 'admin_notices', function() {
 					$more = current_user_can( $this->caps['manage_options'] ) ? sprintf( ' <a href="%s">Click here to upgrade now.</a>', esc_url( add_query_arg( 'tix_do_upgrade', 1, admin_url( 'index.php' ) ) ) ) : '';
-					printf( '<div class="updated"><p>Camptix upgrade required!%s</p></div>', $more );
+					printf( '<div class="updated"><p>CampTix upgrade required!%s</p></div>', $more );
 				});
 			}
 		}
@@ -6400,7 +6400,7 @@ class Camptix_Plugin {
 
 	/**
 	 * Fired before $this->init()
-	 * @todo maybe check $classname's inheritance tree and signal if it's not a Camptix_Addon
+	 * @todo maybe check $classname's inheritance tree and signal if it's not a CampTix_Addon
 	 */
 	function load_addons() {
 		do_action( 'camptix_load_addons' );
@@ -6455,7 +6455,7 @@ class Camptix_Plugin {
 }
 
 // Initialize the $camptix global.
-$GLOBALS['camptix'] = new Camptix_Plugin;
+$GLOBALS['camptix'] = new CampTix_Plugin;
 
 function camptix_register_addon( $classname ) {
 	return $GLOBALS['camptix']->register_addon( $classname );
@@ -6464,7 +6464,7 @@ function camptix_register_addon( $classname ) {
 /**
  * If you're writing an addon, make sure you extend from this class.
  */
-abstract class Camptix_Addon {
+abstract class CampTix_Addon {
 	function __construct() {
 		add_action( 'camptix_init', array( $this, 'camptix_init' ) );
 	}

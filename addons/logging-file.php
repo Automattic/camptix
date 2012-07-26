@@ -6,12 +6,12 @@
  * into a file in plain text. The file is /tmp/camptix.log by default
  * but can easily be changed with a filter.
  */
-class Camptix_Addon_Logging_File extends Camptix_Addon {
+class CampTix_Addon_Logging_File extends CampTix_Addon {
 
 	private $_logfile = null;
 
 	/**
-	 * Runs during camptix_init, @see Camptix_Addon
+	 * Runs during camptix_init, @see CampTix_Addon
 	 */
 	function camptix_init() {
 		add_action( 'camptix_log_raw', array( $this, 'camptix_log_raw' ), 10, 4 );
@@ -38,4 +38,4 @@ class Camptix_Addon_Logging_File extends Camptix_Addon {
 }
 
 // Register this class as a CampTix Addon.
-camptix_register_addon( 'Camptix_Addon_Logging_File' );
+camptix_register_addon( 'CampTix_Addon_Logging_File' );

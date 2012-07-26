@@ -6,12 +6,12 @@
  * into a file in JSON format. The file is /tmp/camptix.json.log by default
  * but can easily be changed with a filter.
  */
-class Camptix_Addon_Logging_File_JSON extends Camptix_Addon {
+class CampTix_Addon_Logging_File_JSON extends CampTix_Addon {
 
 	private $_logfile = null;
 
 	/**
-	 * Runs during camptix_init, @see Camptix_Addon
+	 * Runs during camptix_init, @see CampTix_Addon
 	 */
 	function camptix_init() {
 		add_action( 'camptix_log_raw', array( $this, 'camptix_log_raw' ), 10, 4 );
@@ -49,4 +49,4 @@ class Camptix_Addon_Logging_File_JSON extends Camptix_Addon {
 }
 
 // Register this class as a CampTix Addon.
-camptix_register_addon( 'Camptix_Addon_Logging_File_JSON' );
+camptix_register_addon( 'CampTix_Addon_Logging_File_JSON' );

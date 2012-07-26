@@ -7,10 +7,10 @@
  * persistent mem-based object caching plugin, you should use database 
  * of file-based logging instead.
  */
-class Camptix_Addon_Logging_Meta extends Camptix_Addon {
+class CampTix_Addon_Logging_Meta extends CampTix_Addon {
 
 	/**
-	 * Runs during camptix_init, @see Camptix_Addon
+	 * Runs during camptix_init, @see CampTix_Addon
 	 */
 	function camptix_init() {
 		add_action( 'camptix_log_raw', array( $this, 'camptix_log_raw' ), 10, 4 );
@@ -52,7 +52,7 @@ class Camptix_Addon_Logging_Meta extends Camptix_Addon {
 	}
 
 	/**
-	 * Camptix Log metabox for various post types.
+	 * CampTix Log metabox for various post types.
 	 */
 	function metabox_log() {
 		global $post, $camptix;
@@ -74,4 +74,4 @@ class Camptix_Addon_Logging_Meta extends Camptix_Addon {
 }
 
 // Register this class as a CampTix Addon.
-camptix_register_addon( 'Camptix_Addon_Logging_Meta' );
+camptix_register_addon( 'CampTix_Addon_Logging_Meta' );

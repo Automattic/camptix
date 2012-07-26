@@ -4,10 +4,10 @@
  *
  * @see field-twitter.php
  */
-class Camptix_Addon_URL_Field extends Camptix_Addon {
+class CampTix_Addon_URL_Field extends CampTix_Addon {
 
 	/**
-	 * Runs during camptix_init, @see Camptix_Addon
+	 * Runs during camptix_init, @see CampTix_Addon
 	 */
 	function camptix_init() {
 		global $camptix;
@@ -55,4 +55,4 @@ class Camptix_Addon_URL_Field extends Camptix_Addon {
 }
 
 // Register this class as a CampTix Addon.
-camptix_register_addon( 'Camptix_Addon_URL_Field' );
+camptix_register_addon( 'CampTix_Addon_URL_Field' );

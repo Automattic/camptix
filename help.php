@@ -24,7 +24,7 @@ function tix_contextual_help() {
 			'title' => 'Price',
 			'id' => 'tix-price',
 			'content' => '
-				<p>The ticket price determines how much the user should pay, to obtain the ticket. The currency is set in the Camptix plugin Setup screen. Note that when changing currencies, the existing prices will not be converted, so make sure you get this right the first time.</p>
+				<p>The ticket price determines how much the user should pay, to obtain the ticket. The currency is set in the CampTix plugin Setup screen. Note that when changing currencies, the existing prices will not be converted, so make sure you get this right the first time.</p>
 				<p>A price of <strong>0.00</strong> means that any visitor can obtain such a ticket for free. If you want to give out free tickets to certain groups, you should visit the Coupons section.</p>
 				<p>As soon as at least one ticket has been purchased, the price can no longer be changed. This is made to maintain consistency throughout CampTix reports.',
 		) );
