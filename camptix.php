@@ -6416,7 +6416,6 @@ class CampTix_Plugin {
 		$default_addons = apply_filters( 'camptix_default_addons', array(
 			'field-twitter' => $this->get_default_addon_path( 'field-twitter.php' ),
 			'field-url'     => $this->get_default_addon_path( 'field-url.php' ),
-			'logging-meta'  => $this->get_default_addon_path( 'logging-meta.php' ),
 
 			/**
 			 * The following addons are available but inactive by default. Do not uncomment
@@ -6424,6 +6423,7 @@ class CampTix_Plugin {
 			 * during an update to the plugin.
 			 */
 
+			// 'logging-meta'  => $this->get_default_addon_path( 'logging-meta.php' ),
 			// 'logging-file'  => $this->get_default_addon_path( 'logging-file.php' ),
 			// 'logging-json'  => $this->get_default_addon_path( 'logging-file-json.php' ),
 		) );
