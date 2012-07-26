@@ -5751,6 +5751,11 @@ class CampTix_Plugin {
 		if ( isset( $this->reservation ) && $this->reservation )
 			$reservation_quantiny = $this->reservation['quantity'];
 
+		$log_data = array(
+			'post' => $_POST,
+			'server' => $_SERVER,
+		);
+
 		foreach ( $attendees as $attendee ) {
 			$post_id = wp_insert_post( array(
 				'post_title' => $attendee->first_name . " " . $attendee->last_name,
@@ -5759,7 +5764,7 @@ class CampTix_Plugin {
 			) );
 
 			if ( $post_id ) {
-				$this->log( 'Created attendee draft.', $post_id );
+				$this->log( 'Created attendee draft.', $post_id, $log_data );
 
 				update_post_meta( $post_id, 'tix_timestamp', time() );
 				update_post_meta( $post_id, 'tix_ticket_id', $attendee->ticket_id );
