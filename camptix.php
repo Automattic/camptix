@@ -6417,6 +6417,7 @@ class Camptix_Plugin {
 			'field-twitter' => plugin_dir_path( __FILE__ ) . 'addons/field-twitter.php',
 			'field-url'     => plugin_dir_path( __FILE__ ) . 'addons/field-url.php',
 			'logging-meta'  => plugin_dir_path( __FILE__ ) . 'addons/logging-meta.php',
+			// 'logging-file'  => plugin_dir_path( __FILE__ ) . 'addons/logging-file.php',
 		) );
 
 		foreach ( $default_addons as $filename )
