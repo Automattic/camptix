@@ -6414,14 +6414,19 @@ class Camptix_Plugin {
 	 */
 	function load_default_addons() {
 		$default_addons = apply_filters( 'camptix_default_addons', array(
-			'field-twitter' => plugin_dir_path( __FILE__ ) . 'addons/field-twitter.php',
-			'field-url'     => plugin_dir_path( __FILE__ ) . 'addons/field-url.php',
-			'logging-meta'  => plugin_dir_path( __FILE__ ) . 'addons/logging-meta.php',
-			// 'logging-file'  => plugin_dir_path( __FILE__ ) . 'addons/logging-file.php',
+			'field-twitter' => $this->get_default_addon_path( 'field-twitter.php' ),
+			'field-url'     => $this->get_default_addon_path( 'field-url.php' ),
+			'logging-meta'  => $this->get_default_addon_path( 'logging-meta.php' ),
+			// 'logging-file'  => $this->get_default_addon_path( 'logging-file.php' ),
+			// 'logging-json'  => $this->get_default_addon_path( 'logging-file-json.php' ),
 		) );
 
 		foreach ( $default_addons as $filename )
 			include_once $filename;
+	}
+
+	function get_default_addon_path( $filename ) {
+		return plugin_dir_path( __FILE__ ) . 'addons/' . $filename;
 	}
 
 	/**
