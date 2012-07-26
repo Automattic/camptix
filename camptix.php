@@ -18,7 +18,7 @@ class Camptix_Plugin {
 	public $debug;
 	public $beta_features_enabled;
 	public $version = 20120703;
-	public $css_version = 20120723;
+	public $css_version = 20120726;
 	public $caps;
 
 	public $addons = array();
