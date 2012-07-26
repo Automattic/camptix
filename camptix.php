@@ -1210,6 +1210,14 @@ class CampTix_Plugin {
 		if ( isset( $input['version'] ) )
 			$output['version'] = $input['version'];
 
+		$current_user = wp_get_current_user();
+		$log_data = array(
+			'old' => $this->options,
+			'new' => $output,
+			'username' => $current_user->user_login,
+		);
+		$this->log( 'Options updated.', 0, $log_data );
+
 		return $output;
 	}
 
