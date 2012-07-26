@@ -6417,6 +6417,13 @@ class Camptix_Plugin {
 			'field-twitter' => $this->get_default_addon_path( 'field-twitter.php' ),
 			'field-url'     => $this->get_default_addon_path( 'field-url.php' ),
 			'logging-meta'  => $this->get_default_addon_path( 'logging-meta.php' ),
+
+			/**
+			 * The following addons are available but inactive by default. Do not uncomment
+			 * but rather filter 'camptix_default_addons', otherwise your changes may be overwritten
+			 * during an update to the plugin.
+			 */
+
 			// 'logging-file'  => $this->get_default_addon_path( 'logging-file.php' ),
 			// 'logging-json'  => $this->get_default_addon_path( 'logging-file-json.php' ),
 		) );
