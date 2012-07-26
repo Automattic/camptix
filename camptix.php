@@ -3899,16 +3899,21 @@ class CampTix_Plugin {
 		foreach ( $this->tickets_selected as $ticket_id => $count ) {
 			$ticket = $this->tickets[$ticket_id];
 
+			// Don't allow more than 10 tickets of each type to be purchased in bulk.
+			if ( $count > 10 && $ticket->tix_remaining > 10 ) {
+				$this->tickets_selected[$ticket_id] = 10;
+				$count = 10;
+				$tickets_excess += $count - 10;
+			}
+
 			// ref: #1001
 			if ( $count > $ticket->tix_remaining ) {
 				$this->tickets_selected[$ticket_id] = $ticket->tix_remaining;
 				$tickets_excess += $count - $ticket->tix_remaining;
-			}
 
-			// Don't allow more than 10 tickets of each type to be purchased in bulk.
-			if ( $count > 10 ) {
-				$this->tickets_selected[$ticket_id] = 10;
-				$tickets_excess += $count - 10;
+				// Remove the ticket if count is 0.
+				if ( $this->tickets_selected[$ticket_id] < 1 )
+					unset( $this->tickets_selected[$ticket_id] );
 			}
 
 			// ref: #1002
