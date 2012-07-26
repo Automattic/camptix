@@ -41,15 +41,13 @@ class Camptix_Plugin {
 	function __construct() {
 		do_action( 'camptix_pre_init' );
 
-		add_action( 'init', array( $this, 'init' ) );
-		add_action( 'shutdown', array( $this, 'shutdown' ) );
-
 		// Addons
-		add_action( 'init', array( $this, 'load_addons' ), 9 );
+		add_action( 'init', array( $this, 'load_addons' ), 8 );
 		add_action( 'camptix_load_addons', array( $this, 'load_default_addons' ) );
 
-		// Schedules are run before 'init'
-		$this->schedule_events();
+		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'init', array( $this, 'schedule_events' ), 9 );
+		add_action( 'shutdown', array( $this, 'shutdown' ) );
 	}
 
 	// The tix_action is a user-facing query var, let's enable it.
@@ -158,10 +156,6 @@ class Camptix_Plugin {
 		// add_action( 'tix_scheduled_daily', array( $this, 'paypal_review_pending_payments' ) );
 		add_action( 'tix_scheduled_daily', array( $this, 'paypal_review_timeout_payments' ) );
 
-		// wp_clear_scheduled_hook( 'tix_email_schedule' );
-		if ( ! wp_next_scheduled( 'tix_email_schedule' ) )
-			wp_schedule_event( time(), '10-mins', 'tix_email_schedule');
-
 		if ( ! wp_next_scheduled( 'tix_scheduled_every_ten_minutes' ) )
 			wp_schedule_event( time(), '10-mins', 'tix_scheduled_every_ten_minutes' );
 
@@ -205,6 +199,7 @@ class Camptix_Plugin {
 
 		$recipients_data = $wpdb->get_results( $wpdb->prepare( "SELECT SQL_CALC_FOUND_ROWS meta_id, meta_value FROM $wpdb->postmeta WHERE $wpdb->postmeta.post_id = %d AND $wpdb->postmeta.meta_key = %s LIMIT %d;", $email->ID, 'tix_email_recipient_id', $max ) );
 		$total = $wpdb->get_var( "SELECT FOUND_ROWS();" );
+		$processed = 0;
 
 		$recipients = array();
 		foreach ( $recipients_data as $recipient )
@@ -212,63 +207,63 @@ class Camptix_Plugin {
 
 		unset( $recipients_data, $recipient );
 
-		if ( ! $recipients || ! is_array( $recipients ) || count( $recipients ) < 1 )
-			return;
+		if ( $recipients && is_array( $recipients ) && count( $recipients ) > 0 ) {
 
-		do_action( 'camptix_init_notify_shortcodes' );
+			do_action( 'camptix_init_notify_shortcodes' );
 
-		$paged = 1; $processed = 0;
-		while ( $attendees = get_posts( array(
-				'post_type' => 'tix_attendee',
-				'post_status' => 'any',
-				'post__in' => array_keys( $recipients ),
-				'fields' => 'ids', // ! no post objects
-				'orderby' => 'ID',
-				'order' => 'ASC',
-				'paged' => $paged++,
-				'posts_per_page' => min( 100, $max ),
-				'cache_results' => false, // no caching
-		) ) ) {
+			$paged = 1;
+			while ( $attendees = get_posts( array(
+					'post_type' => 'tix_attendee',
+					'post_status' => 'any',
+					'post__in' => array_keys( $recipients ),
+					'fields' => 'ids', // ! no post objects
+					'orderby' => 'ID',
+					'order' => 'ASC',
+					'paged' => $paged++,
+					'posts_per_page' => min( 100, $max ),
+					'cache_results' => false, // no caching
+			) ) ) {
 
-			// Prepare post metadata, disable object cache.
-			$this->filter_post_meta = $this->prepare_metadata_for( $attendees );
+				// Prepare post metadata, disable object cache.
+				$this->filter_post_meta = $this->prepare_metadata_for( $attendees );
 
-			foreach ( $attendees as $attendee_id ) {
-				$attendee_email = get_post_meta( $attendee_id, 'tix_email', true );
-				$count = $wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE post_id = %d AND meta_id = %d LIMIT 1;", $email->ID, $recipients[$attendee_id] ) );
+				foreach ( $attendees as $attendee_id ) {
+					$attendee_email = get_post_meta( $attendee_id, 'tix_email', true );
+					$count = $wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE post_id = %d AND meta_id = %d LIMIT 1;", $email->ID, $recipients[$attendee_id] ) );
 
-				if ( $count > 0 ) {
+					if ( $count > 0 ) {
 
-					$data = array(
-						'email_id' => $email->ID,
-						'email_title' => $email->post_title,
-						'attendee_id' => $attendee_id,
-						'attendee_email' => $attendee_email,
-					);
+						$data = array(
+							'email_id' => $email->ID,
+							'email_title' => $email->post_title,
+							'attendee_id' => $attendee_id,
+							'attendee_email' => $attendee_email,
+						);
 
-					if ( ! is_email( $attendee_email ) ) {
-						$this->log( sprintf( '%s is not a valid e-mail, removing from queue.', $attendee_email, $email->ID ), $email->ID, $data, 'notify' );
-					} else {
-
-						$this->notify_shortcodes_attendee_id = $attendee_id;
-						$email_content = do_shortcode( $email->post_content );
-						$email_title = do_shortcode( $email->post_title );
-
-						// Attempt to send an e-mail. @todo replace [first_name] etc here.
-						if ( $this->wp_mail( $attendee_email, $email_title, $email_content ) ) {
-							$this->log( sprintf( 'E-mail successfully sent to %s', $attendee_email ), $email->ID, $data, 'notify' );
+						if ( ! is_email( $attendee_email ) ) {
+							$this->log( sprintf( '%s is not a valid e-mail, removing from queue.', $attendee_email, $email->ID ), $email->ID, $data, 'notify' );
 						} else {
-							$this->log( sprintf( 'Could not send e-mail to %s, removing from queue.', $attendee_email ), $email->ID, $data, 'notify' );
+
+							$this->notify_shortcodes_attendee_id = $attendee_id;
+							$email_content = do_shortcode( $email->post_content );
+							$email_title = do_shortcode( $email->post_title );
+
+							// Attempt to send an e-mail. @todo replace [first_name] etc here.
+							if ( $this->wp_mail( $attendee_email, $email_title, $email_content ) ) {
+								$this->log( sprintf( 'E-mail successfully sent to %s', $attendee_email ), $email->ID, $data, 'notify' );
+							} else {
+								$this->log( sprintf( 'Could not send e-mail to %s, removing from queue.', $attendee_email ), $email->ID, $data, 'notify' );
+							}
 						}
+
+						$processed++;
 					}
-
-					$processed++;
 				}
-			}
 
-			// Clean post meta cache.
-			$this->filter_post_meta = false;
-			$this->notify_shortcodes_attendee_id = false;
+				// Clean post meta cache.
+				$this->filter_post_meta = false;
+				$this->notify_shortcodes_attendee_id = false;
+			}
 		}
 
 		//update_post_meta( $email->ID, 'tix_email_recipients', $recipients );
