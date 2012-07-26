@@ -2550,11 +2550,6 @@ class Camptix_Plugin {
 
 		add_meta_box( 'tix_attendee_info', 'Attendee Information', array( $this, 'metabox_attendee_info' ), 'tix_attendee', 'normal' );
 
-		/*add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_attendee', 'normal' );
-		add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_ticket', 'normal' );
-		add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_coupon', 'normal' );
-		add_meta_box( 'tix_log', 'CampTix Log', array( $this, 'metabox_log' ), 'tix_email', 'normal' );*/
-
 		add_meta_box( 'tix_attendee_submitdiv', 'Publish', array( $this, 'metabox_attendee_submitdiv' ), 'tix_attendee', 'side' );
 		remove_meta_box( 'submitdiv', 'tix_attendee', 'side' );
 		
@@ -2636,27 +2631,6 @@ class Camptix_Plugin {
 			</div>
 		</div><!-- #submitpost -->
 		<?php
-	}
-
-	/**
-	 * Camptix Log metabox for various post types.
-	 */
-	function metabox_log() {
-		global $post;
-		$rows = array();
-
-		// The log is stored in an array of array( 'timestamp' => x, 'message' => y ) format.
-		$log = get_post_meta( $post->ID, 'tix_log', true );
-		if ( !$log ) $log = array();
-
-		// Add entries as rows.
-		foreach ( $log as $entry )
-			$rows[] = array( date( 'Y-m-d H:i:s', intval( $entry['timestamp'] ) ), esc_html( $entry['message'] ) );
-
-		if ( count( $rows ) < 1 )
-			$rows[] = array( 'No log entries yet.', '' );
-
-		$this->table( $rows, 'tix-log-table' );
 	}
 
 	/**
@@ -6375,30 +6349,7 @@ class Camptix_Plugin {
 	 * Add something to the CampTix log.
 	 */
 	function log( $message, $post_id = 0, $data = null, $module = 'general' ) {
-		$entry = array(
-			'url' => home_url(),
-			'timestamp' => time(),
-			'message' => $message,
-			'data' => $data,
-			'module' => $module,
-		);
-
-		if ( $post_id ) {
-			$entry['post_id'] = $post_id;
-			$entry['edit_post_link'] = esc_url_raw( add_query_arg( array( 'post' => $post_id, 'action' => 'edit' ), admin_url( 'post.php' ) ) );
-		}
-
-		if ( $post_id > 0 ) {
-			$log = get_post_meta( $post_id, 'tix_log', true );
-			if ( is_array( $log ) )
-				$log[] = $entry;
-			else
-				$log = array( $entry );
-
-			update_post_meta( $post_id, 'tix_log', $log );
-		}
-
-		do_action( 'camptix_log', $entry );
+		// do_action( 'camptix_log', $entry );
 		do_action( 'camptix_log_raw', $message, $post_id, $data, $module );
 	}
 
@@ -6454,6 +6405,7 @@ class Camptix_Plugin {
 
 	/**
 	 * Fired before $this->init()
+	 * @todo maybe check $classname's inheritance tree and signal if it's not a Camptix_Addon
 	 */
 	function load_addons() {
 		do_action( 'camptix_load_addons' );
@@ -6469,6 +6421,7 @@ class Camptix_Plugin {
 		$default_addons = apply_filters( 'camptix_default_addons', array(
 			'field-twitter' => plugin_dir_path( __FILE__ ) . 'addons/field-twitter.php',
 			'field-url'     => plugin_dir_path( __FILE__ ) . 'addons/field-url.php',
+			'logging-meta'  => plugin_dir_path( __FILE__ ) . 'addons/logging-meta.php',
 		) );
 
 		foreach ( $default_addons as $filename )
