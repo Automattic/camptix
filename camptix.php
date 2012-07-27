@@ -1559,7 +1559,7 @@ class CampTix_Plugin {
 			</p>
 		</form>
 
-		<?php if ( isset( $_POST['tix_summarize_submit'] ) && array_key_exists( $summarize_by, $this->get_available_summary_fields() ) ) : ?>
+		<?php if ( isset( $_POST['tix_summarize_submit'] ) && check_admin_referer( 'tix_summarize' ) && array_key_exists( $summarize_by, $this->get_available_summary_fields() ) ) : ?>
 		<?php
 			$fields = $this->get_available_summary_fields();
 			$summary = $this->get_summary( $summarize_by );
@@ -1997,7 +1997,6 @@ class CampTix_Plugin {
 				</tbody>
 			</table>
 			<p class="submit">
-				<?php // @todo add nonce and security ?>
 				<?php wp_nonce_field( 'tix_export' ); ?>
 				<input type="hidden" name="tix_export_submit" value="1" />
 				<input type="submit" class="button-primary" value="Export" />
@@ -2319,7 +2318,6 @@ class CampTix_Plugin {
 				</tbody>
 			</table>
 			<p class="submit">
-				<?php // @todo add nonce and security ?>
 				<?php wp_nonce_field( 'tix_notify_attendees' ); ?>
 				<input type="hidden" name="tix_notify_attendees" value="1" />
 				<input name="tix_notify_submit" type="submit" class="button-primary" value="Send E-mails" />
@@ -2861,7 +2859,6 @@ class CampTix_Plugin {
 		<p><strong>Create a New Reservation:</strong></p>
 		<p>
 			<input type="hidden" name="tix_doing_reservations" value="1" />
-
 			<label>Reservation Name</label>
 			<input type="text" name="tix_reservation_id" autocomplete="off" />
 			<label>Quantity</label>
@@ -3576,12 +3573,20 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Saves ticket post meta, runs during save_post
-	 * @todo validation/sanitization
+	 * Saves ticket post meta, runs during save_post, which runs whenever 
+	 * the post type is saved, and not necessarily from the admin, which is why the nonce check.
 	 */
 	function save_ticket_post( $post_id ) {
 		if ( wp_is_post_revision( $post_id ) || 'tix_ticket' != get_post_type( $post_id ) )
 			return;
+
+		// Stuff here is submittable via POST only.
+		if ( ! isset( $_POST['action'] ) || 'editpost' != $_POST['action'] )
+			return;
+
+		// Security check.
+		$nonce_action = 'update-tix_ticket_' . $post_id; // see edit-form-advanced.php
+		check_admin_referer( $nonce_action );
 
 		if ( isset( $_POST['tix_price'] ) )
 			update_post_meta( $post_id, 'tix_price', $_POST['tix_price'] );
@@ -3703,16 +3708,15 @@ class CampTix_Plugin {
 			}
 		}
 
-		// Purche tickets page cache.
-		$this->flush_tickets_page();
+		$this->log( 'Saved ticket post with form data.', $post_id, $_POST );
 
-		if ( isset( $_POST ) && ! empty( $_POST ) && is_admin() )
-			$this->log( 'Saved ticket post with form data.', $post_id, $_POST );
+		// Purge tickets page cache.
+		$this->flush_tickets_page();
 	}
 
 	/**
 	 * Saves attendee post meta, runs during save_post, also
-	 * populates the attendee content field with data for search. @hacky
+	 * populates the attendee content field with data for search.
 	 */
 	function save_attendee_post( $post_id ) {
 		if ( wp_is_post_revision( $post_id ) || 'tix_attendee' != get_post_type( $post_id ) )
@@ -3755,11 +3759,19 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Saves coupon post meta, runs during save_post
+	 * Saves coupon post meta, runs during save_post and not always in/by the admin.
 	 */
 	function save_coupon_post( $post_id ) {
 		if ( wp_is_post_revision( $post_id ) || 'tix_coupon' != get_post_type( $post_id ) )
 			return;
+
+		// Stuff here is submittable via POST only.
+		if ( ! isset( $_POST['action'] ) || 'editpost' != $_POST['action'] )
+			return;
+
+		// Security check.
+		$nonce_action = 'update-tix_coupon_' . $post_id; // see edit-form-advanced.php
+		check_admin_referer( $nonce_action );
 
 		if ( isset( $_POST['tix_discount_price'], $_POST['tix_discount_percent'] ) ) {
 			$price = (float) $_POST['tix_discount_price'];
@@ -3797,8 +3809,7 @@ class CampTix_Plugin {
 			update_post_meta( $post_id, 'tix_coupon_end', $_POST['tix_coupon_end'] );
 		}
 
-		if ( isset( $_POST ) && is_admin() && ! empty( $_POST ) )
-			$this->log( 'Saved coupon post with form data.', $post_id, $_POST );
+		$this->log( 'Saved coupon post with form data.', $post_id, $_POST );
 	}
 
 	/**
@@ -5015,7 +5026,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * @todo add availability, count, etc.
+	 * Returns true if a ticket is valid for purchase.
 	 */
 	function is_ticket_valid_for_purchase( $post_id ) {
 		$post = get_post( $post_id );
