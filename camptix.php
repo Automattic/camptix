@@ -18,7 +18,7 @@ class CampTix_Plugin {
 	public $debug;
 	public $beta_features_enabled;
 	public $version = 20120703;
-	public $css_version = 20120726;
+	public $css_version = 20120727;
 	public $caps;
 
 	public $addons = array();
@@ -106,6 +106,7 @@ class CampTix_Plugin {
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
+		add_action( 'admin_head', array( $this, 'admin_head' ) );
 
 		// Handle meta for our post types.
 		add_action( 'save_post', array( $this, 'save_ticket_post' ) );
@@ -1372,6 +1373,37 @@ class CampTix_Plugin {
 		add_submenu_page( 'edit.php?post_type=tix_ticket', 'Tools', 'Tools', $this->caps['manage_tools'], 'camptix_tools', array( $this, 'menu_tools' ) );
 		add_submenu_page( 'edit.php?post_type=tix_ticket', 'Setup', 'Setup', $this->caps['manage_options'], 'camptix_options', array( $this, 'menu_setup' ) );
 		remove_submenu_page( 'edit.php?post_type=tix_ticket', 'post-new.php?post_type=tix_ticket' );
+	}
+
+	/**
+	 * Runs during admin_head, outputs some icons CSS.
+	 */
+	function admin_head() {
+		$icons_url = plugins_url( 'images/icons.png', __FILE__ );
+		?>
+		<style>
+			#adminmenu #menu-posts-tix_ticket .wp-menu-image {
+				background-image: url('<?php echo esc_url( $icons_url ); ?>');
+				background-position: 0px 0px;
+				background-size: 196px 168px;
+			}
+			#adminmenu #menu-posts-tix_ticket:hover .wp-menu-image,
+			#adminmenu #menu-posts-tix_ticket.wp-has-current-submenu .wp-menu-image {
+				background-position: 0px -56px;
+			}
+
+			@media only screen and (-webkit-min-device-pixel-ratio: 1.5) {
+				#adminmenu #menu-posts-tix_ticket .wp-menu-image {
+					background-position: -14px 0;
+					background-size: 98px 84px;
+				}
+				#adminmenu #menu-posts-tix_ticket:hover .wp-menu-image,
+				#adminmenu #menu-posts-tix_ticket.wp-has-current-submenu .wp-menu-image {
+					background-position: -14px -56px;
+				}
+			}
+		</style>
+		<?php
 	}
 
 	/**

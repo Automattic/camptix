@@ -227,3 +227,16 @@ label.tix-yes-no {
 .tix-setup-form {
 	max-width: 650px;
 }
+
+#icon-edit.icon32-posts-tix_ticket {
+	background-image: url('images/icons.png');
+	background-position: -39px -11px;
+	background-size: 196px 168px;
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5) {
+	#icon-edit.icon32-posts-tix_ticket {
+		background-size: 98px 84px;
+		background-position: -52px -11px;
+	}
+}
