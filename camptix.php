@@ -2320,8 +2320,13 @@ class CampTix_Plugin {
 			<p class="submit">
 				<?php wp_nonce_field( 'tix_notify_attendees' ); ?>
 				<input type="hidden" name="tix_notify_attendees" value="1" />
-				<input name="tix_notify_submit" type="submit" class="button-primary" value="Send E-mails" />
-				<input name="tix_notify_preview" type="submit" class="button" value="Preview" />
+				
+				<div style="position: absolute; left: -9999px;">
+					<?php /* Hit Preview, not Send, if the form is submitted with Enter. */ ?>
+					<?php submit_button( 'Preview', 'button', 'tix_notify_preview', false ); ?>
+				</div>
+				<?php submit_button( 'Send E-mails', 'primary', 'tix_notify_submit', false ); ?>
+				<?php submit_button( 'Preview', 'button', 'tix_notify_preview', false ); ?>
 			</p>
 		</form>
 
