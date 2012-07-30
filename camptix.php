@@ -372,8 +372,6 @@ class CampTix_Plugin {
 
 		if ( ! $wp_query->query_vars ) { // only on singular admin pages
 			if ( 'tix_ticket' == get_post_type() || 'tix_coupon' == get_post_type() ) {
-				wp_enqueue_script( 'jquery-ui-datepicker' );
-				wp_enqueue_style( 'jquery-ui', plugins_url( '/external/jquery-ui.css', __FILE__ ), array(), $this->version );
 			}
 		}
 
@@ -386,8 +384,11 @@ class CampTix_Plugin {
 				( isset( $_REQUEST['post_type'] ) && in_array( $_REQUEST['post_type'], $post_types ) ) ||
 				( isset( $_REQUEST['page'] ) && in_array( $_REQUEST['page'], $pages ) )
 			) {
+				wp_enqueue_script( 'jquery-ui-datepicker' );
+				wp_enqueue_style( 'jquery-ui', plugins_url( '/external/jquery-ui.css', __FILE__ ), array(), $this->version );
+
 				wp_enqueue_style( 'camptix-admin', plugins_url( '/admin.css', __FILE__ ), array(), $this->css_version );
-				wp_enqueue_script( 'camptix-admin', plugins_url( '/admin.js', __FILE__ ), array( 'jquery' ), $this->js_version );
+				wp_enqueue_script( 'camptix-admin', plugins_url( '/admin.js', __FILE__ ), array( 'jquery', 'jquery-ui-datepicker' ), $this->js_version );
 				wp_dequeue_script( 'autosave' );
 			}
 		}
@@ -1274,18 +1275,6 @@ class CampTix_Plugin {
 			<label>Allow refunds until:</label>
 			<input type="text" name="camptix_options[refunds_date_end]" value="<?php echo esc_attr( $refunds_date_end ); ?>" class="tix-date-field" />
 		</div>
-		<script>
-		jQuery(document).ready(function($){
-			var dates = $( ".tix-date-field" ).datepicker({
-				dateFormat: 'yy-mm-dd',
-				firstDay: 1,
-			});
-
-			$('#tix-refunds-enabled-radios input').change(function() {
-				( $(this).val() > 0 ) ? $('#tix-refunds-date').show() : $('#tix-refunds-date').hide();
-			});
-		});
-		</script>
 
 		<?php if ( isset( $args['description'] ) ) : ?>
 		<p class="description"><?php echo $args['description']; ?></p>
@@ -2265,15 +2254,6 @@ class CampTix_Plugin {
 								<a href="#" class="tix-notify-shortcode"><code>[<?php echo esc_html( $key ); ?>]</code></a>
 								<?php endforeach; ?>
 							</p>
-							<script>
-							(function($){
-								$('.tix-notify-shortcode').click(function() {
-									var shortcode = $(this).find('code').text();
-									$('#tix-notify-body').val( $('#tix-notify-body' ).val() + ' ' + shortcode );
-									return false;
-								});
-							}(jQuery));
-							</script>
 							<?php endif; ?>
 						</td>
 					</tr>
@@ -2712,23 +2692,6 @@ class CampTix_Plugin {
 			<input type="text" name="tix_end" id="tix-date-to" class="regular-text date" value="<?php echo esc_attr( $end ); ?>" />
 		</div>
 		<div class="clear"></div>
-		<script>
-		jQuery(document).ready(function($){
-			var dates = $( "#tix-date-from, #tix-date-to" ).datepicker({
-				dateFormat: 'yy-mm-dd',
-				firstDay: 1,
-				onSelect: function( selectedDate ) {
-					var option = this.id == "tix-date-from" ? "minDate" : "maxDate",
-						instance = $( this ).data( "datepicker" ),
-						date = $.datepicker.parseDate(
-							instance.settings.dateFormat ||
-							$.datepicker._defaults.dateFormat,
-							selectedDate, instance.settings );
-					dates.not( this ).datepicker( "option", option, date );
-				}
-			});
-		});
-		</script>
 		<?php
 	}
 
@@ -3212,122 +3175,6 @@ class CampTix_Plugin {
 				</div>
 			</div>
 		</div>
-		<script>
-		jQuery(document).ready(function($) {
-			var tix_refresh_order = function() {
-				var items = $( ".tix-ui-sortable .tix-item" );
-				for ( var i = 0; i < items.length; i++ )
-					$(items[i]).find('input.tix-field-order').val(i);
-			}
-
-			$( ".tix-ui-sortable" ).sortable({
-				items: ".tix-item-sortable",
-				handle:'.tix-field-type',
-				placeholder: "tix-item-highlight",
-				update: function(e, ui) {
-					tix_refresh_order();
-				}
-			});
-
-			$( '#tix-add-question-new' ).click(function() {
-				$( '#tix-add-question-action' ).hide();
-				$( '#tix-add-question-new-form' ).show();
-				return false;
-			});
-
-			$( '#tix-add-question-new-form-cancel' ).click(function() {
-				$( '#tix-add-question-action' ).show();
-				$( '#tix-add-question-new-form' ).hide();
-				return false;
-			});
-
-			$( '#tix-add-question-existing' ).click(function() {
-				$( '#tix-add-question-action' ).hide();
-				$( '#tix-add-question-existing-form' ).show();
-				return false;
-			});
-
-			$( '#tix-add-question-existing-form-cancel' ).click(function() {
-				$( '#tix-add-question-action' ).show();
-				$( '#tix-add-question-existing-form' ).hide();
-				return false;
-			});
-
-			$( '#tix-add-question-submit' ).click(function() {
-				var item = $( '#tix-add-question-new-form .tix-item.tix-prototype' ).clone();
-
-				var type = $( '#tix-add-question-type' ).val();
-				var name = $( '#tix-add-question-name' ).val();
-				var values = $( '#tix-add-question-values' ).val();
-				var required = $( '#tix-add-question-required' ).is( ':checked' );
-				var order = $( '.tix-ticket-questions .tix-item' ).length-1;
-
-				if ( name.length < 1 )
-					return false;
-
-				$(item).find( 'span.tix-field-type' ).text( type );
-				$(item).find( 'span.tix-field-name' ).text( name );
-				$(item).find( 'span.tix-field-values' ).text( values );
-
-				$(item).find( 'input.tix-field-type' ).val( type ).attr( 'name', 'tix_questions[' + order + '][type]' );
-				$(item).find( 'input.tix-field-name' ).val( name ).attr( 'name', 'tix_questions[' + order + '][field]' );
-				$(item).find( 'input.tix-field-values' ).val( values ).attr( 'name', 'tix_questions[' + order + '][values]' );
-				$(item).find( 'input.tix-field-required' ).val( ( required > 0 ) ? 1 : 0 ).attr( 'name', 'tix_questions[' + order + '][required]' );
-				$(item).find( 'input.tix-field-order' ).val( order ).attr( 'name', 'tix_questions[' + order + '][order]' );;
-
-				if ( required > 0 )
-					$(item).addClass( 'tix-item-required' );
-
-				$(item).removeClass( 'tix-prototype' );
-				$(item).appendTo( '.tix-ticket-questions .tix-ui-sortable' );
-
-				// Clear form
-				$('#tix-add-question-new-form input[type="text"], #tix-add-question-new-form select').val('');
-				$('#tix-add-question-new-form input[type="checkbox"]').attr('checked',false);
-				return false;
-			});
-
-			$( '#tix-add-question-existing-form-add' ).click(function() {
-
-				$( '.tix-existing-checkbox:checked' ).each( function( index, checkbox ) {
-					var item = $( '#tix-add-question-new-form .tix-item.tix-prototype' ).clone();
-					var parent = $( checkbox ).parent();
-
-					var type = $( parent ).find( '.tix-field-type' ).val();
-					var name = $( parent ).find( '.tix-field-name' ).val();
-					var values = $( parent ).find( '.tix-field-values' ).val();
-					var required = $( parent ).find( '.tix-field-required' ).val();
-					var order = $( '.tix-ticket-questions .tix-item' ).length-1;
-
-					$(item).find( 'span.tix-field-type' ).text( type );
-					$(item).find( 'span.tix-field-name' ).text( name );
-					$(item).find( 'span.tix-field-values' ).text( values );
-
-					$(item).find( 'input.tix-field-type' ).val( type ).attr( 'name', 'tix_questions[' + order + '][type]' );
-					$(item).find( 'input.tix-field-name' ).val( name ).attr( 'name', 'tix_questions[' + order + '][field]' );;
-					$(item).find( 'input.tix-field-values' ).val( values ).attr( 'name', 'tix_questions[' + order + '][values]' );;
-					$(item).find( 'input.tix-field-required' ).val( ( required > 0 ) ? 1 : 0 ).attr( 'name', 'tix_questions[' + order + '][required]' );
-					$(item).find( 'input.tix-field-order' ).val( order ).attr( 'name', 'tix_questions[' + order + '][order]' );;
-
-					if ( required > 0 )
-						$(item).addClass( 'tix-item-required' );
-
-					$(item).removeClass( 'tix-prototype' );
-					$(item).appendTo( '.tix-ticket-questions .tix-ui-sortable' );
-
-					$(checkbox).attr('checked',false);
-				});
-				return false;
-			});
-
-			$( '.tix-field-delete a' ).live( 'click', function() {
-				$(this).parents('.tix-item').remove();
-				tix_refresh_order();
-				return false;
-			});
-		});
-		</script>
-
 		<?php
 	}
 
@@ -3428,20 +3275,6 @@ class CampTix_Plugin {
 			</div>
 		</div>
 		<div class="clear"></div>
-		<script>
-			(function($){
-				$( '#tix-applies-to-all' ).click( function(e) {
-					$( '.tix-applies-to-checkbox' ).prop( 'checked', true );
-					e.preventDefault();
-					return false;
-				});
-				$( '#tix-applies-to-none' ).click( function(e) {
-					$( '.tix-applies-to-checkbox' ).prop( 'checked', false );
-					e.preventDefault();
-					return false;
-				});
-			})(jQuery);
-		</script>
 		<?php
 
 		// Restore the original post.
@@ -3467,23 +3300,6 @@ class CampTix_Plugin {
 			<input type="text" name="tix_coupon_end" id="tix-date-to" class="regular-text date" value="<?php echo esc_attr( $end ); ?>" />
 		</div>
 		<div class="clear"></div>
-		<script>
-		jQuery(document).ready(function($){
-			var dates = $( "#tix-date-from, #tix-date-to" ).datepicker({
-				dateFormat: 'yy-mm-dd',
-				firstDay: 1,
-				onSelect: function( selectedDate ) {
-					var option = this.id == "tix-date-from" ? "minDate" : "maxDate",
-						instance = $( this ).data( "datepicker" ),
-						date = $.datepicker.parseDate(
-							instance.settings.dateFormat ||
-							$.datepicker._defaults.dateFormat,
-							selectedDate, instance.settings );
-					dates.not( this ).datepicker( "option", option, date );
-				}
-			});
-		});
-		</script>
 		<?php
 	}
 
