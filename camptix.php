@@ -30,6 +30,7 @@ class CampTix_Plugin {
 	protected $form_data;
 	protected $coupon;
 	protected $error_flags;
+	protected $error_data;
 	protected $did_template_redirect;
 	protected $did_checkout;
 	protected $shortcode_contents;
@@ -4094,8 +4095,12 @@ class CampTix_Plugin {
 			$this->error( 'It looks like somebody took that last ticket before you, sorry! You try a different ticket.' );
 
 		$redirected_error_flags = isset( $_REQUEST['tix_errors'] ) ? array_flip( (array) $_REQUEST['tix_errors'] ) : array();
-		if ( isset( $redirected_error_flags['paypal_http_error'] ) )
-			$this->error( 'An HTTP error has occurred, looks like PayPal is not responding. Please try again later.' );
+		if ( isset( $redirected_error_flags['paypal_http_error'] ) ) {
+			if ( isset( $_REQUEST['tix_error_data']['paypal_http_error_code'] ) )
+				$this->error( sprintf( 'PayPal Error: %s', $this->paypal_error( $_REQUEST['tix_error_data']['paypal_http_error_code'] ) ) );
+			else
+				$this->error( 'An HTTP error has occurred, looks like PayPal is not responding. Please try again later.' );
+		}
 
 		if ( isset( $redirected_error_flags['tickets_excess'] ) )
 			$this->error( 'It looks like somebody grabbed those tickets before you could complete the purchase. You have not been charged, please try again.' );
@@ -5500,15 +5505,12 @@ class CampTix_Plugin {
 					foreach ( $attendees as $attendee )
 						$this->log( 'Payment cancelled due to an HTTP error during DoExpressCheckoutPayment.', $attendee->ID, $request );
 
+					if ( isset( $txn['L_ERRORCODE0'] ) )
+						$this->error_data['paypal_http_error_code'] = intval( $txn['L_ERRORCODE0'] );
+
 					$this->error_flags['paypal_http_error'] = true;
 					$this->redirect_with_error_flags();
 					die();
-
-					/*$error_url = remove_query_arg( array( 'tix_action', 'token' ) );
-					$error_url = add_query_arg( array( 'tix_action' => 'attendee_info' , 'tix_error' => 1 ), $error_url );
-					wp_safe_redirect( $error_url . '#tix' );
-					die();*/
-
 				}
 			} else {
 
@@ -5966,6 +5968,27 @@ class CampTix_Plugin {
 	}
 
 	/**
+	 * Returns an error string from a PayPal error code
+	 * @see https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_errorcodes
+	 */
+	function paypal_error( $error_code ) {
+		$errors = array(
+			0 =>     __( 'An unknown error has occurred. Please try again later.', 'camptix' ),
+
+			10422 => __( 'Please return to PayPal to select new funding sources.', 'camptix' ),
+			10417 => __( 'The transaction cannot complete successfully. Please use an alternative payment method.', 'camptix' ),
+			10445 => __( 'This transaction cannot be processed at this time. Please try again later.', 'camptix' ),
+			10421 => __( 'This Express Checkout session belongs to a different customer. Please try a new purchase.', 'camptix' ),
+		);
+
+		$error_code = absint( $error_code );
+		if ( isset( $errors[ $error_code ] ) )
+			return $errors[ $error_code ];
+
+		return $errors[0];
+	}
+
+	/**
 	 * Displays attendees in a list.
 	 */
 	function shortcode_attendees( $atts ) {
@@ -6306,8 +6329,13 @@ class CampTix_Plugin {
 	function redirect_with_error_flags( $query_args = array() ) {
 		$query_args['tix_error'] = 1;
 		$query_args['tix_errors'] = array();
+		$query_args['tix_error_data'] = array();
+
 		foreach ( $this->error_flags as $key => $value )
 			if ( $value ) $query_args['tix_errors'][] = $key;
+
+		foreach ( $this->error_data as $key => $value )
+			$query_args['tix_error_data'][$key] = $value;
 
 		$url = esc_url_raw( add_query_arg( $query_args, $this->get_tickets_url() ) . '#tix' );
 		wp_safe_redirect( $url );
