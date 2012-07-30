@@ -19,6 +19,7 @@ class CampTix_Plugin {
 	public $beta_features_enabled;
 	public $version = 20120703;
 	public $css_version = 20120727;
+	public $js_version = 20120727;
 	public $caps;
 
 	public $addons = array();
@@ -376,7 +377,7 @@ class CampTix_Plugin {
 			}
 		}
 
-		// Let's see whether to include admin.css
+		// Let's see whether to include admin.css and admin.js
 		if ( is_admin() ) {
 			$post_types = array( 'tix_ticket', 'tix_coupon', 'tix_email', 'tix_attendee' );
 			$pages = array( 'camptix_options', 'camptix_tools' );
@@ -386,6 +387,7 @@ class CampTix_Plugin {
 				( isset( $_REQUEST['page'] ) && in_array( $_REQUEST['page'], $pages ) )
 			) {
 				wp_enqueue_style( 'camptix-admin', plugins_url( '/admin.css', __FILE__ ), array(), $this->css_version );
+				wp_enqueue_script( 'camptix-admin', plugins_url( '/admin.js', __FILE__ ), array( 'jquery' ), $this->js_version );
 				wp_dequeue_script( 'autosave' );
 			}
 		}
@@ -6405,10 +6407,11 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Add something to the CampTix log.
+	 * Add something to the CampTix log. This function does nothing out of the box, 
+	 * but you can easily use an addon or create your own addon for logging. It's fairly 
+	 * easy, check out the addons directory.
 	 */
 	function log( $message, $post_id = 0, $data = null, $module = 'general' ) {
-		// do_action( 'camptix_log', $entry );
 		do_action( 'camptix_log_raw', $message, $post_id, $data, $module );
 	}
 
