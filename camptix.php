@@ -705,15 +705,18 @@ class CampTix_Plugin {
 	 */
 	function get_sorted_questions( $ticket_ID ) {
 		$questions = (array) get_post_meta( $ticket_ID, 'tix_question' );
-
-		usort( $questions, function( $a, $b ) {
-			$a = intval( $a['order'] );
-			$b = intval( $b['order'] );
-			if ( $a == $b ) return 0;
-			return ( $a < $b ) ? -1 : 1;
-		});
-
+		usort( $questions, array( $this, 'get_sorted_questions_sort' ) );
 		return $questions;
+	}
+
+	/**
+	 * Sorts an array by the 'order' key.
+	 */
+	private function get_sorted_questions_sort( $a, $b ) {
+		$a = intval( $a['order'] );
+		$b = intval( $b['order'] );
+		if ( $a == $b ) return 0;
+		return ( $a < $b ) ? -1 : 1;
 	}
 
 	/**
