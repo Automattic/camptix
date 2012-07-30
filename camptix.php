@@ -1690,14 +1690,19 @@ class CampTix_Plugin {
 		}
 
 		// Sort the summary by count.
-		uasort( $summary, function( $a, $b ) {
-			$a = $a['count'];
-			$b = $b['count'];
-
-			if ( $a == $b ) return 0;
-			return ( $a < $b ) ? 1 : -1;
-		});
+		uasort( $summary, array( $this, 'get_summary_sort' ) );
 		return $summary;
+	}
+
+	/**
+	 * Sorts an array by the 'count' keys.
+	 */
+	private function get_summary_sort( $a, $b ) {
+		$a = $a['count'];
+		$b = $b['count'];
+
+		if ( $a == $b ) return 0;
+		return ( $a < $b ) ? 1 : -1;
 	}
 
 	/**
