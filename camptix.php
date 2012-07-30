@@ -6323,25 +6323,6 @@ class CampTix_Plugin {
 		die();
 	}
 
-	// @todo deprecate
-	function redirect_with_errors( $errors, $action = false ) {
-		if ( ! is_array( $errors ) )
-			$errors = array( $errors );
-
-		$query_args = array( 'tix_error' => 1 );
-		if ( $action )
-			$query_args['tix_action'] = $action;
-
-		$url = esc_url_raw( add_query_arg( $query_args, $this->get_tickets_url() ) . '#tix' );
-
-		if ( ! headers_sent() )
-			wp_safe_redirect( $url );
-		else
-			echo '<script>window.location="' . $url . '";</script>';
-
-		die();
-	}
-
 	/**
 	 * Sorts an array by the 'order' key.
 	 */
