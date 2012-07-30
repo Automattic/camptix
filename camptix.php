@@ -705,18 +705,8 @@ class CampTix_Plugin {
 	 */
 	function get_sorted_questions( $ticket_ID ) {
 		$questions = (array) get_post_meta( $ticket_ID, 'tix_question' );
-		usort( $questions, array( $this, 'get_sorted_questions_sort' ) );
+		usort( $questions, array( $this, 'usort_by_order' ) );
 		return $questions;
-	}
-
-	/**
-	 * Sorts an array by the 'order' key.
-	 */
-	private function get_sorted_questions_sort( $a, $b ) {
-		$a = intval( $a['order'] );
-		$b = intval( $b['order'] );
-		if ( $a == $b ) return 0;
-		return ( $a < $b ) ? -1 : 1;
 	}
 
 	/**
@@ -1690,19 +1680,8 @@ class CampTix_Plugin {
 		}
 
 		// Sort the summary by count.
-		uasort( $summary, array( $this, 'get_summary_sort' ) );
+		uasort( $summary, array( $this, 'usort_by_count' ) );
 		return $summary;
-	}
-
-	/**
-	 * Sorts an array by the 'count' keys.
-	 */
-	private function get_summary_sort( $a, $b ) {
-		$a = $a['count'];
-		$b = $b['count'];
-
-		if ( $a == $b ) return 0;
-		return ( $a < $b ) ? 1 : -1;
 	}
 
 	/**
@@ -3621,14 +3600,8 @@ class CampTix_Plugin {
 			$questions = (array) $_POST['tix_questions'];
 			$questions_clean = array();
 
-			if ( isset( $this->options['questions_v2'] ) && $this->options['questions_v2'] ) {
-				usort( $questions, function( $a, $b ) {
-					$a = $a['order'];
-					$b = $b['order'];
-					if ($a == $b) return 0;
-					return ($a < $b) ? -1 : 1;
-				});
-			}
+			if ( isset( $this->options['questions_v2'] ) && $this->options['questions_v2'] )
+				usort( $questions, array( $this, 'usort_by_order' ) );
 
 			foreach ( $questions as $order => $question ) {
 				if ( empty( $question['field'] ) || strlen( trim( $question['field'] ) ) < 1 )
@@ -6380,6 +6353,27 @@ class CampTix_Plugin {
 			echo '<script>window.location="' . esc_url_raw( $url ) . '";</script>';
 
 		die();
+	}
+
+	/**
+	 * Sorts an array by the 'order' key.
+	 */
+	private function usort_by_order( $a, $b ) {
+		$a = intval( $a['order'] );
+		$b = intval( $b['order'] );
+		if ( $a == $b ) return 0;
+		return ( $a < $b ) ? -1 : 1;
+	}
+
+	/**
+	 * Sorts an array by the 'count' keys.
+	 */
+	private function usort_by_count( $a, $b ) {
+		$a = $a['count'];
+		$b = $b['count'];
+
+		if ( $a == $b ) return 0;
+		return ( $a < $b ) ? 1 : -1;
 	}
 
 	protected function notice( $notice ) {
