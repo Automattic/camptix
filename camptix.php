@@ -250,7 +250,7 @@ class CampTix_Plugin {
 							$email_content = do_shortcode( $email->post_content );
 							$email_title = do_shortcode( $email->post_title );
 
-							// Attempt to send an e-mail. @todo replace [first_name] etc here.
+							// Attempt to send an e-mail.
 							if ( $this->wp_mail( $attendee_email, $email_title, $email_content ) ) {
 								$this->log( sprintf( 'E-mail successfully sent to %s', $attendee_email ), $email->ID, $data, 'notify' );
 							} else {
@@ -1545,7 +1545,6 @@ class CampTix_Plugin {
 				</tbody>
 			</table>
 			<p class="submit">
-				<?php // @todo add nonce and security ?>
 				<?php wp_nonce_field( 'tix_summarize' ); ?>
 				<input type="hidden" name="tix_summarize_submit" value="1" />
 				<input type="submit" class="button-primary" value="Show Summary" />
@@ -1833,7 +1832,7 @@ class CampTix_Plugin {
 		$totals->discounted = 0;
 		$totals->revenue = 0;
 
-		// This will hold all our transactions. @todo maybe optimize mem usage.
+		// This will hold all our transactions.
 		$transactions = array();
 
 		$tickets_query = new WP_Query( array(
@@ -2137,7 +2136,8 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Notify tools @todo refactor.
+	 * Notify tools menu, allows to create, preview and send an e-mail 
+	 * to all attendees. See also: notify shortcodes.
 	 */
 	function menu_tools_notify() {
 		global $post, $shortcode_tags;
@@ -3486,7 +3486,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * @todo refactor everything
+	 * Generates an attendee info table.
 	 */
 	function metabox_attendee_info() {
 		global $post;
@@ -5052,7 +5052,7 @@ class CampTix_Plugin {
 
 	/**
 	 * Returns the number of remaining tickets according to number of published attendees.
-	 * @todo cache values and bust in purchase process.
+	 * @todo maybe cache values and bust in purchase process.
 	 */
 	function get_remaining_tickets( $post_id, $via_reservation = false ) {
 		$remaining = 0;
