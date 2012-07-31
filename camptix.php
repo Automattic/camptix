@@ -5194,6 +5194,7 @@ class CampTix_Plugin {
 
 				$payload = array(
 					'METHOD' => 'DoExpressCheckoutPayment',
+					'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
 					'TOKEN' => $token,
 					'PAYERID' => $payer_id,
 					'PAYMENTREQUEST_0_AMT' => number_format( (float) $expected_total, 2, '.', '' ),
@@ -5580,6 +5581,7 @@ class CampTix_Plugin {
 		$payload = array(
 			'METHOD' => 'SetExpressCheckout',
 			'PAYMENTREQUEST_0_PAYMENTACTION' => 'Sale',
+			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
 			'RETURNURL' => add_query_arg( 'tix_action', 'paypal_return', $this->get_tickets_url() ),
 			'CANCELURL' => add_query_arg( 'tix_action', 'paypal_cancel', $this->get_tickets_url() ),
 			'ALLOWNOTE' => 0,
