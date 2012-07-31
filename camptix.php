@@ -6074,6 +6074,9 @@ class CampTix_Plugin {
 		$last_name = isset( $_POST['tix_last_name'] ) ? $_POST['tix_last_name'] : '';
 		$email = isset( $_POST['tix_email'] ) ? $_POST['tix_email'] : '';
 		ob_start();
+
+		if ( isset( $atts['logged_out_message'] ) )
+			echo wpautop( $atts['logged_out_message'] );
 		?>
 		<div id="tix">
 			<?php do_action( 'camptix_notices' ); ?>
@@ -6115,7 +6118,7 @@ class CampTix_Plugin {
 		echo '<div id="tix">';
 		do_action( 'camptix_notices' );
 
-		echo $content;
+		echo do_shortcode( $content );
 
 		echo '</div>';
 		$content = ob_get_contents();
