@@ -5915,6 +5915,12 @@ class CampTix_Plugin {
 			$last_name = isset( $_POST['tix_last_name'] ) ? trim( $_POST['tix_last_name'] ) : '';
 			$email = isset( $_POST['tix_email'] ) ? trim( $_POST['tix_email'] ) : '';
 
+			// Remove cookies if a previous one was set.
+			if ( isset( $_COOKIE['tix_view_token'] ) ) {
+				setcookie( 'tix_view_token', '', time() - 60*60, COOKIEPATH, COOKIE_DOMAIN, false );
+				unset( $_COOKIE['tix_view_token'] );
+			}
+
 			if ( empty( $first_name ) || empty( $last_name ) || empty( $email ) )
 				return $this->error( 'Please fill in all fields.' );
 
@@ -5958,8 +5964,6 @@ class CampTix_Plugin {
 					$this->log( sprintf( 'Viewing private content using %s', @$_SERVER['REMOTE_ADDR'] ), $attendee->ID, $_SERVER, 'private-content' );
 				}
 			} else {
-				setcookie( 'tix_view_token', '', time() - 60*60, COOKIEPATH, COOKIE_DOMAIN, false );
-				unset( $_COOKIE['tix_view_token'] );
 				$this->error( 'The information you have entered is incorrect. Please try again.' );
 			}
 		}
@@ -6053,7 +6057,9 @@ class CampTix_Plugin {
 
 			return $this->shortcode_private_display_content( $atts, $content );
 		} else {
-			$this->notice( 'The content on this page is private. Please log in using the form below.' );
+			if ( ! isset( $_POST['tix_private_shortcode_submit'] ) && ! $error )
+				$this->notice( 'The content on this page is private. Please log in using the form below.' );
+
 			return $this->shortcode_private_login_form( $atts, $content );
 		}
 	}
@@ -6348,8 +6354,8 @@ function camptix_register_addon( $classname ) {
  * If you're writing an addon, make sure you extend from this class.
  */
 abstract class CampTix_Addon {
-	function __construct() {
+	public function __construct() {
 		add_action( 'camptix_init', array( $this, 'camptix_init' ) );
 	}
-	function camptix_init() {}
+	public function camptix_init() {}
 }
