@@ -6141,10 +6141,10 @@ class CampTix_Plugin {
 		$query_args['tix_errors'] = array();
 		$query_args['tix_error_data'] = array();
 
-		foreach ( $this->error_flags as $key => $value )
+		foreach ( (array) $this->error_flags as $key => $value )
 			if ( $value ) $query_args['tix_errors'][] = $key;
 
-		foreach ( $this->error_data as $key => $value )
+		foreach ( (array) $this->error_data as $key => $value )
 			$query_args['tix_error_data'][$key] = $value;
 
 		$url = esc_url_raw( add_query_arg( $query_args, $this->get_tickets_url() ) . '#tix' );
