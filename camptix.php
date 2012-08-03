@@ -6104,6 +6104,9 @@ class CampTix_Plugin {
 				<input type="hidden" name="tix_post_id" value="<?php the_ID(); ?>" />
 				<table class="tix-private-form">
 					<tr>
+						<th class="tix-left" colspan="2">Sign in</th>
+					</tr>
+					<tr>
 						<td class="tix-left">First Name</td>
 						<td class="tix-right"><input name="tix_first_name" value="<?php echo esc_attr( $first_name ); ?>" type="text" /></td>
 					</tr>
