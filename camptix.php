@@ -294,6 +294,7 @@ class CampTix_Plugin {
 
 		add_shortcode( 'first_name', array( $this, 'notify_shortcode_first_name' ) );
 		add_shortcode( 'last_name', array( $this, 'notify_shortcode_last_name' ) );
+		add_shortcode( 'email', array( $this, 'notify_shortcode_email' ) );
 		add_shortcode( 'ticket_url', array( $this, 'notify_shortcode_ticket_url' ) );
 	}
 
@@ -311,6 +312,14 @@ class CampTix_Plugin {
 	function notify_shortcode_last_name( $atts ) {
 		if ( $this->notify_shortcodes_attendee_id )
 			return get_post_meta( $this->notify_shortcodes_attendee_id, 'tix_last_name', true );
+	}
+
+	/**
+	 * Notify shortcode: returns the attendee e-mail address.
+	 */
+	function notify_shortcode_email( $atts ) {
+		if ( $this->notify_shortcodes_attendee_id )
+			return get_post_meta( $this->notify_shortcodes_attendee_id, 'tix_email', true );
 	}
 
 	/**
