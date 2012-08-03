@@ -5277,6 +5277,8 @@ class CampTix_Plugin {
 						// If there's more than 1 ticket, send e-mails to all
 						if ( $this->tickets_selected_count > 1 )
 							$this->email_ticket_to_attendee( $attendee->ID );
+
+						do_action( 'camptix_ticket_emailed', $attendee->ID );
 					}
 
 					if ( is_email( $receipt_email ) ) {
@@ -5713,6 +5715,8 @@ class CampTix_Plugin {
 				// If there's more than 1 ticket, send e-mails to all
 				if ( $this->tickets_selected_count > 1 )
 					$this->email_ticket_to_attendee( $attendee->post_id );
+
+				do_action( 'camptix_ticket_emailed', $attendee->post_id );
 			}
 
 			if ( is_email( $receipt_email ) ) {
@@ -5972,6 +5976,7 @@ class CampTix_Plugin {
 					$count++;
 					update_post_meta( $attendee->ID, 'tix_private_form_submit_count', $count );
 					add_post_meta( $attendee->ID, 'tix_private_form_submit_entry', $_SERVER );
+					add_post_meta( $attendee->ID, 'tix_private_form_submit_ip', @$_SERVER['REMOTE_ADDR'] );
 					$this->log( sprintf( 'Viewing private content using %s', @$_SERVER['REMOTE_ADDR'] ), $attendee->ID, $_SERVER, 'private-content' );
 				}
 			} else {
@@ -6113,6 +6118,10 @@ class CampTix_Plugin {
 			</form>
 		</div>
 		<?php
+
+		if ( isset( $atts['logged_out_message_after'] ) )
+			echo wpautop( $atts['logged_out_message_after'] );
+
 		$content = ob_get_contents();
 		ob_end_clean();
 		return $content;
