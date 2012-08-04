@@ -1,11 +1,49 @@
-=== xiTpmaC ===
+=== CampTix Event Ticketing ===
 Contributors: automattic, kovshenin, andreamiddleton
+Tags: ticketing, event ticketing
 Requires at least: 3.4
 Tested up to: 3.4.1
-Stable tag: 0.1
+Stable tag: 1.0
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Hang in there!
+Simple and Flexible ticketing plugin by WordCamp.org
 
 == Description ==
 
-Please don't use this plugin yet :)
+CampTix is an easy to use and flexible event ticketing plugin created by WordCamp.org. Allow visitors to purchase tickets to your online or offline event, directly from your WordPress website.
+
+* Multiple tickets and attendees forms
+* Coupon codes for discounts
+* Mass e-mail attendees
+* Export attendees data into CSV or XML
+* Public attendees list
+* Revenue reports and summaries
+* and much more!
+
+Feel free to post your feature requests, issues and pull requests to [CampTix on GitHub](https://github.com/automattic/camptix "CampTix on GitHub").
+
+== Installation ==
+
+1. Download and extract CampTix in your `wp-content/plugins` directory
+1. Activate the plugin through the Plugins menu in WordPress
+1. Go to Tickets - Setup to configure your PayPal account
+1. Creat a ticket or two, place the `[camptix]` shortcode on a Page
+1. Start selling!
+
+For more information, visit the [Getting Started](https://github.com/automattic/camptix/wiki "Getting Started") guide on CampTix Wiki.
+
+== Screenshots ==
+
+1. Ticket sales table
+2. Attendee registration form
+3. Attendee admin view
+4. Summarize by ticket type
+5. Summarize by purchase day of week
+6. Revenue report
+7. Mass e-mail attendees
+
+== Changelog ==
+
+= 1.0 =
+* First version
