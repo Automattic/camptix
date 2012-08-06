@@ -1335,6 +1335,10 @@ class CampTix_Plugin {
 				'label' => 'Polish Zloty',
 				'format' => 'PLN %s',
 			),
+			'JPY' => array(
+				'label' => 'Japanese Yen',
+				'format' => 'JPY %s',
+			),
 		) );
 	}
 
