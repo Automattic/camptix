@@ -47,8 +47,6 @@
 			return false;
 		});
 
-		
-
 		// Questions v2 (jQuery UI Sortable)
 		if ( $( ".tix-ui-sortable" ).length > 0 ) {
 			var tix_refresh_questions_order = function() {

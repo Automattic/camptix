@@ -465,17 +465,17 @@ class CampTix_Plugin {
 				break;
 			case 'tix_remaining':
 				echo $this->get_remaining_tickets( $post_id );
-				
+
 				if ( $this->options['reservations_enabled'] ) {
 					$reserved = 0;
 					$reservations = $this->get_reservations( $post_id );
 					foreach ( $reservations as $reservation_token => $reservation )
 						$reserved += $reservation['quantity'] - $this->get_purchased_tickets_count( $post_id, $reservation_token );
-					
+
 					if ( $reserved > 0 )
 						printf( " (%d reserved)", $reserved );
 				}
-				
+
 				break;
 			case 'tix_availability':
 				$start = get_post_meta( $post_id, 'tix_start', true );
@@ -1170,10 +1170,10 @@ class CampTix_Plugin {
 			'name' => sprintf( 'camptix_options[%s]', $key ),
 			'value' => $this->options[$key],
 		);
-		
+
 		if ( $description )
 			$args['description'] = $description;
-		
+
 		add_settings_field( $key, $title, array( $this, $callback_method ), 'camptix_options', $section, $args );
 	}
 
@@ -2140,7 +2140,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Notify tools menu, allows to create, preview and send an e-mail 
+	 * Notify tools menu, allows to create, preview and send an e-mail
 	 * to all attendees. See also: notify shortcodes.
 	 */
 	function menu_tools_notify() {
@@ -2303,7 +2303,7 @@ class CampTix_Plugin {
 			<p class="submit">
 				<?php wp_nonce_field( 'tix_notify_attendees' ); ?>
 				<input type="hidden" name="tix_notify_attendees" value="1" />
-				
+
 				<div style="position: absolute; left: -9999px;">
 					<?php /* Hit Preview, not Send, if the form is submitted with Enter. */ ?>
 					<?php submit_button( 'Preview', 'button', 'tix_notify_preview', false ); ?>
@@ -2573,7 +2573,7 @@ class CampTix_Plugin {
 
 		add_meta_box( 'tix_attendee_submitdiv', 'Publish', array( $this, 'metabox_attendee_submitdiv' ), 'tix_attendee', 'side' );
 		remove_meta_box( 'submitdiv', 'tix_attendee', 'side' );
-		
+
 		do_action( 'camptix_add_meta_boxes' );
 	}
 
@@ -2621,7 +2621,7 @@ class CampTix_Plugin {
 						$date = date_i18n( $datef, strtotime( current_time('mysql') ) );
 					}
 					?>
-					
+
 					<?php if ( $can_publish ) : ?>
 					<div class="misc-pub-section curtime">
 						<span id="timestamp"><?php printf( $stamp, $date ); ?></span>
@@ -3397,7 +3397,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Saves ticket post meta, runs during save_post, which runs whenever 
+	 * Saves ticket post meta, runs during save_post, which runs whenever
 	 * the post type is saved, and not necessarily from the admin, which is why the nonce check.
 	 */
 	function save_ticket_post( $post_id ) {
@@ -4556,7 +4556,7 @@ class CampTix_Plugin {
 			$this->redirect_with_error_flags();
 			die();
 		}
-		
+
 		$today = date( 'Y-m-d' );
 		$refunds_until = $this->options['refunds_date_end'];
 		if ( ! strtotime( $refunds_until ) || strtotime( $refunds_until ) < strtotime( $today ) ) {
@@ -6264,8 +6264,8 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Add something to the CampTix log. This function does nothing out of the box, 
-	 * but you can easily use an addon or create your own addon for logging. It's fairly 
+	 * Add something to the CampTix log. This function does nothing out of the box,
+	 * but you can easily use an addon or create your own addon for logging. It's fairly
 	 * easy, check out the addons directory.
 	 */
 	function log( $message, $post_id = 0, $data = null, $module = 'general' ) {
