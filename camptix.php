@@ -5904,7 +5904,7 @@ class CampTix_Plugin {
 							$last = get_post_meta( $attendee_id, 'tix_last_name', true );
 
 							echo get_avatar( get_post_meta( $attendee_id, 'tix_email', true ) );
-							printf( '<h2 class="tix-field tix-attendee-name">%s %s</h2>', esc_html( $first ), esc_html( $last ) );
+							printf( '<h2 class="tix-field tix-attendee-name"><span class="tix-first">%s</span> <span class="tix-last">%s</span></h2>', esc_html( $first ), esc_html( $last ) );
 							do_action( 'camptix_attendees_shortcode_item', $attendee_id );
 							echo '</li>';
 
