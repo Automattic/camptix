@@ -4456,6 +4456,7 @@ class CampTix_Plugin {
 			$posted = stripslashes_deep( $_POST );
 
 			$new_ticket_info = $posted['tix_ticket_info'];
+			$new_ticket_info = array_map( 'trim', $new_ticket_info );
 
 			// todo validate new attendee data here, maybe wrap data validation.
 			if ( empty( $new_ticket_info['first_name'] ) || empty( $new_ticket_info['last_name'] ) )
@@ -5554,6 +5555,8 @@ class CampTix_Plugin {
 				$this->error_flags['tickets_excess'] = true;
 				continue;
 			}
+
+			$attendee_info = array_map( 'trim', $attendee_info );
 
 			if ( empty( $attendee_info['first_name'] ) || empty( $attendee_info['last_name'] ) )
 				$this->error_flags['required_fields'] = true;
