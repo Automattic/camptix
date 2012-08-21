@@ -348,24 +348,38 @@ class CampTix_Plugin {
 		$that = $this;
 		$questions = $that->get_all_questions();
 
-		// Adds all questions to Summarize (as available fields)
-		add_filter( 'camptix_summary_fields', function( $fields ) use ( $questions ) {
-			foreach ( $questions as $key => $question )
-				$fields['tix_q_' . $key] = $question['field'];
+		// Adds all questions to Summarize and register the callback that counts all the things.
+		add_filter( 'camptix_summary_fields', array( $this, 'camptix_summary_fields_extras' ) );
+		add_action( 'camptix_summarize_by_field', array( $this, 'camptix_summarize_by_field_extras' ), 10, 3 );
+	}
 
-			return $fields;
-		} );
+	/**
+	 * Filters camptix_summary_fields to add user-defined
+	 * questions to the Summarize list.
+	 */
+	function camptix_summary_fields_extras( $fields ) {
+		$questions = $this->get_all_questions();
+		foreach ( $questions as $key => $question )
+			$fields['tix_q_' . $key] = $question['field'];
 
-		// Adds actions for each new field to carry out the sorting.
-		foreach ( $questions as $key => $question ) {
-			add_action( 'camptix_summarize_by_tix_q_' . $key, function( $summary, $post ) use ( $that, $key ) {
-				$answers = (array) get_post_meta( $post->ID, 'tix_questions', true );
-				if ( isset( $answers[$key] ) && ! empty( $answers[$key] ) )
-					$that->increment_summary( $summary, $answers[$key] );
-				else
-					$that->increment_summary( $summary, 'None' );
-			}, 10, 2 );
-		}
+		return $fields;
+	}
+
+	/**
+	 * Runs during camptix_summarize_by_field, fetches answers from
+	 * attendee objects and increments summary.
+	 */
+	function camptix_summarize_by_field_extras( $summarize_by, $summary, $attendee ) {
+		if ( 'tix_q_' != substr( $summarize_by, 0, 6 ) )
+			return;
+
+		$key = substr( $summarize_by, 6 );
+		$answers = (array) get_post_meta( $attendee->ID, 'tix_questions', true );
+
+		if ( isset( $answers[$key] ) && ! empty( $answers[$key] ) )
+			$this->increment_summary( $summary, $answers[$key] );
+		else
+			$this->increment_summary( $summary, __( 'None', 'camptix' ) );
 	}
 
 	/**
@@ -1681,6 +1695,7 @@ class CampTix_Plugin {
 
 					// Let other folks summarize too.
 					do_action_ref_array( 'camptix_summarize_by_' . $summarize_by, array( &$summary, $attendee ) );
+					do_action_ref_array( 'camptix_summarize_by_field', array( $summarize_by, &$summary, $attendee ) );
 				}
 			}
 		}
