@@ -1000,10 +1000,6 @@ class CampTix_Plugin {
 		return $options;
 	}
 
-	function is_upgraded() {
-		return $this->options['version'] == $this->version;
-	}
-
 	/**
 	 * Runs when get_option decides that the current version is out of date.
 	 */
@@ -1014,96 +1010,21 @@ class CampTix_Plugin {
 		$current_user = wp_get_current_user();
 		$this->log( sprintf( __( 'Running upgrade script, thanks %s.', 'camptix' ), $current_user->user_login ), 0, null, 'upgrade' );
 
+		/**
+		 * Example upgrade routine.
+		 */
 		if ( $from < 20120620 ) {
 			$this->log( sprintf( __( 'Upgrading from %s to %s.', 'camptix' ), $from, 20120620 ), 0, null, 'upgrade' );
 
-			/*
-			 * Post statuses were introduced, and a scenario that timeouts old drafts,
-			 * but each attendee needs a tix_timestamp post meta.
+			/**
+			 * Do upgrade stuff here.
 			 */
-			$paged = 1;
-			while ( $attendees = get_posts( array(
-				'post_status' => 'any',
-				'post_type' => 'tix_attendee',
-				'posts_per_page' => 100,
-				'paged' => $paged++,
-				'cache_results' => false,
-			) ) ) {
-				foreach ( $attendees as $attendee ) {
-					update_post_meta( $attendee->ID, 'tix_timestamp', strtotime( $attendee->post_date ) );
-					clean_post_cache( $attendee->ID );
-				}
-			}
 
 			$from = 20120620;
 		}
 
-		if ( $from < 20120703 ) {
-			// Run through all attendees and get transaction details from PayPal.
-			set_time_limit(1200); // *way* more than enough for 1k txns
-
-	 		$this->options = array_merge( apply_filters( 'camptix_default_options', array(
-				'paypal_api_username' => '',
-				'paypal_api_password' => '',
-				'paypal_api_signature' => '',
-				'paypal_currency' => 'USD',
-				'paypal_sandbox' => true,
-				'paypal_statement_subject' => get_bloginfo( 'name' ),
-				'version' => $this->version,
-				'reservations_enabled' => false,
-				'refunds_enabled' => false,
-				'refund_all_enabled' => false,
-				'questions_v2' => false,
-			) ), get_option( 'camptix_options', array() ) );
-
-			if ( empty( $this->options['paypal_api_username'] ) )
-				$this->log( __( 'Could not upgrade to 20120703, invalid paypal username.', 'camptix' ), 0, null, 'upgrades' );
-
-			$count = 0;
-			$processed = 0;
-			$paged = 1;
-			while ( $attendees = get_posts( array(
-				'post_status' => 'any',
-				'post_type' => 'tix_attendee',
-				'posts_per_page' => 100,
-				'paged' => $paged++,
-				'update_term_cache' => false,
-				'orderby' => 'ID',
-				'order' => 'ASC',
-			) ) ) {
-				foreach ( $attendees as $attendee ) {
-					$txn_id = get_post_meta( $attendee->ID, 'tix_paypal_transaction_id', true );
-					if ( ! $txn_id ) continue;
-
-					$count++;
-					$payload = array(
-						'METHOD' => 'GetTransactionDetails',
-						'TRANSACTIONID' => $txn_id,
-					);
-					$txn = wp_parse_args( wp_remote_retrieve_body( $this->paypal_request( $payload ) ) );
-
-					if ( isset( $txn['ACK'], $txn['PAYMENTSTATUS'] ) && $txn['ACK'] == 'Success' ) {
-						$processed++;
-						$this->log( sprintf( __( 'Processed %s. (%d)', 'camptix' ), $txn_id, $count ), 0, null, 'upgrade' );
-						update_post_meta( $attendee->ID, 'tix_paypal_transaction_details', $txn );
-					} else {
-						$this->log( sprintf( __( 'Could not process %s. (%d)', 'camptix' ), $txn_id, $count ), 0, $txn, 'upgrade' );
-					}
-					clean_post_cache( $attendee->ID );
-				}
-			}
-
-			$this->log( sprintf( __( 'Processed %d out of %d transactions.', 'camptix' ), $processed, $count ), 0, null, 'upgrade' );
-
-			// Clean up
-			$this->options = array();
-			$from = 20120703;
-		}
-
-		$from = $this->version;
-
-		$this->log( sprintf( __( 'Upgrade complete, current version: %s.', 'camptix' ), $from ), 0, null, 'upgrade' );
-		return $from;
+		$this->log( sprintf( __( 'Upgrade complete, current version: %s.', 'camptix' ), $this->version ), 0, null, 'upgrade' );
+		return $this->version;
 	}
 
 	/**
@@ -5118,10 +5039,6 @@ class CampTix_Plugin {
 
 		// Nothing to do for archived sites.
 		if ( $this->options['archived'] )
-			return;
-
-		// No cool stuff for non upgraded sites.
-		if ( ! $this->is_upgraded() )
 			return;
 
 		$processed = 0;
