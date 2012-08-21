@@ -14,6 +14,7 @@ class CampTix_Plugin {
 	protected $notices;
 	protected $errors;
 	protected $infos;
+	protected $admin_notices;
 
 	public $debug;
 	public $beta_features_enabled;
@@ -123,7 +124,7 @@ class CampTix_Plugin {
 
 		// Notices, errors and infos, all in one.
 		add_action( 'camptix_notices', array( $this, 'do_notices' ) );
-		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+		add_action( 'admin_notices', array( $this, 'do_admin_notices' ) );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
@@ -983,16 +984,11 @@ class CampTix_Plugin {
 				if ( $new_version > $options['version'] ) {
 					$options['version'] = $new_version;
 					update_option( 'camptix_options', $options );
-
-					add_action( 'admin_notices', function() use ( $new_version ) {
-						printf( '<div class="updated"><p>' . __( 'CampTix upgrade successful. Current version: %s.', 'camptix' ) . '</p></div>', $new_version );
-					});
+					$this->admin_notice( sprintf( __( 'CampTix upgrade successful. Current version: %s.', 'camptix' ), $new_version ) );
 				}
 			} else {
-				add_action( 'admin_notices', function() {
-					$more = current_user_can( $this->caps['manage_options'] ) ? sprintf( ' <a href="%s">' . __( 'Click here to upgrade now.', 'camptix' ) . '</a>', esc_url( add_query_arg( 'tix_do_upgrade', 1, admin_url( 'index.php' ) ) ) ) : '';
-					printf( '<div class="updated"><p>' . __( 'CampTix upgrade required!', 'camptix' ) . '%s</p></div>', $more );
-				});
+				$more = current_user_can( $this->caps['manage_options'] ) ? sprintf( ' <a href="%s">' . __( 'Click here to upgrade now.', 'camptix' ) . '</a>', esc_url( add_query_arg( 'tix_do_upgrade', 1, admin_url( 'index.php' ) ) ) ) : '';
+				$this->admin_notice( __( 'CampTix upgrade required!', 'camptix' ) . $more );
 			}
 		}
 
@@ -6240,6 +6236,10 @@ class CampTix_Plugin {
 		$this->infos[] = $info;
 	}
 
+	protected function admin_notice( $notice ) {
+		$this->admin_notices[] = $notice;
+	}
+
 	function do_notices() {
 
 		$printed = array();
@@ -6280,12 +6280,16 @@ class CampTix_Plugin {
 	/**
 	 * Runs during admin_notices
 	 */
-	function admin_notices() {
+	function do_admin_notices() {
 		do_action( 'camptix_admin_notices' );
 
 		// Signal when archived.
 		if ( $this->options['archived'] )
 			echo '<div class="updated"><p>' . __( 'CampTix is in <strong>archive mode</strong>. Please do not make any changes.', 'camptix' ) . '</p></div>';
+
+		if ( is_array( $this->admin_notices ) && ! empty( $this->admin_notices) )
+		foreach ( $this->admin_notices as $notice )
+			printf( '<div class="updated"><p>%s</p></div>', $notice );
 	}
 
 	/**
