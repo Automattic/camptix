@@ -12,7 +12,7 @@
 }
 .tix-table span {
 	display: inline-block;
-	padding: 4px 0px;
+	padding: 4px 0;
 }
 
 #tix_ticket_options input,
@@ -48,9 +48,9 @@
 	margin: 0 0px;
 }
 
-.tix-ticket-questions-v1 span {
-	margin: 8px 0 8px 8px;
-	padding: 0 4px;
+#tix_ticket_questions .inside {
+	margin: 0;
+	padding: 0;
 }
 
 .tix-ticket-questions span.tix-field-type {

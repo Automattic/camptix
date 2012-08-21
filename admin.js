@@ -5,12 +5,15 @@
 	$(document).ready(function(){
 		$( ".tix-date-field" ).datepicker({
 			dateFormat: 'yy-mm-dd',
-			firstDay: 1,
+			firstDay: 1
 		});
 
 		// Show or hide the refunds date field in Setup > Beta.
 		$('#tix-refunds-enabled-radios input').change(function() {
-			( $(this).val() > 0 ) ? $('#tix-refunds-date').show() : $('#tix-refunds-date').hide();
+			if ( $(this).val() > 0 )
+				$('#tix-refunds-date').show();
+			else
+				$('#tix-refunds-date').hide();
 		});
 
 		// Clicking on a notify shortcode in Tools > Notify inserts it into the email body.
@@ -53,7 +56,7 @@
 				var items = $( ".tix-ui-sortable .tix-item" );
 				for ( var i = 0; i < items.length; i++ )
 					$(items[i]).find('input.tix-field-order').val(i);
-			}
+			};
 
 			$( ".tix-ui-sortable" ).sortable({
 				items: ".tix-item-sortable",
@@ -108,7 +111,7 @@
 				$(item).find( 'input.tix-field-name' ).val( name ).attr( 'name', 'tix_questions[' + order + '][field]' );
 				$(item).find( 'input.tix-field-values' ).val( values ).attr( 'name', 'tix_questions[' + order + '][values]' );
 				$(item).find( 'input.tix-field-required' ).val( ( required > 0 ) ? 1 : 0 ).attr( 'name', 'tix_questions[' + order + '][required]' );
-				$(item).find( 'input.tix-field-order' ).val( order ).attr( 'name', 'tix_questions[' + order + '][order]' );;
+				$(item).find( 'input.tix-field-order' ).val( order ).attr( 'name', 'tix_questions[' + order + '][order]' );
 
 				if ( required > 0 )
 					$(item).addClass( 'tix-item-required' );
@@ -139,10 +142,10 @@
 					$(item).find( 'span.tix-field-values' ).text( values );
 
 					$(item).find( 'input.tix-field-type' ).val( type ).attr( 'name', 'tix_questions[' + order + '][type]' );
-					$(item).find( 'input.tix-field-name' ).val( name ).attr( 'name', 'tix_questions[' + order + '][field]' );;
-					$(item).find( 'input.tix-field-values' ).val( values ).attr( 'name', 'tix_questions[' + order + '][values]' );;
+					$(item).find( 'input.tix-field-name' ).val( name ).attr( 'name', 'tix_questions[' + order + '][field]' );
+					$(item).find( 'input.tix-field-values' ).val( values ).attr( 'name', 'tix_questions[' + order + '][values]' );
 					$(item).find( 'input.tix-field-required' ).val( ( required > 0 ) ? 1 : 0 ).attr( 'name', 'tix_questions[' + order + '][required]' );
-					$(item).find( 'input.tix-field-order' ).val( order ).attr( 'name', 'tix_questions[' + order + '][order]' );;
+					$(item).find( 'input.tix-field-order' ).val( order ).attr( 'name', 'tix_questions[' + order + '][order]' );
 
 					if ( required > 0 )
 						$(item).addClass( 'tix-item-required' );

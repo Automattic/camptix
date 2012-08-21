@@ -19,8 +19,8 @@ class CampTix_Plugin {
 	public $debug;
 	public $beta_features_enabled;
 	public $version = 20120703;
-	public $css_version = 20120727;
-	public $js_version = 20120727;
+	public $css_version = 20120821;
+	public $js_version = 20120821;
 	public $caps;
 
 	public $addons = array();
@@ -128,9 +128,6 @@ class CampTix_Plugin {
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-
-		add_action( 'wp_ajax_tix_get_questions', array( $this, 'ajax_get_questions' ) );
-		add_action( 'wp_ajax_tix_get_question_values', array( $this, 'ajax_get_question_values' ) );
 
 		// Sort of admin_init but on the Tickets > Tools page only.
 		add_action( 'load-tix_ticket_page_camptix_tools', array( $this, 'summarize_extra_fields' ) );
@@ -966,7 +963,6 @@ class CampTix_Plugin {
 			'reservations_enabled' => false,
 			'refunds_enabled' => false,
 			'refund_all_enabled' => false,
-			'questions_v2' => false,
 			'archived' => false,
 		) ), get_option( 'camptix_options', array() ) );
 
@@ -1074,9 +1070,6 @@ class CampTix_Plugin {
 				$this->add_settings_field_helper( 'refund_all_enabled', __( 'Enable Refund All', 'camptix' ), 'field_yesno', false,
 					__( "Allows to refund all purchased tickets by an admin via the Tools menu.", 'camptix' )
 				);
-				$this->add_settings_field_helper( 'questions_v2', __( 'Enable Questions v2', 'camptix' ), 'field_yesno', false,
-					__( "A new interface for managing questions, allows sorting, adding existing questions and more.", 'camptix' )
-				);
 				$this->add_settings_field_helper( 'archived', __( 'Archived Event', 'camptix' ), 'field_yesno', false,
 					__( "Archived events are read-only.", 'camptix' )
 				);
@@ -1167,7 +1160,6 @@ class CampTix_Plugin {
 			'reservations_enabled',
 			'refunds_enabled',
 			'refund_all_enabled',
-			'questions_v2',
 			'archived',
 		);
 	}
@@ -2492,11 +2484,7 @@ class CampTix_Plugin {
 	function add_meta_boxes() {
 		add_meta_box( 'tix_ticket_options', __( 'Ticket Options', 'camptix' ), array( $this, 'metabox_ticket_options' ), 'tix_ticket', 'side' );
 		add_meta_box( 'tix_ticket_availability', __( 'Availability', 'camptix' ), array( $this, 'metabox_ticket_availability' ), 'tix_ticket', 'side' );
-
-		if ( isset( $this->options['questions_v2'] ) && $this->options['questions_v2'] )
-			add_meta_box( 'tix_ticket_questions_2', __( 'Questions v2 (beta)', 'camptix' ), array( $this, 'metabox_ticket_questions_2' ), 'tix_ticket' );
-		else
-			add_meta_box( 'tix_ticket_questions', __( 'Questions', 'camptix' ), array( $this, 'metabox_ticket_questions' ), 'tix_ticket' );
+		add_meta_box( 'tix_ticket_questions', __( 'Questions', 'camptix' ), array( $this, 'metabox_ticket_questions' ), 'tix_ticket' );
 
 		if ( $this->options['reservations_enabled'] )
 			add_meta_box( 'tix_ticket_reservations', __( 'Reservations', 'camptix' ), array( $this, 'metabox_ticket_reservations' ), 'tix_ticket' );
@@ -2837,148 +2825,8 @@ class CampTix_Plugin {
 	 * Metabox callback for ticket questions.
 	 */
 	function metabox_ticket_questions() {
-		?>
-		<div id="postcustomstuff" class="tix-ticket-questions tix-ticket-questions-v1">
-		<table class="">
-			<thead>
-				<tr>
-					<th><?php _e( 'Field', 'camptix' ); ?></th>
-					<th><?php _e( 'Type', 'camptix' ); ?></th>
-					<th><?php _e( 'Values', 'camptix' ); ?></th>
-					<th><?php _e( 'Required', 'camptix' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr class="alternate">
-					<td><span><?php _e( 'First Name', 'camptix' ); ?></span></td>
-					<td><span><?php _e( 'Text input', 'camptix' ); ?></span></td>
-					<td></td>
-					<td class="column-required"><input type="checkbox" checked="checked" disabled="disabled" /></td>
-				</tr>
-				<tr>
-					<td><span><?php _e( 'Last Name', 'camptix' ); ?></span></td>
-					<td><span><?php _e( 'Text input', 'camptix' ); ?></span></td>
-					<td></td>
-					<td class="column-required"><input type="checkbox" checked="checked" disabled="disabled" /></td>
-				</tr>
-				<tr class="alternate">
-					<td><span><?php _e( 'E-mail', 'camptix' ); ?></span></td>
-					<td><span><?php _e( 'Text input', 'camptix' ); ?></span></td>
-					<td></td>
-					<td class="column-required"><input type="checkbox" checked="checked" disabled="disabled" /></td>
-				</tr>
-
-				<?php
-					$questions = $this->get_sorted_questions( get_the_ID() );
-					$types = $this->get_question_field_types();
-					$i = 0;
-					$alt = 'alternate';
-				?>
-				<?php foreach ( $questions as $question ) : $i++; $alt = $alt == '' ? 'alternate' : ''; ?>
-				<tr class="<?php echo $alt; ?>">
-					<td><input class="suggest-questions" type="text" name="tix_questions[<?php echo $i; ?>][field]" value="<?php echo esc_attr( $question['field'] ); ?>" /></td>
-					<td>
-						<select name="tix_questions[<?php echo $i; ?>][type]">
-							<?php foreach ( $types as $key => $label ) : ?>
-							<option <?php selected( $question['type'], $key ); ?> value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
-							<?php endforeach; ?>
-						</select>
-					</td>
-					<td><input class="suggest-values" name="tix_questions[<?php echo $i; ?>][values]" type="text" value="<?php echo esc_attr( implode( ', ', $question['values'] ) ); ?>" /></td>
-					<td class="column-required"><input <?php checked( $question['required'] ); ?> name="tix_questions[<?php echo $i; ?>][required]" value="1" type="checkbox" /></td>
-				</tr>
-				<?php endforeach; ?>
-
-				<?php $i++; ?>
-				<tr class="tix-question-new">
-					<td><input class="suggest-questions" type="text" name="tix_questions[<?php echo $i; ?>][field]" value="" /></td>
-					<td>
-						<select name="tix_questions[<?php echo $i; ?>][type]">
-							<?php foreach ( $types as $key => $label ) : ?>
-							<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
-							<?php endforeach; ?>
-						</select>
-					</td>
-					<td><input class="suggest-values" name="tix_questions[<?php echo $i; ?>][values]" type="text" value="" /></td>
-					<td class="column-required"><input name="tix_questions[<?php echo $i; ?>][required]" value="1" type="checkbox" /></td>
-				</tr>
-			</tbody>
-
-			<?php $i++; ?>
-			<tfoot class="tix-question-prototype" style="display: none;">
-			<tr class="tix-question-new">
-				<td><input class="suggest-questions" type="text" name="tix_questions[q_id][field]" value="" /></td>
-				<td>
-					<select name="tix_questions[q_id][type]">
-						<?php foreach ( $types as $key => $label ) : ?>
-						<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
-						<?php endforeach; ?>
-					</select>
-				</td>
-				<td><input class="suggest-values" name="tix_questions[q_id][values]" type="text" value="" /></td>
-				<td class="column-required"><input name="tix_questions[q_id][required]" value="1" type="checkbox" /></td>
-			</tr>
-			</tfoot>
-			<script>
-			jQuery(document).ready(function($) {
-				var i = $( '.suggest-questions' ).length;
-
-				$( '.suggest-questions' ).live( 'focus', function() {
-					if ( $(this).data( 'has-suggest' ) ) return;
-					$(this).data( 'has-suggest', 1 );
-					$(this).suggest( ajaxurl + '?action=tix_get_questions', {
-						delay: 500,
-						minchars: 2,
-						multiple: false,
-					} );
-				} );
-
-				$( '.suggest-values' ).live( 'focus', function() {
-					if ( $(this).data( 'has-suggest' ) ) return;
-					$(this).data( 'has-suggest', 1 );
-					$(this).suggest( ajaxurl + '?action=tix_get_question_values', {
-						delay: 500,
-						minchars: 2,
-						multiple: false,
-					} );
-				} );
-
-				$( '.tix-question-new .suggest-questions' ).live( 'keyup', function() {
-					if ( $(this).val().length < 1 ) return;
-
-					var tr = $(this).parents('tr');
-					$(tr).removeClass('tix-question-new');
-					var tbody = $(this).parents('tbody');
-					var new_tr = $.clone($('.tix-question-prototype tr')[0]);
-
-					$(new_tr).find('[name="tix_questions[q_id][field]"]').attr('name', 'tix_questions[' + i + '][field]');
-					$(new_tr).find('[name="tix_questions[q_id][type]"]').attr('name', 'tix_questions[' + i + '][type]');
-					$(new_tr).find('[name="tix_questions[q_id][values]"]').attr('name', 'tix_questions[' + i + '][values]');
-					$(new_tr).find('[name="tix_questions[q_id][required]"]').attr('name', 'tix_questions[' + i + '][required]');
-
-					$(tbody).append(new_tr);
-
-					i++;
-				});
-			});
-			</script>
-		</table>
-		</div>
-		<?php
-	}
-
-	/**
-	 * Metabox callback for ticket questions.
-	 */
-	function metabox_ticket_questions_2() {
 		$types = $this->get_question_field_types();
 		?>
-		<style>
-		#tix_ticket_questions_2 .inside {
-			margin: 0;
-			padding: 0;
-		}
-		</style>
 		<div class="tix-ticket-questions">
 			<div class="tix-ui-sortable">
 				<div class="tix-item tix-item-required">
@@ -3128,41 +2976,6 @@ class CampTix_Plugin {
 			</div>
 		</div>
 		<?php
-	}
-
-	/**
-	 * Ajax search through question fields.
-	 */
-	function ajax_get_questions() {
-		$search = $_REQUEST['q'];
-		$matches = array();
-		$questions = $this->get_all_questions();
-		foreach ( $questions as $question )
-			if ( stristr( $question['field'], $search ) )
-				$matches[] = $question['field'];
-
-		echo implode( "\n", $matches );
-		die();
-	}
-
-	/**
-	 * Ajax search through question values.
-	 */
-	function ajax_get_question_values() {
-		$search = $_REQUEST['q'];
-		$matches = array();
-		$questions = $this->get_all_questions();
-		foreach ( $questions as $question ) {
-			foreach ( $question['values'] as $value ) {
-				if ( stristr( $value, $search ) ) {
-					$matches[] = implode( ', ', $question['values'] );
-					break;
-				}
-			}
-		}
-
-		echo implode( "\n", $matches );
-		die();
 	}
 
 	/**
@@ -3370,8 +3183,7 @@ class CampTix_Plugin {
 			$questions = (array) $_POST['tix_questions'];
 			$questions_clean = array();
 
-			if ( isset( $this->options['questions_v2'] ) && $this->options['questions_v2'] )
-				usort( $questions, array( $this, 'usort_by_order' ) );
+			usort( $questions, array( $this, 'usort_by_order' ) );
 
 			foreach ( $questions as $order => $question ) {
 				if ( empty( $question['field'] ) || strlen( trim( $question['field'] ) ) < 1 )
@@ -3393,9 +3205,7 @@ class CampTix_Plugin {
 					'required' => isset( $question['required'] ),
 				);
 
-				if ( isset( $this->options['questions_v2'] ) && $this->options['questions_v2'] ) {
-					$clean_question['required'] = (bool) $question['required'];
-				}
+				$clean_question['required'] = (bool) $question['required'];
 
 				// Save serialized value.
 				add_post_meta( $post_id, 'tix_question', $clean_question );
