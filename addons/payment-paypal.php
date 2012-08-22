@@ -4,6 +4,37 @@
  */
 
 class CampTix_Payment_Gateway extends CampTix_Addon {
+
+	public $id = false;
+	public $name = false;
+	public $description = false;
+
+	function __construct() {
+		parent::__construct();
+
+		add_filter( 'camptix_available_payment_methods', array( $this, '_camptix_available_payment_methods' ) );
+		add_action( 'camptix_payment_checkout', array( $this, '_camptix_payment_checkout' ), 10, 2 );
+	}
+
+	function _camptix_payment_checkout( $payment_method, $payment_token ) {
+		if ( $this->id == $payment_method )
+			$this->payment_checkout( $payment_token );
+	}
+
+	function payment_checkout( $payment_token ) {
+		die( __FUNCTION__ . ' not implemented' );
+	}
+
+	function _camptix_available_payment_methods( $payment_methods ) {
+		if ( $this->id && $this->name && $this->description )
+			$payment_methods[ $this->id ] = array(
+				'name' => $this->name,
+				'description' => $this->description,
+			);
+
+		return $payment_methods;
+	}
+
 	function payment_result( $payment_token, $result ) {
 		global $camptix;
 		return $camptix->payment_result( $payment_token, $result );
@@ -28,9 +59,55 @@ class CampTix_Payment_Gateway extends CampTix_Addon {
 		global $camptix;
 		return $camptix->log( $message, $post_id, $data, $module );
 	}
+
+	function get_order( $payment_token = false ) {
+		if ( ! $payment_token )
+			return array();
+
+		$attendees = get_posts( array(
+			'posts_per_page' => 1,
+			'post_type' => 'tix_attendee',
+			'post_status' => 'any',
+			'meta_query' => array(
+				array(
+					'key' => 'tix_payment_token',
+					'compare' => '=',
+					'value' => $payment_token,
+					'type' => 'CHAR',
+				),
+			),
+		) );
+
+		if ( ! $attendees )
+			return array();
+
+		return (array) get_post_meta( $attendees[0]->ID, 'tix_order', true );
+	}
+}
+
+class CampTix_Payment_Gateway_Blackhole extends CampTix_Payment_Gateway {
+
+	public $id = 'blackhole';
+	public $name = 'Blackhole';
+	public $description = 'Will always result in a successful payment.';
+
+	function payment_checkout( $payment_token ) {
+		global $camptix;
+
+		// Process $order and do something.
+		$order = $this->get_order( $payment_token );
+		do_action( 'camptix_before_payment', $payment_token );
+		$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED );
+		die();
+	}
 }
 
 class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
+
+	public $id = 'paypal';
+	public $name = 'PayPal';
+	public $description = 'PayPal Express Checkout';
+
 	protected $options = array();
 	protected $error_flags = array();
 
@@ -46,9 +123,6 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 			'sandbox' => true,
 			'currency' => 'USD',
 		);
-
-		add_filter( 'camptix_available_payment_methods', array( $this, 'camptix_available_payment_methods' ) );
-		add_action( 'camptix_payment_checkout_paypal', array( $this, 'camptix_payment_checkout_paypal' ), 10, 3 );
 
 		add_action( 'template_redirect', array( $this, 'template_redirect' ) );
 	}
@@ -67,35 +141,15 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 	function payment_cancel() {
 		global $camptix;
 
-		if ( ! isset( $_REQUEST['tix_payment_token'] ) || empty( $_REQUEST['tix_payment_token'] ) )
-			die( 'empty payment token' );
-
-		if ( ! isset( $_REQUEST['token'] ) || empty( $_REQUEST['token'] ) )
-			die( 'empty paypal token' );
-
-		$payment_token = trim( $_REQUEST['tix_payment_token'] );
-		$paypal_token = trim( $_REQUEST['token'] );
+		$payment_token = ( isset( $_REQUEST['tix_payment_token'] ) ) ? trim( $_REQUEST['tix_payment_token'] ) : '';
+		$paypal_token = ( isset( $_REQUEST['token'] ) ) ? trim( $_REQUEST['token'] ) : '';
 
 		if ( ! $payment_token || ! $paypal_token )
 			die( 'empty token' );
 
-		$attendees = get_posts( array(
-			'posts_per_page' => -1,
-			'post_type' => 'tix_attendee',
-			'post_status' => array( 'draft' ),
-			'meta_query' => array(
-				array(
-					'key' => 'tix_payment_token',
-					'compare' => '=',
-					'value' => $payment_token,
-					'type' => 'CHAR',
-				),
-			),
-		) );
-
-		foreach ( $attendees as $attendee )
-			if ( get_post_meta( $attendee->ID, 'tix_paypal_token', true ) != $paypal_token )
-				die( 'paypal token does not match!' );
+		/**
+		 * @todo maybe check tix_paypal_token for security.
+		 */
 
 		$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_CANCELLED );
 		die();
@@ -104,78 +158,72 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 	function payment_return() {
 		global $camptix;
 
-		if ( ! isset( $_REQUEST['tix_payment_token'] ) || empty( $_REQUEST['tix_payment_token'] ) )
-			die( 'empty payment token' );
+		$payment_token = ( isset( $_REQUEST['tix_payment_token'] ) ) ? trim( $_REQUEST['tix_payment_token'] ) : '';
+		$paypal_token = ( isset( $_REQUEST['token'] ) ) ? trim( $_REQUEST['token'] ) : '';
+		$payer_id = ( isset( $_REQUEST['PayerID'] ) ) ? trim( $_REQUEST['PayerID'] ) : '';
 
-		if ( ! isset( $_REQUEST['token'] ) || empty( $_REQUEST['token'] ) )
-			die( 'empty paypal token' );
-
-		$payment_token = trim( $_REQUEST['tix_payment_token'] );
-		$paypal_token = trim( $_REQUEST['token'] );
-		$payer_id = trim( $_REQUEST['PayerID'] );
-
-		if ( ! $payment_token || ! $paypal_token )
+		if ( ! $payment_token || ! $paypal_token || ! $payer_id )
 			die( 'empty token' );
 
-		$attendees = get_posts( array(
-			'posts_per_page' => -1,
-			'post_type' => 'tix_attendee',
-			'post_status' => array( 'draft' ),
-			'meta_query' => array(
-				array(
-					'key' => 'tix_payment_token',
-					'compare' => '=',
-					'value' => $payment_token,
-					'type' => 'CHAR',
-				),
-			),
-		) );
+		$order = $this->get_order( $payment_token );
 
-		foreach ( $attendees as $attendee )
-			if ( get_post_meta( $attendee->ID, 'tix_paypal_token', true ) != $paypal_token )
-				die( 'paypal token does not match!' );
-
-		$expected_total = (float) get_post_meta( $attendees[0]->ID, 'tix_order_total', true );
+		/**
+		 * @todo maybe check tix_paypal_token for security.
+		 */
 
 		$payload = array(
 			'METHOD' => 'GetExpressCheckoutDetails',
 			'TOKEN' => $paypal_token,
 		);
 
-		$request = $this->paypal_request( $payload );
+		$request = $this->request( $payload );
 		$checkout_details = wp_parse_args( wp_remote_retrieve_body( $request ) );
 
 		if ( isset( $checkout_details['ACK'] ) && $checkout_details['ACK'] == 'Success' ) {
 
-			if ( (float) $checkout_details['PAYMENTREQUEST_0_AMT'] != $expected_total ) {
-				echo __( "Unexpected total!", 'camptix' );
-				die();
-			}
-
 			/**
-			 * @todo Check whether the tickets are still available at this stage.
+			 * @todo Check whether the order is still available at this stage.
 			 */
+
 			$payload = array(
 				'METHOD' => 'DoExpressCheckoutPayment',
 				'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
 				'TOKEN' => $paypal_token,
 				'PAYERID' => $payer_id,
-				'PAYMENTREQUEST_0_AMT' => number_format( (float) $expected_total, 2, '.', '' ),
-				'PAYMENTREQUEST_0_ITEMAMT' => number_format( (float) $expected_total, 2, '.', '' ),
-				'PAYMENTREQUEST_0_CURRENCYCODE' => $this->options['currency'],
 				'PAYMENTREQUEST_0_NOTIFYURL' => esc_url_raw( add_query_arg( 'tix_paypal_ipn', 1, trailingslashit( home_url() ) ) ),
 			);
+
+			$this->fill_payload_with_order( $payload, $order );
+
+			if ( (float) $checkout_details['PAYMENTREQUEST_0_AMT'] != $order['total'] ) {
+				echo __( "Unexpected total!", 'camptix' );
+				die();
+			}
+
+			// One final check before charging the user.
+			if ( ! $camptix->verify_order( $order ) ) {
+				die( 'Something went wrong!' );
+			}
+
+			// Get money money, get money money money!
+			$request = $this->request( $payload );
+			$txn = wp_parse_args( wp_remote_retrieve_body( $request ) );
+
+			if ( isset( $txn['ACK'], $txn['PAYMENTINFO_0_PAYMENTSTATUS'] ) && $txn['ACK'] == 'Success' ) {
+				$txn_id = $txn['PAYMENTINFO_0_TRANSACTIONID'];
+				$payment_status = $txn['PAYMENTINFO_0_PAYMENTSTATUS'];
+
+				if ( $payment_status == 'Completed' ) {
+					$this->log( 'Payment status completed.' );
+					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED );
+				} else {
+					$this->log( 'Payment status pending.' );
+					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_PENDING );
+				}
+			}
 		}
 
 		die();
-	}
-
-	function camptix_available_payment_methods( $payment_methods ) {
-		$payment_methods['paypal'] = array(
-			'name' => 'PayPal',
-			'description' => 'PayPal Express Checkout',
-		);
-		return $payment_methods;
 	}
 
 	/**
@@ -191,7 +239,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 	 *     ),
 	 * );
 	 */
-	function camptix_payment_checkout_paypal( $order, $payment_token, $attendees ) {
+	function payment_checkout( $payment_token ) {
 		global $camptix;
 
 		if ( ! $payment_token || empty( $payment_token ) )
@@ -220,39 +268,44 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 			'SOLUTIONTYPE' => 'Sole',
 		);
 
-		$i = 0; $total = 0;
-		foreach ( $order as $item ) {
-			$payload['L_PAYMENTREQUEST_0_NAME' . $i] = substr( 'Statement: ' . $item['name'], 0, 127 );
-			$payload['L_PAYMENTREQUEST_0_DESC' . $i] = substr( $item['description'], 0, 127 );
-			$payload['L_PAYMENTREQUEST_0_NUMBER' . $i] = $item['id'];
-			$payload['L_PAYMENTREQUEST_0_AMT' . $i] = $item['price'];
-			$payload['L_PAYMENTREQUEST_0_QTY' . $i] = $item['quantity'];
-			$total += $item['price'] * $item['quantity'];
-			$i++;
-		}
-
-		$payload['PAYMENTREQUEST_0_ITEMAMT'] = $total;
-		$payload['PAYMENTREQUEST_0_AMT'] = $total;
-		$payload['PAYMENTREQUEST_0_CURRENCYCODE'] = $this->options['currency'];
+		$order = $this->get_order( $payment_token );
+		$this->fill_payload_with_order( $payload, $order );
 
 		$request = $this->request( $payload );
 		$response = wp_parse_args( wp_remote_retrieve_body( $request ) );
 		if ( isset( $response['ACK'], $response['TOKEN'] ) && 'Success' == $response['ACK'] ) {
 			$token = $response['TOKEN'];
 
-			foreach ( $attendees as $attendee ) {
+			/*foreach ( $attendees as $attendee ) {
 				update_post_meta( $attendee->ID, 'tix_paypal_token', $token );
-			}
+			}*/
 
 			$url = $this->options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout';
 			$url = add_query_arg( 'token', $token, $url );
 			wp_redirect( esc_url_raw( $url ) );
-			die();
 		} else {
 			echo 'error';
 			print_r($response);
-			die();
 		}
+
+		die();
+	}
+
+	function fill_payload_with_order( &$payload, $order ) {
+		$i = 0;
+		foreach ( $order['items'] as $item ) {
+			$payload['L_PAYMENTREQUEST_0_NAME' . $i] = substr( 'Statement: ' . $item['name'], 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_DESC' . $i] = substr( $item['description'], 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_NUMBER' . $i] = $item['id'];
+			$payload['L_PAYMENTREQUEST_0_AMT' . $i] = $item['price'];
+			$payload['L_PAYMENTREQUEST_0_QTY' . $i] = $item['quantity'];
+			$i++;
+		}
+
+		$payload['PAYMENTREQUEST_0_ITEMAMT'] = $order['total'];
+		$payload['PAYMENTREQUEST_0_AMT'] = $order['total'];
+		$payload['PAYMENTREQUEST_0_CURRENCYCODE'] = $this->options['currency'];
+		return $payload;
 	}
 
 	/**
@@ -273,3 +326,4 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 // Register this class as a CampTix Addon.
 camptix_register_addon( 'CampTix_Payment_Gateway_PayPal' );
+camptix_register_addon( 'CampTix_Payment_Gateway_Blackhole' );

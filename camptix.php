@@ -38,7 +38,7 @@ class CampTix_Plugin {
 	protected $shortcode_contents;
 
 	const PAYMENT_STATUS_CANCELLED = 1;
-	const PAYMENT_STATUS_SUCCESS = 2;
+	const PAYMENT_STATUS_COMPLETED = 2;
 	const PAYMENT_STATUS_PENDING = 3;
 	const PAYMENT_STATUS_FAILED = 4;
 	const PAYMENT_STATUS_TIMEOUT = 5;
@@ -3522,6 +3522,35 @@ class CampTix_Plugin {
 				if ( isset( $this->tickets[$ticket_id] ) && $count > 0 )
 					$this->tickets_selected[$ticket_id] = intval( $count );
 
+		// Make an order.
+		$this->order = array( 'items' => array(), 'total' => 0 );
+		if ( isset( $_POST['tix_tickets_selected'] ) ) {
+			foreach ( $_POST['tix_tickets_selected'] as $ticket_id => $count ) {
+				$ticket = $this->tickets[ $ticket_id ];
+				$item = array(
+					'id' => $ticket->ID,
+					'name' => $ticket->post_title,
+					'description' => $ticket->post_excerpt,
+					'quantity' => $count,
+					'price' => $ticket->tix_discounted_price,
+				);
+				$this->order['items'][] = $item;
+				$this->order['total'] += $item['price'] * $item['quantity'];
+			}
+		}
+
+		if ( isset( $_REQUEST['tix_coupon'] ) )
+			$this->order['coupon'] = $_REQUEST['tix_coupon'];
+
+		if ( isset( $_REQUEST['tix_reservation_id'], $_REQUEST['tix_reservation_token'] ) ) {
+			$this->order['reservation_id'] = $_REQUEST['tix_reservation_id'];
+			$this->order['reservation_token'] = $_REQUEST['tix_reservation_token'];
+		}
+
+		// Check whether this is a valid order.
+		if ( ! empty( $this->order['items'] ) )
+			$this->verify_order( $this->order );
+
 		// Check selected tickets.
 		$tickets_excess = 0;
 		$coupons_applied = 0;
@@ -3579,9 +3608,11 @@ class CampTix_Plugin {
 				$this->log( __( 'Something is terribly wrong, extra > 0 after stripping extra coupons', 'camptix' ), 0, null, 'critical' );
 		}
 
-		$this->error_flags['no_tickets_selected'] = true;
-		foreach ( $this->tickets_selected as $ticket_id => $count )
-			if ( $count > 0 ) unset( $this->error_flags['no_tickets_selected'] );
+		if ( isset( $_POST['tix_tickets_selected'] ) ) {
+			$this->error_flags['no_tickets_selected'] = true;
+			foreach ( $this->tickets_selected as $ticket_id => $count )
+				if ( $count > 0 ) unset( $this->error_flags['no_tickets_selected'] );
+		}
 
 		$this->did_template_redirect = true;
 
@@ -5367,19 +5398,7 @@ class CampTix_Plugin {
 			return $this->form_attendee_info();
 		}
 
-		$order = array(); $total = 0;
-		foreach ( $this->tickets_selected as $ticket_id => $count ) {
-			$ticket = $this->tickets[$ticket_id];
-			$item = array(
-				'id' => $ticket->ID,
-				'name' => $ticket->post_title,
-				'description' => $ticket->post_excerpt,
-				'price' => ( $this->coupon ) ? $ticket->tix_discounted_price : $ticket->tix_price,
-				'quantity' => $count,
-			);
-			$order[] = $item;
-			$total += $item['price'] * $item['quantity'];
-		}
+		$this->verify_order( $this->order );
 
 		/*$i = 0; $total = 0;
 		foreach ( $this->tickets_selected as $ticket_id => $count ) {
@@ -5426,6 +5445,7 @@ class CampTix_Plugin {
 				update_post_meta( $post_id, 'tix_payment_token', $payment_token );
 				update_post_meta( $post_id, 'tix_edit_token', $edit_token );
 				update_post_meta( $post_id, 'tix_payment_method', $payment_method );
+				update_post_meta( $post_id, 'tix_order', $this->order );
 
 				update_post_meta( $post_id, 'tix_timestamp', time() );
 				update_post_meta( $post_id, 'tix_ticket_id', $attendee->ticket_id );
@@ -5436,7 +5456,7 @@ class CampTix_Plugin {
 				update_post_meta( $post_id, 'tix_receipt_email', $receipt_email );
 
 				// Cash
-				update_post_meta( $post_id, 'tix_order_total', (float) $total );
+				update_post_meta( $post_id, 'tix_order_total', (float) $order['total'] );
 				update_post_meta( $post_id, 'tix_ticket_price', (float) $this->tickets[$attendee->ticket_id]->tix_price );
 				update_post_meta( $post_id, 'tix_ticket_discounted_price', (float) $this->tickets[$attendee->ticket_id]->tix_discounted_price );
 
@@ -5470,8 +5490,8 @@ class CampTix_Plugin {
 		unset( $attendees_posts, $attendee );
 
 		// Do we need to pay?
-		if ( $total > 0 ) {
-			do_action( "camptix_payment_checkout_{$payment_method}", $order, $payment_token, $attendees );
+		if ( $this->order['total'] > 0 ) {
+			do_action( "camptix_payment_checkout", $payment_method, $payment_token );
 			// Totals
 			/*$payload['PAYMENTREQUEST_0_ITEMAMT'] = $total;
 			$payload['PAYMENTREQUEST_0_AMT'] = $total;
@@ -5554,6 +5574,66 @@ class CampTix_Plugin {
 	}
 
 	/**
+	 * @todo implement
+	 */
+	function verify_order( &$order = array() ) {
+		$tickets_objects = get_posts( array(
+			'post_type' => 'tix_ticket',
+			'post_status' => 'publish',
+			'posts_per_page' => -1,
+		) );
+
+		$via_reservation = false;
+
+		$tickets = array();
+		foreach ( $tickets_objects as $ticket ) {
+			$ticket->tix_price = (float) get_post_meta( $ticket->ID, 'tix_price', true );
+			$ticket->tix_remaining = $this->get_remaining_tickets( $ticket->ID, $via_reservation );
+			$ticket->tix_coupon_applied = false;
+			$ticket->tix_discounted_price = $ticket->tix_price;
+
+			$tickets[ $ticket->ID ] = $ticket;
+		}
+
+		unset( $tickets_objects, $ticket );
+
+		$orders_clean = array();
+		foreach ( $order['items'] as $key => $item ) {
+
+			/**
+			 * @todo check items, reservation, coupon.
+			 */
+
+			if ( ! isset( $tickets[ $item['id'] ] ) ) {
+				$this->error_flag( 'invalid-ticket-id' );
+				$this->redirect_with_error_flags();
+			}
+
+			$ticket = $tickets[ $item['id'] ];
+			if ( $ticket->tix_remaining < 1 ) {
+				$this->error_flag( 'verify-remaining-less-than-1' );
+				continue;
+			}
+
+			if ( $ticket->tix_remaining < $item['quantity'] ) {
+				$item['quantity'] = $ticket->tix_remaining;
+				$this->error_flag( 'remaining-less-than-quantity' );
+			}
+
+			if ( $item['quantity'] > 10 ) {
+				$item['quantity'] = min( 10, $ticket->tix_remaining );
+				$this->error_flag( 'selected-more-than-10' );
+			}
+		}
+
+		if ( ! empty( $this->error_flags ) ) {
+			$this->redirect_with_error_flags();
+		}
+
+		return true;
+	}
+
+	/**
 	 * Fire a POST request to PayPal.
 	 */
 	function paypal_request( $payload = array() ) {
@@ -5624,12 +5704,29 @@ class CampTix_Plugin {
 				wp_update_post( $attendee );
 				continue;
 			}
+
+			if ( $this::PAYMENT_STATUS_COMPLETED == $result ) {
+				$this->log( __( 'Payment was completed.', 'camptix' ), $attendee->ID );
+				$attendee->post_status = 'publish';
+				wp_update_post( $attendee );
+				continue;
+			}
 		}
 
 		if ( $this::PAYMENT_STATUS_CANCELLED == $result ) {
+
 			$this->error_flag( 'payment_cancelled' );
 			$this->redirect_with_error_flags();
 			die();
+
+		} elseif ( $this::PAYMENT_STATUS_COMPLETED == $result ) {
+
+			// Show the purchased tickets.
+			$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
+			$url = add_query_arg( array( 'tix_action' => 'access_tickets', 'tix_access_token' => $access_token ), $this->get_tickets_url() );
+			wp_safe_redirect( $url . '#tix' );
+			die();
+
 		}
 	}
 
