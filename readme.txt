@@ -3,7 +3,7 @@ Contributors: automattic, kovshenin, andreamiddleton
 Tags: ticketing, event ticketing
 Requires at least: 3.4
 Tested up to: 3.4.1
-Stable tag: 1.0
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,6 +44,13 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.1 =
+* Added JPY currency
+* Added l10n functions
+* Removing closure functions to support php 5.2
+* Questions v2 now a public feature
+* Minor cleanups, bugfixes and enhancements
 
 = 1.0 =
 * First version
