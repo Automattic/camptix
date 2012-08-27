@@ -3874,7 +3874,7 @@ class CampTix_Plugin {
 		if ( isset( $this->error_flags['invalid_payment_method'] ) )
 			$this->error( __( 'You have selected an invalid payment method. Please try again.', 'camptix' ) );
 
-		if ( 'checkout' == get_query_var( 'tix_action' ) && isset( $this->error_flags['invalid_coupon'] ) )
+		if ( isset( $this->error_flags['invalid_coupon'] ) )
 			$this->notice( __( "Looks like you're trying to use an invalid or expired coupon.", 'camptix' ) );
 
 		if ( 'attendee_info' == get_query_var( 'tix_action' ) && $this->coupon )
@@ -5515,9 +5515,10 @@ class CampTix_Plugin {
 				return $this->form_attendee_info();
 			}*/
 		} else { // free beer for everyone!
+			$this->payment_result( $payment_token, $this::PAYMENT_STATUS_COMPLETED );
 
 			// Create the access token used to access the tickets later.
-			foreach ( $attendees as $attendee ) {
+			/*foreach ( $attendees as $attendee ) {
 				$attendee->post_status = 'publish';
 				wp_update_post( $attendee );
 
@@ -5569,7 +5570,7 @@ class CampTix_Plugin {
 			$url = add_query_arg( 'tix_action', 'access_tickets' );
 			$url = add_query_arg( 'tix_access_token', $access_token, $url );
 			wp_safe_redirect( $url );
-			die();
+			die();*/
 		}
 	}
 
@@ -5583,7 +5584,40 @@ class CampTix_Plugin {
 			'posts_per_page' => -1,
 		) );
 
+		$coupon = null;
+		$reservation = null;
 		$via_reservation = false;
+
+		// Let's check the coupon first.
+		if ( isset( $order['coupon'] ) && ! empty( $order['coupon'] ) ) {
+			$coupon = $this->get_coupon_by_code( $order['coupon'] );
+			if ( $coupon && $this->is_coupon_valid_for_use( $coupon->ID ) ) {
+				$coupon->tix_coupon_remaining = $this->get_remaining_coupons( $coupon->ID );
+				$coupon->tix_discount_price = (float) get_post_meta( $coupon->ID, 'tix_discount_price', true );
+				$coupon->tix_discount_percent = (int) get_post_meta( $coupon->ID, 'tix_discount_percent', true );
+				$coupon->tix_applies_to = (array) get_post_meta( $coupon->ID, 'tix_applies_to' );
+			} else {
+				$order['coupon'] = null;
+				$coupon = null;
+				$this->error_flag( 'invalid_coupon' );
+			}
+		} else {
+			$order['coupon'] = null;
+			$coupon = null;
+		}
+
+		// Then check the reservation.
+		if ( isset( $order['tix_reservation_id'], $order['tix_reservation_token'] ) ) {
+			$reservation = $this->get_reservation( $order['tix_reservation_token'] );
+
+			if ( $reservation && $reservation['id'] == strtolower( $order['tix_reservation_id'] ) && $this->is_reservation_valid_for_use( $reservation['token'] ) ) {
+				$via_reservation = $reservation['token'];
+			} else {
+				$this->error_flags['invalid_reservation'] = true;
+				$reservation = null;
+				$via_reservation = false;
+			}
+		}
 
 		$tickets = array();
 		foreach ( $tickets_objects as $ticket ) {
@@ -5592,42 +5626,108 @@ class CampTix_Plugin {
 			$ticket->tix_coupon_applied = false;
 			$ticket->tix_discounted_price = $ticket->tix_price;
 
+			if ( $coupon && in_array( $ticket->ID, $coupon->tix_applies_to ) ) {
+				$ticket->tix_coupon_applied = true;
+				$ticket->tix_discounted_text = '';
+
+				if ( $coupon->tix_discount_price > 0 ) {
+					$ticket->tix_discounted_price = number_format( $ticket->tix_price - $coupon->tix_discount_price, 2, '.', '' );
+				} elseif ( $coupon->tix_discount_percent > 0 ) {
+					$ticket->tix_discounted_price = number_format( $ticket->tix_price - ( $ticket->tix_price * $coupon->tix_discount_percent / 100 ), 2, '.', '' );
+				}
+
+				if ( $ticket->tix_discounted_price < 0 )
+					$ticket->tix_discounted_price = 0;
+			}
+
 			$tickets[ $ticket->ID ] = $ticket;
 		}
 
 		unset( $tickets_objects, $ticket );
+		$coupon_used = 0;
 
-		$orders_clean = array();
-		foreach ( $order['items'] as $key => $item ) {
+		$items_clean = array();
+		foreach ( $order['items'] as $item ) {
 
 			/**
 			 * @todo check items, reservation, coupon.
 			 */
 
 			if ( ! isset( $tickets[ $item['id'] ] ) ) {
-				$this->error_flag( 'invalid-ticket-id' );
-				$this->redirect_with_error_flags();
+				$this->error_flag( 'invalid_ticket_id' );
+				continue;
 			}
 
 			$ticket = $tickets[ $item['id'] ];
+
 			if ( $ticket->tix_remaining < 1 ) {
-				$this->error_flag( 'verify-remaining-less-than-1' );
+				$this->error_flag( 'tickets_excess' );
 				continue;
 			}
 
 			if ( $ticket->tix_remaining < $item['quantity'] ) {
 				$item['quantity'] = $ticket->tix_remaining;
-				$this->error_flag( 'remaining-less-than-quantity' );
+				$this->error_flag( 'tickets_excess' );
 			}
 
 			if ( $item['quantity'] > 10 ) {
 				$item['quantity'] = min( 10, $ticket->tix_remaining );
-				$this->error_flag( 'selected-more-than-10' );
+				$this->error_flag( 'tickets_excess' );
 			}
+
+			// Track coupons usage quantity.
+			if ( $ticket->tix_coupon_applied ) {
+				$coupon_used += $item['quantity'];
+				if ( $coupon_used > $coupon->tix_coupon_remaining ) {
+
+					// How much more coupons are we allowed to use?
+					$quantity_allowed = $coupon->tix_coupon_remaining - ( $coupon_used - $item['quantity'] );
+
+					// Revert the # of used coupons.
+					$coupon_used = ( $coupon_used - $item['quantity'] );
+
+					// Set the new allowed quantity and add it to used coupons.
+					$item['quantity'] = $quantity_allowed;
+					$coupon_used += $item['quantity'];
+
+					$this->error_flag( 'coupon_excess' );
+				}
+			}
+
+			// Don't add empty items.
+			if ( $item['quantity'] < 1 )
+				continue;
+
+			// Check pricing
+			if ( (float) $item['price'] != (float) $ticket->tix_discounted_price ) {
+				$this->error_flag( 'tickets_price_error' );
+				continue;
+			}
+
+			$items_clean[] = $item;
 		}
 
+		// Clean up the original array.
+		$order['items'] = $items_clean;
+		unset( $items_clean );
+
+		if ( count( $order['items'] ) < 1 )
+			$this->error_flag( 'no_tickets_selected' );
+
+		// Recount the total.
+		$order['total'] = 0;
+		foreach ( $order['items'] as $item )
+			$order['total'] += $item['price'] * $item['quantity'];
+
 		if ( ! empty( $this->error_flags ) ) {
-			$this->redirect_with_error_flags();
+
+			if ( 'attendee_info' == get_query_var( 'tix_action' ) ) {
+				print_r($this->error_flags);
+			} elseif( 'checkout' == get_query_var( 'tix_action' ) ) {
+				print_r($this->error_flags);
+			} else {
+				$this->redirect_with_error_flags();
+			}
 		}
 
 		return true;
@@ -5721,6 +5821,9 @@ class CampTix_Plugin {
 
 		} elseif ( $this::PAYMENT_STATUS_COMPLETED == $result ) {
 
+			// Send out the tickets and receipt
+			$this->email_tickets( $payment_token );
+
 			// Show the purchased tickets.
 			$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
 			$url = add_query_arg( array( 'tix_action' => 'access_tickets', 'tix_access_token' => $access_token ), $this->get_tickets_url() );
@@ -5730,6 +5833,75 @@ class CampTix_Plugin {
 		}
 	}
 
+	function email_tickets( $payment_token = false ) {
+		if ( ! $payment_token )
+			return;
+
+		$attendees = get_posts( array(
+			'posts_per_page' => -1,
+			'post_type' => 'tix_attendee',
+			'post_status' => array( 'publish', 'pending' ),
+			'meta_query' => array(
+				array(
+					'key' => 'tix_payment_token',
+					'compare' => '=',
+					'value' => $payment_token,
+					'type' => 'CHAR',
+				),
+			),
+		) );
+
+		if ( ! $attendees )
+			return;
+
+		$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
+		$receipt_email = get_post_meta( $attendees[0]->ID, 'tix_receipt_email', true );
+		$order = get_post_meta( $attendees[0]->ID, 'tix_order', true );
+
+		$receipt_content = '';
+		foreach ( $order['items'] as $item ) {
+			$ticket = get_post( $item['id'] );
+			$receipt_content .= sprintf( "* %s (%s) x%d = %s\n", $ticket->post_title, $this->append_currency( $item['price'], false ), $item['quantity'], $this->append_currency( $item['price'] * $item['quantity'], false ) );
+		}
+
+		if ( isset( $order['coupon'] ) && $order['coupon'] )
+			$receipt_content .= sprintf( '* ' . __( 'Coupon used: %s') . "\n", $order['coupon'] );
+
+		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $order['total'], false ) );
+
+		if ( count( $attendees ) == 1 ) {
+
+			$edit_link = $this->get_access_tickets_link( $access_token );
+			$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $receipt_content, $edit_link );
+			$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['paypal_statement_subject'] );
+			$this->log( __( 'Single purchase, so sent ticket and receipt in one e-mail.', 'camptix' ), $attendees[0]->ID );
+			$this->wp_mail( $receipt_email, $subject, $content );
+
+			do_action( 'camptix_ticket_emailed', $attendees[0]->ID );
+
+		} else {
+
+			// Send tickets
+			foreach ( $attendees as $attendee ) {
+				$attendee_email = get_post_meta( $attendee->ID, 'tix_email', true );
+				$edit_token = get_post_meta( $attendee->ID, 'tix_edit_token', true );
+				$edit_link = $this->get_edit_attendee_link( $attendee->ID, $edit_token );
+				$content = sprintf( __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $edit_link );
+
+				$this->log( sprintf( __( 'Sent ticket e-mail to %s', 'camptix' ), $attendee_email ), $attendee->ID );
+				$this->log( sprintf( __( 'Sent receipt to %s.', 'camptix' ), $receipt_email ), $attendee->ID );
+				$this->wp_mail( $attendee_email, sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['paypal_statement_subject'] ), $content );
+
+				do_action( 'camptix_ticket_emailed', $attendee->ID );
+			}
+
+			// Send a receipt
+			$edit_link = $this->get_access_tickets_link( $access_token );
+			$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $receipt_content, $edit_link );
+			$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['paypal_statement_subject'] );
+			$this->wp_mail( $receipt_email, $subject, $content );
+		}
+	}
 
 
 	/**
