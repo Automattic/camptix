@@ -3705,6 +3705,11 @@ class CampTix_Plugin {
 				$this->error( __( 'An HTTP error has occurred, looks like PayPal is not responding. Please try again later.', 'camptix' ) );
 		}
 
+		if ( isset( $redirected_error_flags['payment_failed'] ) ) {
+			/** @todo explain error */
+			$this->error( __( 'An error has occured and your payment has failed. Please try again later.', 'camptix' ) );
+		}
+
 		if ( isset( $redirected_error_flags['tickets_excess'] ) )
 			$this->error( __( 'It looks like somebody grabbed those tickets before you could complete the purchase. You have not been charged, please try again.', 'camptix' ) );
 
@@ -4040,7 +4045,7 @@ class CampTix_Plugin {
 							<option value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
 						<?php endforeach; ?>
 					</select>
-					<input type="submit" value="<?php esc_attr_e( 'Checkout', 'camptix' ); ?>" />
+					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
 					<?php else : ?>
 						<input type="submit" value="<?php esc_attr_e( 'Claim Tickets &rarr;', 'camptix' ); ?>" />
 					<?php endif; ?>
@@ -5805,6 +5810,13 @@ class CampTix_Plugin {
 				continue;
 			}
 
+			if ( $this::PAYMENT_STATUS_FAILED == $result ) {
+				$this->log( __( 'Payment has failed.', 'camptix' ), $attendee->ID );
+				$attendee->post_status = 'failed';
+				wp_update_post( $attendee );
+				continue;
+			}
+
 			if ( $this::PAYMENT_STATUS_COMPLETED == $result ) {
 				$this->log( __( 'Payment was completed.', 'camptix' ), $attendee->ID );
 				$attendee->post_status = 'publish';
@@ -5828,6 +5840,12 @@ class CampTix_Plugin {
 			$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
 			$url = add_query_arg( array( 'tix_action' => 'access_tickets', 'tix_access_token' => $access_token ), $this->get_tickets_url() );
 			wp_safe_redirect( $url . '#tix' );
+			die();
+
+		} elseif ( $this::PAYMENT_STATUS_FAILED == $result ) {
+
+			$this->error_flag( 'payment_failed' );
+			$this->redirect_with_error_flags();
 			die();
 
 		}

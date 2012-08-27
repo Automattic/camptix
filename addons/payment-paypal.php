@@ -181,10 +181,6 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 		if ( isset( $checkout_details['ACK'] ) && $checkout_details['ACK'] == 'Success' ) {
 
-			/**
-			 * @todo Check whether the order is still available at this stage.
-			 */
-
 			$payload = array(
 				'METHOD' => 'DoExpressCheckoutPayment',
 				'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
@@ -202,7 +198,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 			// One final check before charging the user.
 			if ( ! $camptix->verify_order( $order ) ) {
-				die( 'Something went wrong!' );
+				die( 'Something went wrong, order is no longer available.' );
 			}
 
 			// Get money money, get money money money!
@@ -213,14 +209,20 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 				$txn_id = $txn['PAYMENTINFO_0_TRANSACTIONID'];
 				$payment_status = $txn['PAYMENTINFO_0_PAYMENTSTATUS'];
 
+				$this->log( sprintf( __( 'Payment details for %s', 'camptix'), $txn_id ), null, $txn, 'payment' );
+
 				if ( $payment_status == 'Completed' ) {
-					$this->log( 'Payment status completed.' );
 					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED );
 				} else {
-					$this->log( 'Payment status pending.' );
 					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_PENDING );
 				}
+			} else {
+				$this->log( __( 'Payment cancelled due to an HTTP error during DoExpressCheckoutPayment.', 'camptix' ), null, $request, 'payment' );
+				$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 			}
+		} else {
+			$this->log( __( 'Payment cancelled due to an HTTP error during GetExpressCheckoutDetails.', 'camptix' ), null, $request, 'payment' );
+			$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 		}
 
 		die();
@@ -230,13 +232,15 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 	 * Called when the checkout process is initiated.
 	 *
 	 * $order = array(
-	 *     array(
+	 *     'items' => array(
 	 *         'id' => 123,
 	 *         'name' => 'Item Name',
 	 *         'description' => 'Item description',
 	 *         'price' => 10.99,
 	 *         'quantity' => 3,
 	 *     ),
+	 *     'coupon' => 'xyz',
+	 *     'total' => 123.45,
 	 * );
 	 */
 	function payment_checkout( $payment_token ) {
@@ -326,4 +330,4 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 // Register this class as a CampTix Addon.
 camptix_register_addon( 'CampTix_Payment_Gateway_PayPal' );
-camptix_register_addon( 'CampTix_Payment_Gateway_Blackhole' );
+// camptix_register_addon( 'CampTix_Payment_Gateway_Blackhole' );
