@@ -150,8 +150,6 @@ class CampTix_Plugin {
 		$this->register_post_statuses();
 
 		do_action( 'camptix_init' );
-
-		$this->paypal_ipn();
 	}
 
 	/**
@@ -163,8 +161,7 @@ class CampTix_Plugin {
 		add_action( 'tix_scheduled_every_ten_minutes', array( $this, 'send_emails_batch' ) );
 		add_action( 'tix_scheduled_every_ten_minutes', array( $this, 'process_refund_all' ) );
 
-		// add_action( 'tix_scheduled_daily', array( $this, 'paypal_review_pending_payments' ) );
-		add_action( 'tix_scheduled_daily', array( $this, 'paypal_review_timeout_payments' ) );
+		add_action( 'tix_scheduled_daily', array( $this, 'review_timeout_payments' ) );
 
 		if ( ! wp_next_scheduled( 'tix_scheduled_every_ten_minutes' ) )
 			wp_schedule_event( time(), '10-mins', 'tix_scheduled_every_ten_minutes' );
@@ -3408,47 +3405,6 @@ class CampTix_Plugin {
 		$coupon_used_count = 0;
 		$via_reservation = false;
 
-		if ( 'paypal_return' == get_query_var( 'tix_action' ) && isset( $_REQUEST['token'] ) && ! empty( $_REQUEST['token'] ) ) {
-
-			// Get all attendees for this return.
-			$token = $_REQUEST['token'];
-			$attendees = get_posts( array(
-				'posts_per_page' => -1,
-				'post_type' => 'tix_attendee',
-				'post_status' => array( 'draft' ),
-				'meta_query' => array(
-					array(
-						'key' => 'tix_paypal_token',
-						'value' => $token,
-						'compare' => '=',
-						'type' => 'CHAR',
-					)
-				),
-			) );
-
-			if ( $attendees ) {
-
-				// Set the coupon request for paypal return.
-				if ( $paypal_return_coupon = get_post_meta( $attendees[0]->ID, 'tix_coupon', true ) )
-					$_REQUEST['tix_coupon'] = $paypal_return_coupon;
-
-				// Set the selected tickets for this paypal return.
-				$_POST['tix_tickets_selected'] = (array) get_post_meta( $attendees[0]->ID, 'tix_tickets_selected', true );
-
-				// Let's dig into some reservations here.
-				foreach ( $attendees as $attendee ) {
-					$reservation_token = get_post_meta( $attendee->ID, 'tix_reservation_token', true );
-					if ( $reservation_token && $this->get_reservation( $reservation_token ) ) {
-						$reservation = $this->get_reservation( $reservation_token );
-						$_REQUEST['tix_reservation_id'] = $reservation['id'];
-						$_REQUEST['tix_reservation_token'] = $reservation['token'];
-					}
-				}
-			}
-
-			unset( $attendees, $paypal_return_coupon );
-		}
-
 		// Find the coupon.
 		if ( isset( $_REQUEST['tix_coupon'] ) && ! empty( $_REQUEST['tix_coupon'] ) ) {
 			$coupon = $this->get_coupon_by_code( $_REQUEST['tix_coupon'] );
@@ -4896,7 +4852,7 @@ class CampTix_Plugin {
 	 * This routine looks up old draft attendee posts and puts
 	 * their status into Timeout.
 	 */
-	function paypal_review_timeout_payments() {
+	function review_timeout_payments() {
 
 		// Nothing to do for archived sites.
 		if ( $this->options['archived'] )
@@ -4941,354 +4897,6 @@ class CampTix_Plugin {
 		$this->log( sprintf( __( 'Reviewed timeout payments and set %d attendees to timeout status.', 'camptix' ), $processed ) );
 	}
 
-	/**
-	 * PayPal Return. This function is fired when the user has accepted the
-	 * payment at PayPal and is being returned here for the final confirmation.
-	 */
-	function paypal_return() {
-		global $post;
-		if ( get_query_var( 'tix_action' ) != 'paypal_return' )
-			return;
-
-		if ( ! isset( $_REQUEST['token'], $_REQUEST['PayerID'] ) )
-			return;
-
-		$token = $_REQUEST['token'];
-		$payer_id = $_REQUEST['PayerID'];
-
-		$attendees = get_posts( array(
-			'posts_per_page' => -1,
-			'post_type' => 'tix_attendee',
-			'post_status' => array( 'draft' ),
-			'meta_query' => array(
-				array(
-					'key' => 'tix_paypal_token',
-					'value' => $token,
-					'compare' => '=',
-					'type' => 'CHAR',
-				)
-			),
-		) );
-
-		if ( $attendees ) {
-			$expected_total = (float) get_post_meta( $attendees[0]->ID, 'tix_order_total', true );
-			$receipt_email = get_post_meta( $attendees[0]->ID, 'tix_receipt_email', true );
-			$receipt_content = '';
-
-			$payload = array(
-				'METHOD' => 'GetExpressCheckoutDetails',
-				'TOKEN' => $token,
-			);
-			$request = $this->paypal_request( $payload );
-			$checkout_details = wp_parse_args( wp_remote_retrieve_body( $request ) );
-
-			if ( isset( $checkout_details['ACK'] ) && $checkout_details['ACK'] == 'Success' ) {
-
-				if ( (float) $checkout_details['PAYMENTREQUEST_0_AMT'] != $expected_total ) {
-					echo __( "Unexpected total!", 'camptix' );
-					die();
-				}
-
-				if ( count( $this->error_flags ) > 0 ) {
-					$this->redirect_with_error_flags();
-					die();
-				}
-
-				foreach ( $this->tickets_selected as $ticket_id => $count ) {
-					$ticket = $this->tickets[$ticket_id];
-					$price = $ticket->tix_coupon_applied ? $ticket->tix_discounted_price : $ticket->tix_price;
-
-					// * Ticket Name ($1.00) x3 = $3.00
-					$receipt_content .= sprintf( "* %s (%s) x%d = %s\n", $ticket->post_title, $this->append_currency( $price, false ), $count, $this->append_currency( $price * $count, false ) );
-				}
-
-				if ( $this->coupon )
-					$receipt_content .= sprintf( "* " . __( 'Coupon used: %s', 'camptix' ) . "\n", $this->coupon->post_title );
-
-				$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $expected_total, false ) );
-
-				$payload = array(
-					'METHOD' => 'DoExpressCheckoutPayment',
-					'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
-					'TOKEN' => $token,
-					'PAYERID' => $payer_id,
-					'PAYMENTREQUEST_0_AMT' => number_format( (float) $expected_total, 2, '.', '' ),
-					'PAYMENTREQUEST_0_ITEMAMT' => number_format( (float) $expected_total, 2, '.', '' ),
-					'PAYMENTREQUEST_0_CURRENCYCODE' => $this->options['paypal_currency'],
-					'PAYMENTREQUEST_0_NOTIFYURL' => esc_url_raw( add_query_arg( 'tix_paypal_ipn', 1, trailingslashit( home_url() ) ) ),
-				);
-
-				if ( $this->coupon )
-					$payload['PAYMENTREQUEST_0_CUSTOM'] = substr( sprintf( 'Using coupon: %s', $this->coupon->post_title ), 0, 255 );
-
-				$i = 0; $total = 0;
-				foreach ( $this->tickets_selected as $ticket_id => $count ) {
-					$ticket = $this->tickets[$ticket_id];
-
-					$name = sprintf( '%s: %s', $this->options['paypal_statement_subject'], $ticket->post_title );
-					$desc = $ticket->post_excerpt;
-
-					$payload['L_PAYMENTREQUEST_0_NAME' . $i] = substr( $name, 0, 127 );
-					$payload['L_PAYMENTREQUEST_0_DESC' . $i] = substr( $desc, 0, 127 );
-					$payload['L_PAYMENTREQUEST_0_NUMBER' . $i] = $ticket->ID;
-					$price = ( $this->coupon ) ? $ticket->tix_discounted_price : $ticket->tix_price;
-					$payload['L_PAYMENTREQUEST_0_AMT' . $i] = $price;
-					$payload['L_PAYMENTREQUEST_0_QTY' . $i] = $count;
-					$i++;
-				}
-
-				$request = $this->paypal_request( $payload );
-				$txn = wp_parse_args( wp_remote_retrieve_body( $request ) );
-
-				if ( isset( $txn['ACK'], $txn['PAYMENTINFO_0_PAYMENTSTATUS'] ) && $txn['ACK'] == 'Success' ) {
-
-					// Used to access these tickets at a later stage.
-					$access_token = md5( wp_hash( $payer_id . $txn['PAYMENTINFO_0_TRANSACTIONID'] . time(), 'nonce' ) );
-					$txn_id = $txn['PAYMENTINFO_0_TRANSACTIONID'];
-
-					// Store transaction details.
-					$payload = array(
-						'METHOD' => 'GetTransactionDetails',
-						'TRANSACTIONID' => $txn_id,
-					);
-					$request = $this->paypal_request( $payload );
-					$txn_details = wp_parse_args( wp_remote_retrieve_body( $request ) );
-
-					foreach ( $attendees as $attendee ) {
-
-						$edit_token = md5( wp_hash( $access_token . $attendee->ID . time(), 'nonce' ) );
-
-						$this->log( sprintf( __( 'Returned from PayPal with status: %s', 'camptix' ), $txn['PAYMENTINFO_0_PAYMENTSTATUS'] ), $attendee->ID, $txn );
-						update_post_meta( $attendee->ID, 'tix_paypal_payer_id', $payer_id );
-						update_post_meta( $attendee->ID, 'tix_paypal_checkout_details', $checkout_details );
-						update_post_meta( $attendee->ID, 'tix_paypal_transaction_details', $txn_details );
-						update_post_meta( $attendee->ID, 'tix_paypal_transaction_id', $txn_id );
-						update_post_meta( $attendee->ID, 'tix_access_token', $access_token );
-						update_post_meta( $attendee->ID, 'tix_edit_token', $edit_token );
-
-						if ( is_email( $receipt_email ) )
-							$this->log( sprintf( __( 'Receipt has been sent to %s', 'camptix' ), $receipt_email ), $attendee->ID );
-
-						if ( $txn['PAYMENTINFO_0_PAYMENTSTATUS'] == 'Completed' ) {
-							$attendee->post_status = 'publish';
-						} else {
-							// Don't confuse with PAYMENTSTATUS = Pending, we just set it to pending.
-							// https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_r_DoExpressCheckoutPayment
-							// IPN will do the rest.
-							$attendee->post_status = 'pending';
-						}
-
-						wp_update_post( $attendee );
-
-						// If there's more than 1 ticket, send e-mails to all
-						if ( $this->tickets_selected_count > 1 )
-							$this->email_ticket_to_attendee( $attendee->ID );
-
-						do_action( 'camptix_ticket_emailed', $attendee->ID );
-					}
-
-					if ( is_email( $receipt_email ) ) {
-
-						// If there is more than 1 ticket, we'll send a receipt for all + individual
-						// ticket to each, otherwise we'll send only one receipt, which is the ticket anyway.
-						if ( $this->tickets_selected_count > 1 ) {
-
-							$edit_link = $this->get_access_tickets_link( $access_token );
-							$content = sprintf( __( "Hey there!\n\nYou have purchased the following tickets:\n\n%s\n\nYou can edit the information for all the purchased tickets at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $receipt_content, $edit_link );
-							$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['paypal_statement_subject'] );
-
-						} else { // only one recipient
-
-							// Give them the edit attendee link instead
-							$edit_link = $this->get_access_tickets_link( $access_token );
-							$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $receipt_content, $edit_link );
-							$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['paypal_statement_subject'] );
-							$this->log( __( 'Single purchase, so sent ticket and receipt in one e-mail.', 'camptix' ), $attendees[0]->ID );
-						}
-
-						if ( $txn['PAYMENTINFO_0_PAYMENTSTATUS'] != 'Completed' )
-							$content .= sprintf( "\n\n" . __( 'Your payment status is: %s. You will receive a notification e-mail once your payment is completed.', 'camptix' ), strtolower( $txn['PAYMENTINFO_0_PAYMENTSTATUS'] ) );
-
-						$this->wp_mail( $receipt_email, $subject, $content );
-					}
-					// Show the purchased tickets.
-					$url = add_query_arg( array( 'tix_action' => 'access_tickets', 'tix_access_token' => $access_token ), $this->get_tickets_url() );
-					wp_safe_redirect( $url . '#tix' );
-					die();
-
-				} else {
-
-					// Log this error
-					foreach ( $attendees as $attendee )
-						$this->log( __( 'Payment cancelled due to an HTTP error during DoExpressCheckoutPayment.', 'camptix' ), $attendee->ID, $request );
-
-					if ( isset( $txn['L_ERRORCODE0'] ) )
-						$this->error_data['paypal_http_error_code'] = intval( $txn['L_ERRORCODE0'] );
-
-					$this->error_flags['paypal_http_error'] = true;
-					$this->redirect_with_error_flags();
-					die();
-				}
-			} else {
-
-				// Log this error
-				foreach ( $attendees as $attendee )
-					$this->log( __( 'Payment cancelled due to an HTTP error during GetExpressCheckoutDetails.', 'camptix' ), $attendee->ID, $request );
-
-				$this->error_flags['paypal_http_error'] = true;
-				$this->redirect_with_error_flags();
-				die();
-			}
-		} else {
-			$this->log( __( 'Attendee not found in paypal_return.', 'camptix' ) );
-		}
-
-		// echo 'doing paypal return';
-		die();
-	}
-
-	function paypal_cancel() {
-		if ( ! isset( $_REQUEST['token'] ) || empty( $_REQUEST['token'] ) )
-			return;
-
-		$token = $_REQUEST['token'];
-
-		$attendees = get_posts( array(
-			'posts_per_page' => -1,
-			'post_type' => 'tix_attendee',
-			'post_status' => array( 'draft' ),
-			'meta_query' => array(
-				array(
-					'key' => 'tix_paypal_token',
-					'value' => $token,
-					'compare' => '=',
-					'type' => 'CHAR',
-				)
-			),
-		) );
-
-		foreach ( $attendees as $attendee ) {
-			$attendee->post_status = 'cancel';
-			wp_update_post( $attendee );
-			$this->log( __( 'Transaction was cancelled at PayPal.', 'camptix' ), $attendee->ID );
-		}
-
-		$this->error_flags['cancelled'] = true;
-		$this->redirect_with_error_flags();
-		die();
-	}
-
-	function paypal_ipn() {
-		if ( ! isset( $_REQUEST['tix_paypal_ipn'] ) )
-			return;
-
-		// Verify the IPN came from PayPal.
-		$payload = stripslashes_deep( $_POST );
-		$response = $this->paypal_verify_ipn( $payload );
-		if ( wp_remote_retrieve_response_code( $response ) != '200' || wp_remote_retrieve_body( $response ) != 'VERIFIED' ) {
-			$this->log( __( 'Could not verify PayPal IPN.', 'camptix' ), 0, null, 'ipn' );
-			return;
-		}
-
-		// Grab the txn id (or the parent id in case of refunds, cancels, etc)
-		$txn_id = isset( $payload['txn_id'] ) && ! empty( $payload['txn_id'] ) ? $payload['txn_id'] : 'None';
-		if ( isset( $payload['parent_txn_id'] ) && ! empty( $payload['parent_txn_id'] ) )
-			$txn_id = $payload['parent_txn_id'];
-
-		$attendees = $this->get_attendees_by_txn_id( $txn_id );
-
-		if ( ! is_array( $attendees ) || ! $attendees ) {
-			$this->log( sprintf( __( 'Received IPN without attendees association %s', 'camptix' ), $txn_id ) );
-			return;
-		}
-
-		// Case created, etc are subject to IPN too.
-		if ( ! isset( $payload['payment_status'] ) ) {
-			$this->log( sprintf( __( 'Received IPN with no payment status %s', 'camptix' ), $txn_id ), 0, $payload );
-			return;
-		}
-
-		// Get most recent transaction details.
-		$txn_details_payload = array(
-			'METHOD' => 'GetTransactionDetails',
-			'TRANSACTIONID' => $txn_id,
-		);
-		$txn_details = wp_parse_args( wp_remote_retrieve_body( $this->paypal_request( $txn_details_payload ) ) );
-		if ( ! isset( $txn_details['ACK'] ) || $txn_details['ACK'] != 'Success' ) {
-			$txn_details = false;
-			$this->log( sprintf( __( 'Fetching transaction after IPN failed %s.', 'camptix' ), $txn_id, 0, $txn_details ) );
-		}
-
-		$log = array();
-
-		// Let's do notifications.
-		$attendee = $attendees[0];
-		if ( $attendee->post_status != 'publish' && $txn_details['PAYMENTSTATUS'] == 'Completed' ) {
-			$receipt_subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['paypal_statement_subject'] );
-			$receipt_email = get_post_meta( $attendee->ID, 'tix_receipt_email', true );
-			$access_token = get_post_meta( $attendee->ID, 'tix_access_token', true );
-			$edit_link = $this->get_access_tickets_link( $access_token );
-
-			$receipt_content = sprintf( __( "Hey there!\n\nYour payment for %s has been completed, looking forward to seeing you at the event! You can access and change your tickets information by visiting the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['paypal_statement_subject'], $edit_link );
-
-			$this->wp_mail( $receipt_email, $receipt_subject, $receipt_content );
-			$log[] = sprintf( __( 'Sending completed notification after ipn to %s.', 'camptix' ), $receipt_email );
-		}
-
-		if ( $attendee->post_status != 'failed' && $txn_details['PAYMENTSTATUS'] == 'Failed' ) {
-			$receipt_subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['paypal_statement_subject'] );
-			$receipt_email = get_post_meta( $attendee->ID, 'tix_receipt_email', true );
-			$access_token = get_post_meta( $attendee->ID, 'tix_access_token', true );
-			$edit_link = $this->get_access_tickets_link( $access_token );
-
-			$receipt_content = sprintf( __( "Hey there!\n\nWe're so sorry, but it looks like your payment for %s has failed! Please check your PayPal transactions for more details. If you still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['paypal_statement_subject'], $this->get_tickets_url() );
-
-			$this->wp_mail( $receipt_email, $receipt_subject, $receipt_content );
-			$log[] = sprintf( __( 'Sent failed notification after ipn to %s.', 'camptix' ), $receipt_email );
-		}
-
-		foreach ( $attendees as $attendee ) {
-			$old_status = $attendee->post_status;
-
-			// Change status.
-			switch ( $txn_details['PAYMENTSTATUS'] ) {
-				case 'Completed':
-					$attendee->post_status = 'publish';
-					break;
-				case 'Pending':
-					$attendee->post_status = 'pending';
-					break;
-				case 'Cancelled':
-					$attendee->post_status = 'cancel';
-					break;
-				case 'Failed':
-				case 'Denied':
-					$attendee->post_status = 'failed';
-					break;
-				case 'Refunded':
-				case 'Reversed':
-					$attendee->post_status = 'refund';
-					break;
-				default:
-					// $attendee->post_status = 'pending';
-					break;
-			}
-
-			$updating_status = ( $old_status == $attendee->post_status ) ? __( 'status not updated', 'camptix' ) : __( 'updating status', 'camptix' );
-			$this->log( sprintf( __( 'IPN result via payload: %s (via txn: %s), %s.', 'camptix' ), $payload['payment_status'], $txn_details['PAYMENTSTATUS'], $updating_status ), $attendee->ID, $payload, 'ipn' );
-			if ( isset( $txn_details ) ) {
-				update_post_meta( $attendee->ID, 'tix_paypal_transaction_details', $txn_details );
-				$this->log( sprintf( __( 'Updated transaction details for %s.', 'camptix' ), $txn_id ), $attendee->ID, $txn_details );
-			}
-
-			wp_update_post( $attendee );
-			foreach ( $log as $entry )
-				$this->log( $entry, $attendee->ID );
-		}
-
-		die();
-	}
-
 	function get_attendees_by_txn_id( $txn_id ) {
 		$attendees = get_posts( array(
 			'post_type' => 'tix_attendee',
@@ -5304,22 +4912,6 @@ class CampTix_Plugin {
 			),
 		) );
 		return $attendees;
-	}
-
-	/**
-	 * The first e-mail sent to the attendee upon ticket purchase.
-	 * @todo maybe e-mail templates.
-	 */
-	function email_ticket_to_attendee( $attendee_id ) {
-		$attendee_email = get_post_meta( $attendee_id, 'tix_email', true );
-		$edit_token = get_post_meta( $attendee_id, 'tix_edit_token', true );
-		if ( is_email( $attendee_email ) ) {
-			$edit_link = $this->get_edit_attendee_link( $attendee_id, $edit_token );
-			$content = sprintf( __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $edit_link );
-
-			$this->wp_mail( $attendee_email, sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['paypal_statement_subject'] ), $content );
-			$this->log( sprintf( __( 'Sent ticket e-mail to %s', 'camptix' ), $attendee_email ), $attendee_id );
-		}
 	}
 
 	/**
@@ -5405,23 +4997,6 @@ class CampTix_Plugin {
 
 		$this->verify_order( $this->order );
 
-		/*$i = 0; $total = 0;
-		foreach ( $this->tickets_selected as $ticket_id => $count ) {
-			$ticket = $this->tickets[$ticket_id];
-
-			$name = sprintf( '%s: %s', $this->options['paypal_statement_subject'], $ticket->post_title );
-			$desc = $ticket->post_excerpt;
-
-			$payload['L_PAYMENTREQUEST_0_NAME' . $i] = substr( $name, 0, 127 );
-			$payload['L_PAYMENTREQUEST_0_DESC' . $i] = substr( $desc, 0, 127 );
-			$payload['L_PAYMENTREQUEST_0_NUMBER' . $i] = $ticket->ID;
-			$price = ( $this->coupon ) ? $ticket->tix_discounted_price : $ticket->tix_price;
-			$payload['L_PAYMENTREQUEST_0_AMT' . $i] = $price;
-			$payload['L_PAYMENTREQUEST_0_QTY' . $i] = $count;
-			$total += $price * $count;
-			$i++;
-		}*/
-
 		$reservation_quantiny = 0;
 		if ( isset( $this->reservation ) && $this->reservation )
 			$reservation_quantiny = $this->reservation['quantity'];
@@ -5497,85 +5072,8 @@ class CampTix_Plugin {
 		// Do we need to pay?
 		if ( $this->order['total'] > 0 ) {
 			do_action( "camptix_payment_checkout", $payment_method, $payment_token );
-			// Totals
-			/*$payload['PAYMENTREQUEST_0_ITEMAMT'] = $total;
-			$payload['PAYMENTREQUEST_0_AMT'] = $total;
-			$payload['PAYMENTREQUEST_0_CURRENCYCODE'] = $this->options['paypal_currency'];
-
-			$request = $this->paypal_request( $payload );
-			$response = wp_parse_args( wp_remote_retrieve_body( $request ) );
-			if ( isset( $response['ACK'], $response['TOKEN'] ) && $response['ACK'] == 'Success' ) {
-				$token = $response['TOKEN'];
-
-				// Add the token to all attendees.
-				foreach ( $attendees as $attendee )
-					update_post_meta( $attendee->post_id, 'tix_paypal_token', $token );
-
-				$url = $this->options['paypal_sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout';
-				$url = add_query_arg( 'token', $token, $url );
-				wp_redirect( esc_url_raw( $url ) );
-				die();
-			} else {
-				$this->error_flags['paypal_http_error'] = true;
-				return $this->form_attendee_info();
-			}*/
 		} else { // free beer for everyone!
 			$this->payment_result( $payment_token, $this::PAYMENT_STATUS_COMPLETED );
-
-			// Create the access token used to access the tickets later.
-			/*foreach ( $attendees as $attendee ) {
-				$attendee->post_status = 'publish';
-				wp_update_post( $attendee );
-
-				$this->log( __( 'Attendee published due to order total being 0.', 'camptix' ), $attendee->ID );
-				if ( is_email( $receipt_email ) )
-					$this->log( sprintf( __( 'Receipt has been sent to %s', 'camptix' ), $receipt_email ), $attendee->ID );
-
-				// If there's more than 1 ticket, send e-mails to all
-				if ( $this->tickets_selected_count > 1 )
-					$this->email_ticket_to_attendee( $attendee->ID );
-
-				do_action( 'camptix_ticket_emailed', $attendee->ID );
-			}
-
-			if ( is_email( $receipt_email ) ) {
-				$receipt_content = '';
-
-				// Let's check what the user is trying to purchase.
-				foreach ( $this->tickets_selected as $ticket_id => $count ) {
-					$ticket = $this->tickets[$ticket_id];
-					$price = $ticket->tix_coupon_applied ? $ticket->tix_discounted_price : $ticket->tix_price;
-					// * Ticket Name ($1.00) x3 = $3.00
-					$receipt_content .= sprintf( "* %s (%s) x%d = %s\n", $ticket->post_title, $this->append_currency( $price, false ), $count, $this->append_currency( $price * $count, false ) );
-				}
-
-				if ( $this->coupon )
-					$receipt_content .= sprintf( "* " . __( 'Coupon used: %s', 'camptix' ) . "\n", $this->coupon->post_title );
-
-				$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( 0, false ) );
-
-				if ( $this->tickets_selected_count > 1 ) {
-
-					$edit_link = $this->get_access_tickets_link( $access_token );
-					$content = sprintf( __( "Hey there!\n\nYou have purchased the following tickets:\n\n%s\n\nYou can edit the information for all the purchased tickets at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $receipt_content, $edit_link );
-					$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['paypal_statement_subject'] );
-
-				} else {
-
-					$edit_link = $this->get_access_tickets_link( $access_token );
-					$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $receipt_content, $edit_link );
-					$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['paypal_statement_subject'] );
-					$this->log( __( 'Single purchase, so sent ticket and receipt in one e-mail.', 'camptix' ), $attendees[0]->ID );
-				}
-
-				$this->wp_mail( $receipt_email, $subject, $content );
-			}
-
-			// Let's see those new shiny tickets!
-			$url = add_query_arg( 'tix_action', 'access_tickets' );
-			$url = add_query_arg( 'tix_access_token', $access_token, $url );
-			wp_safe_redirect( $url );
-			die();*/
 		}
 	}
 
@@ -5727,57 +5225,15 @@ class CampTix_Plugin {
 		if ( ! empty( $this->error_flags ) ) {
 
 			if ( 'attendee_info' == get_query_var( 'tix_action' ) ) {
-				print_r($this->error_flags);
+				// print_r($this->error_flags);
 			} elseif( 'checkout' == get_query_var( 'tix_action' ) ) {
-				print_r($this->error_flags);
+				// print_r($this->error_flags);
 			} else {
 				$this->redirect_with_error_flags();
 			}
 		}
 
 		return true;
-	}
-
-	/**
-	 * Fire a POST request to PayPal.
-	 */
-	function paypal_request( $payload = array() ) {
-		$url = $this->options['paypal_sandbox'] ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
-		$payload = array_merge( array(
-			'USER' => $this->options['paypal_api_username'],
-			'PWD' => $this->options['paypal_api_password'],
-			'SIGNATURE' => $this->options['paypal_api_signature'],
-			'VERSION' => '88.0', // https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_PreviousAPIVersionsNVP
-		), (array) $payload );
-
-		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => 20 ) );
-	}
-
-	function paypal_verify_ipn( $payload = array() ) {
-		$url = $this->options['paypal_sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr';
-		$payload = 'cmd=_notify-validate&' . http_build_query( $payload );
-		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => 20 ) );
-	}
-
-	/**
-	 * Returns an error string from a PayPal error code
-	 * @see https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_errorcodes
-	 */
-	function paypal_error( $error_code ) {
-		$errors = array(
-			0 =>     __( 'An unknown error has occurred. Please try again later.', 'camptix' ),
-
-			10422 => __( 'Please return to PayPal to select new funding sources.', 'camptix' ),
-			10417 => __( 'The transaction cannot complete successfully. Please use an alternative payment method.', 'camptix' ),
-			10445 => __( 'This transaction cannot be processed at this time. Please try again later.', 'camptix' ),
-			10421 => __( 'This Express Checkout session belongs to a different customer. Please try a new purchase.', 'camptix' ),
-		);
-
-		$error_code = absint( $error_code );
-		if ( isset( $errors[ $error_code ] ) )
-			return $errors[ $error_code ];
-
-		return $errors[0];
 	}
 
 	function get_available_payment_methods() {
