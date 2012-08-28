@@ -955,19 +955,18 @@ class CampTix_Plugin {
 		if ( isset( $this->options ) && is_array( $this->options ) && ! empty( $this->options ) )
 			return $this->options;
 
- 		$options = array_merge( apply_filters( 'camptix_default_options', array(
-			'paypal_api_username' => '',
-			'paypal_api_password' => '',
-			'paypal_api_signature' => '',
+		$default_options = apply_filters( 'camptix_default_options', array(
 			'paypal_currency' => 'USD',
-			'paypal_sandbox' => true,
 			'paypal_statement_subject' => get_bloginfo( 'name' ),
 			'version' => $this->version,
 			'reservations_enabled' => false,
 			'refunds_enabled' => false,
 			'refund_all_enabled' => false,
 			'archived' => false,
-		) ), get_option( 'camptix_options', array() ) );
+			'payment_methods' => array(),
+		) );
+
+ 		$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
 
 		// Allow plugins to hi-jack or read the options.
 		$options = apply_filters( 'camptix_options', $options );
@@ -1044,16 +1043,21 @@ class CampTix_Plugin {
 		$section = $this->get_setup_section();
 
 		switch ( $section ) {
-			case 'paypal':
-				add_settings_section( 'general', __( 'PayPal Configuration', 'camptix' ), array( $this, 'menu_setup_section_paypal' ), 'camptix_options' );
-				$this->add_settings_field_helper( 'paypal_api_username', __( 'API Username', 'camptix' ), 'field_text' );
-				$this->add_settings_field_helper( 'paypal_api_password', __( 'API Password', 'camptix' ), 'field_text' );
-				$this->add_settings_field_helper( 'paypal_api_signature', __( 'API Signature', 'camptix' ), 'field_text' );
+			case 'general':
+				add_settings_section( 'general', __( 'General Configuration', 'camptix' ), array( $this, 'menu_setup_section_general' ), 'camptix_options' );
 				$this->add_settings_field_helper( 'paypal_statement_subject', __( 'Statement Subject', 'camptix' ), 'field_text' );
 				$this->add_settings_field_helper( 'paypal_currency', __( 'Currency', 'camptix' ), 'field_currency' );
-				$this->add_settings_field_helper( 'paypal_sandbox', __( 'Sandbox Mode', 'camptix' ), 'field_yesno', false,
-					sprintf( __( "The PayPal Sandbox is a way to test payments without using real accounts and transactions. If you'd like to use Sandbox Mode, you'll need to create a %s account and obtain the API credentials for your sandbox user.", 'camptix' ), sprintf( '<a href="https://developer.paypal.com/">%s</a>', __( 'PayPal Developer', 'camptix' ) ) )
-				);
+				break;
+			case 'payment':
+				// add_settings_section( 'general', __( 'Payment Configuration', 'camptix' ), array( $this, 'menu_setup_section_payment' ), 'camptix_options' );
+				foreach ( $this->get_available_payment_methods() as $key => $payment_method ) {
+					add_settings_section( 'payment_' . $key, $payment_method['name'], '__return_false', 'camptix_options' );
+					add_settings_field( 'payment_method_' . $key . '_enabled', __( 'Enabled', 'camptix' ), array( $this, 'field_yesno' ), 'camptix_options', 'payment_' . $key, array(
+						'name' => "camptix_options[payment_methods][{$key}]",
+						'value' => isset( $this->options['payment_methods'][$key] ) ? (bool) $this->options['payment_methods'][$key] : false,
+					) );
+					do_action( "camptix_payment_settings_fields", $key );
+				}
 				break;
 			case 'beta':
 
@@ -1085,8 +1089,12 @@ class CampTix_Plugin {
 		echo '<p>' . __( 'Beta features are things that are being worked on in CampTix, but are not quite finished yet. You can try them out, but we do not recommend doing that in a live environment on a real event. If you have any kind of feedback on any of the beta features, please let us know.', 'camptix' ) . '</p>';
 	}
 
-	function menu_setup_section_paypal() {
-		echo '<p>' . __( 'Enter your PayPal API credentials in the form below. Note, that these <strong>are not</strong> your PayPal username and password. Learn more about <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_ECAPICredentials">Obtaining API Credentials</a> at PayPal.', 'camptix' ) . '</p>';
+	function menu_setup_section_general() {
+		echo '<p>' . __( 'General configuration.', 'camptix' ) . '</p>';
+	}
+
+	function menu_setup_section_payment() {
+		echo '<p>' . __( 'Booyaga' ) . '</p>';
 	}
 
 	/**
@@ -1114,15 +1122,6 @@ class CampTix_Plugin {
 	function validate_options( $input ) {
 		$output = $this->options;
 
-		if ( isset( $input['paypal_api_username'] ) )
-			$output['paypal_api_username'] = $input['paypal_api_username'];
-
-		if ( isset( $input['paypal_api_password'] ) )
-			$output['paypal_api_password'] = $input['paypal_api_password'];
-
-		if ( isset( $input['paypal_api_signature'] ) )
-			$output['paypal_api_signature'] = $input['paypal_api_signature'];
-
 		if ( isset( $input['paypal_statement_subject'] ) )
 			$output['paypal_statement_subject'] = sanitize_text_field( $input['paypal_statement_subject'] );
 
@@ -1130,7 +1129,7 @@ class CampTix_Plugin {
 			$output['paypal_currency'] = $input['paypal_currency'];
 
 		$yesno_fields = array(
-			'paypal_sandbox',
+			// 'paypal_sandbox',
 		);
 
 		// Beta features checkboxes
@@ -1147,6 +1146,13 @@ class CampTix_Plugin {
 		if ( isset( $input['version'] ) )
 			$output['version'] = $input['version'];
 
+		// Enabled payment methods.
+		if ( isset( $input['payment_methods'] ) ) {
+			foreach ( $this->get_available_payment_methods() as $key => $method )
+				if ( isset( $input['payment_methods'][ $key ] ) )
+					$output['payment_methods'][ $key ] = (bool) $input['payment_methods'][ $key ];
+		}
+
 		$current_user = wp_get_current_user();
 		$log_data = array(
 			'old' => $this->options,
@@ -1154,6 +1160,8 @@ class CampTix_Plugin {
 			'username' => $current_user->user_login,
 		);
 		$this->log( __( 'Options updated.', 'camptix' ), 0, $log_data );
+
+		$output = apply_filters( 'camptix_validate_options', $output );
 
 		return $output;
 	}
@@ -1369,7 +1377,7 @@ class CampTix_Plugin {
 		if ( isset( $_REQUEST['tix_section'] ) )
 			return strtolower( $_REQUEST['tix_section'] );
 
-		return 'paypal';
+		return 'general';
 	}
 
 	/**
@@ -1378,7 +1386,8 @@ class CampTix_Plugin {
 	function menu_setup_tabs() {
 		$current_section = $this->get_setup_section();
 		$sections = array(
-			'paypal' => __( 'PayPal', 'camptix' ),
+			'general' => __( 'General', 'camptix' ),
+			'payment' => __( 'Payment', 'camptix' ),
 		);
 
 		if ( $this->beta_features_enabled )
@@ -3997,7 +4006,7 @@ class CampTix_Plugin {
 					<?php if ( $total > 0 ) : ?>
 					<!--<input type="submit" value="" style="background: transparent url('https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif') 0 0 no-repeat; border: none; width: 145px; height: 42px;" />-->
 					<select name="tix_payment_method">
-						<?php foreach ( $this->get_available_payment_methods() as $payment_method_key => $payment_method ) : ?>
+						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
 							<option value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -4924,7 +4933,7 @@ class CampTix_Plugin {
 		$receipt_email = false;
 		$payment_method = false;
 
-		if ( isset( $_POST['tix_payment_method'] ) && array_key_exists( $_POST['tix_payment_method'], $this->get_available_payment_methods() ) )
+		if ( isset( $_POST['tix_payment_method'] ) && array_key_exists( $_POST['tix_payment_method'], $this->get_enabled_payment_methods() ) )
 			$payment_method = $_POST['tix_payment_method'];
 		else
 			$this->error_flags['invalid_payment_method'] = true;
@@ -5036,7 +5045,7 @@ class CampTix_Plugin {
 				update_post_meta( $post_id, 'tix_receipt_email', $receipt_email );
 
 				// Cash
-				update_post_meta( $post_id, 'tix_order_total', (float) $order['total'] );
+				update_post_meta( $post_id, 'tix_order_total', (float) $this->order['total'] );
 				update_post_meta( $post_id, 'tix_ticket_price', (float) $this->tickets[$attendee->ticket_id]->tix_price );
 				update_post_meta( $post_id, 'tix_ticket_discounted_price', (float) $this->tickets[$attendee->ticket_id]->tix_discounted_price );
 
@@ -5238,6 +5247,15 @@ class CampTix_Plugin {
 
 	function get_available_payment_methods() {
 		return (array) apply_filters( 'camptix_available_payment_methods', array() );
+	}
+
+	function get_enabled_payment_methods() {
+		$enabled = array();
+		foreach ( $this->get_available_payment_methods() as $key => $method )
+			if ( isset( $this->options['payment_methods'][ $key ] ) && $this->options['payment_methods'][ $key ] )
+				$enabled[ $key ] = $method;
+
+		return $enabled;
 	}
 
 	function payment_result( $payment_token, $result ) {
