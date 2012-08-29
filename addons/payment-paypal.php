@@ -395,9 +395,15 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 	}
 
 	function fill_payload_with_order( &$payload, $order ) {
+		global $camptix;
+		$event_name = 'Event';
+		$camptix_options = $camptix->get_options();
+		if ( isset( $camptix_options['event_name'] ) )
+			$event_name = $camptix_options['event_name'];
+
 		$i = 0;
 		foreach ( $order['items'] as $item ) {
-			$payload['L_PAYMENTREQUEST_0_NAME' . $i] = substr( 'Statement: ' . $item['name'], 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_NAME' . $i] = substr( $event_name . ': ' . $item['name'], 0, 127 );
 			$payload['L_PAYMENTREQUEST_0_DESC' . $i] = substr( $item['description'], 0, 127 );
 			$payload['L_PAYMENTREQUEST_0_NUMBER' . $i] = $item['id'];
 			$payload['L_PAYMENTREQUEST_0_AMT' . $i] = $item['price'];

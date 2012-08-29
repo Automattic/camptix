@@ -957,7 +957,7 @@ class CampTix_Plugin {
 
 		$default_options = apply_filters( 'camptix_default_options', array(
 			'paypal_currency' => 'USD',
-			'paypal_statement_subject' => get_bloginfo( 'name' ),
+			'event_name' => get_bloginfo( 'name' ),
 			'version' => $this->version,
 			'reservations_enabled' => false,
 			'refunds_enabled' => false,
@@ -1045,7 +1045,7 @@ class CampTix_Plugin {
 		switch ( $section ) {
 			case 'general':
 				add_settings_section( 'general', __( 'General Configuration', 'camptix' ), array( $this, 'menu_setup_section_general' ), 'camptix_options' );
-				$this->add_settings_field_helper( 'paypal_statement_subject', __( 'Statement Subject', 'camptix' ), 'field_text' );
+				$this->add_settings_field_helper( 'event_name', __( 'Event Name', 'camptix' ), 'field_text' );
 				$this->add_settings_field_helper( 'paypal_currency', __( 'Currency', 'camptix' ), 'field_currency' );
 				break;
 			case 'payment':
@@ -1122,8 +1122,8 @@ class CampTix_Plugin {
 	function validate_options( $input ) {
 		$output = $this->options;
 
-		if ( isset( $input['paypal_statement_subject'] ) )
-			$output['paypal_statement_subject'] = sanitize_text_field( $input['paypal_statement_subject'] );
+		if ( isset( $input['event_name'] ) )
+			$output['event_name'] = sanitize_text_field( $input['event_name'] );
 
 		if ( isset( $input['paypal_currency'] ) )
 			$output['paypal_currency'] = $input['paypal_currency'];
@@ -5365,7 +5365,7 @@ class CampTix_Plugin {
 
 			$edit_link = $this->get_access_tickets_link( $access_token );
 			$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $receipt_content, $edit_link );
-			$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['paypal_statement_subject'] );
+			$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
 			$this->log( __( 'Single purchase, so sent ticket and receipt in one e-mail.', 'camptix' ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 
@@ -5382,7 +5382,7 @@ class CampTix_Plugin {
 
 				$this->log( sprintf( __( 'Sent ticket e-mail to %s', 'camptix' ), $attendee_email ), $attendee->ID );
 				$this->log( sprintf( __( 'Sent receipt to %s.', 'camptix' ), $receipt_email ), $attendee->ID );
-				$this->wp_mail( $attendee_email, sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['paypal_statement_subject'] ), $content );
+				$this->wp_mail( $attendee_email, sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] ), $content );
 
 				do_action( 'camptix_ticket_emailed', $attendee->ID );
 			}
@@ -5390,7 +5390,7 @@ class CampTix_Plugin {
 			// Send a receipt
 			$edit_link = $this->get_access_tickets_link( $access_token );
 			$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $receipt_content, $edit_link );
-			$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['paypal_statement_subject'] );
+			$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['event_name'] );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 	}
@@ -5915,7 +5915,7 @@ class CampTix_Plugin {
 
 	function wp_mail( $to, $subject, $message, $headers = array(), $attachments = '' ) {
 		if ( is_email( get_option( 'admin_email' ) ) && is_array( $headers ) )
-			$headers[] = sprintf( 'From: %s <%s>', $this->options['paypal_statement_subject'], get_option( 'admin_email' ) );
+			$headers[] = sprintf( 'From: %s <%s>', $this->options['event_name'], get_option( 'admin_email' ) );
 
 		return wp_mail( $to, $subject, $message, $headers, $attachments );
 	}
