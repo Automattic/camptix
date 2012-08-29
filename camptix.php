@@ -1051,15 +1051,15 @@ class CampTix_Plugin {
 			case 'payment':
 				// add_settings_section( 'general', __( 'Payment Configuration', 'camptix' ), array( $this, 'menu_setup_section_payment' ), 'camptix_options' );
 				foreach ( $this->get_available_payment_methods() as $key => $payment_method ) {
-					$payment_method = $this->get_payment_method_by_id( $key );
+					$payment_method_obj = $this->get_payment_method_by_id( $key );
 
-					add_settings_section( 'payment_' . $key, $payment_method->name, array( $payment_method, '_camptix_settings_section_callback' ), 'camptix_options' );
-					add_settings_field( 'payment_method_' . $key . '_enabled', __( 'Enabled', 'camptix' ), array( $payment_method, '_camptix_settings_enabled_callback' ), 'camptix_options', 'payment_' . $key, array(
+					add_settings_section( 'payment_' . $key, $payment_method_obj->name, array( $payment_method_obj, '_camptix_settings_section_callback' ), 'camptix_options' );
+					add_settings_field( 'payment_method_' . $key . '_enabled', __( 'Enabled', 'camptix' ), array( $payment_method_obj, '_camptix_settings_enabled_callback' ), 'camptix_options', 'payment_' . $key, array(
 						'name' => "camptix_options[payment_methods][{$key}]",
 						'value' => isset( $this->options['payment_methods'][$key] ) ? (bool) $this->options['payment_methods'][$key] : false,
 					) );
 
-					$payment_method->payment_settings_fields();
+					$payment_method_obj->payment_settings_fields();
 				}
 				break;
 			case 'beta':
@@ -1832,7 +1832,7 @@ class CampTix_Plugin {
 					$tickets[$ticket_id]->tix_sold_count++;
 
 					$order_total = (float) get_post_meta( $attendee_id, 'tix_order_total', true );
-					$txn = get_post_meta( $attendee_id, 'tix_paypal_transaction_id', true );
+					$txn = get_post_meta( $attendee_id, 'tix_transaction_id', true );
 					if ( ! empty( $txn ) && ! isset( $transactions[$txn] ) )
 						$transactions[$txn] = $order_total;
 
@@ -1895,7 +1895,7 @@ class CampTix_Plugin {
 		);
 
 		if ( $totals->revenue != $actual_total ) {
-			printf( '<div class="updated settings-error below-h2"><p>%s</p></div>', sprintf( __( '<strong>Woah!</strong> The revenue total does not match with the PayPal transactions total. The actual total is: <strong>%s</strong>. Something somewhere has gone wrong, please report this.', 'camptix' ), $this->append_currency( $actual_total ) ) );
+			printf( '<div class="updated settings-error below-h2"><p>%s</p></div>', sprintf( __( '<strong>Woah!</strong> The revenue total does not match with the transactions total. The actual total is: <strong>%s</strong>. Something somewhere has gone wrong, please report this.', 'camptix' ), $this->append_currency( $actual_total ) ) );
 		}
 
 		$this->table( $rows, 'widefat tix-revenue-summary' );
@@ -2027,7 +2027,7 @@ class CampTix_Plugin {
 						'email' => get_post_meta( $attendee_id, 'tix_email', true ),
 						'date' => mysql2date( 'Y-m-d', $attendee->post_date ),
 						'status' => ucfirst( $attendee->post_status ),
-						'txn_id' => get_post_meta( $attendee_id, 'tix_paypal_transaction_id', true ),
+						'txn_id' => get_post_meta( $attendee_id, 'tix_transaction_id', true ),
 						'coupon' => get_post_meta( $attendee_id, 'tix_coupon', true ),
 					);
 
@@ -2392,8 +2392,10 @@ class CampTix_Plugin {
 
 	/**
 	 * Runs by WP_Cron, refunds attendees set to refund.
+	 * @todo do :)
 	 */
 	function process_refund_all() {
+		die( 'needs implementation' );
 		if ( $this->options['archived'] )
 			return;
 
@@ -2426,7 +2428,7 @@ class CampTix_Plugin {
 				continue;
 
 			delete_post_meta( $attendee->ID, 'tix_pending_refund' );
-			$transaction_id = get_post_meta( $attendee->ID, 'tix_paypal_transaction_id', true );
+			$transaction_id = get_post_meta( $attendee->ID, 'tix_transaction_id', true );
 
 			if ( $transaction_id && ! empty( $transaction_id ) && trim( $transaction_id ) ) {
 
@@ -2445,7 +2447,7 @@ class CampTix_Plugin {
 							'value' => 1,
 						),
 						array(
-							'key' => 'tix_paypal_transaction_id',
+							'key' => 'tix_transaction_id',
 							'compare' => '=',
 							'value' => $transaction_id,
 						),
@@ -3110,9 +3112,9 @@ class CampTix_Plugin {
 
 		// Transaction
 		$rows[] = array( __( 'Transaction', 'camptix' ), '' );
-		$txn_id = get_post_meta( $post->ID, 'tix_paypal_transaction_id', true );
+		$txn_id = get_post_meta( $post->ID, 'tix_transaction_id', true );
 		if ( $txn_id ) {
-			$txn = get_post_meta( $post->ID, 'tix_paypal_transaction_details', true );
+			$txn = get_post_meta( $post->ID, 'tix_transaction_details', true );
 			$txn_url = get_admin_url( 0, '/edit.php?post_type=tix_attendee' );
 			$txn_url = add_query_arg( 's', $txn_id, $txn_url );
 
@@ -3309,13 +3311,11 @@ class CampTix_Plugin {
 			'tix_first_name',
 			'tix_last_name',
 			'tix_email',
-			'tix_paypal_transaction_id',
-			'tix_paypal_payer_id',
-			'tix_paypal_token',
+			'tix_transaction_id',
 			'tix_questions',
 			'tix_coupon',
 			'tix_reservation_id',
-			'tix_reservation_token',
+			'tix_ticket_id',
 		);
 		$data = array( 'timestamp' => time() );
 
@@ -3597,12 +3597,6 @@ class CampTix_Plugin {
 		if ( 'checkout' == get_query_var( 'tix_action' ) )
 			return $this->shortcode_contents = $this->form_checkout();
 
-		if ( 'paypal_return' == get_query_var( 'tix_action' ) )
-			return $this->shortcode_contents = $this->paypal_return();
-
-		if ( 'paypal_cancel' == get_query_var( 'tix_action' ) )
-			return $this->shortcode_contents = $this->paypal_cancel();
-
 		if ( 'access_tickets' == get_query_var( 'tix_action' ) )
 			return $this->shortcode_contents = $this->form_access_tickets();
 
@@ -3641,9 +3635,6 @@ class CampTix_Plugin {
 			if ( $this->is_ticket_valid_for_purchase( $ticket->ID ) )
 				$available_tickets++;
 
-		if ( $this->options['paypal_sandbox'] || empty( $this->options['paypal_api_username'] ) )
-			$this->notice( __( 'Ticket sales are in sandbox mode. All purchases during sandbox mode will be deleted.', 'camptix' ) );
-
 		if ( isset( $this->error_flags['invalid_coupon'] ) )
 			$this->error( __( 'Sorry, but the coupon you have entered seems to be invalid or expired.', 'camptix' ) );
 
@@ -3667,12 +3658,6 @@ class CampTix_Plugin {
 			$this->error( __( 'It looks like somebody took that last ticket before you, sorry! You try a different ticket.', 'camptix' ) );
 
 		$redirected_error_flags = isset( $_REQUEST['tix_errors'] ) ? array_flip( (array) $_REQUEST['tix_errors'] ) : array();
-		if ( isset( $redirected_error_flags['paypal_http_error'] ) ) {
-			if ( isset( $_REQUEST['tix_error_data']['paypal_http_error_code'] ) )
-				$this->error( sprintf( __( 'PayPal Error: %s', 'camptix' ), $this->paypal_error( $_REQUEST['tix_error_data']['paypal_http_error_code'] ) ) );
-			else
-				$this->error( __( 'An HTTP error has occurred, looks like PayPal is not responding. Please try again later.', 'camptix' ) );
-		}
 
 		if ( isset( $redirected_error_flags['payment_failed'] ) ) {
 			/** @todo explain error */
@@ -5085,8 +5070,8 @@ class CampTix_Plugin {
 		// Do we need to pay?
 		if ( $this->order['total'] > 0 ) {
 
-			$payment_method = $this->get_payment_method_by_id( $payment_method );
-			$payment_method->payment_checkout( $payment_token );
+			$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
+			$payment_method_obj->payment_checkout( $payment_token );
 
 		} else { // free beer for everyone!
 			$this->payment_result( $payment_token, $this::PAYMENT_STATUS_COMPLETED );
@@ -5274,7 +5259,7 @@ class CampTix_Plugin {
 		return $enabled;
 	}
 
-	function payment_result( $payment_token, $result ) {
+	function payment_result( $payment_token, $result, $data = array() ) {
 		if ( empty( $payment_token ) )
 			die( 'Do not call payment_result without a payment token.' );
 
@@ -5292,7 +5277,20 @@ class CampTix_Plugin {
 			),
 		) );
 
+		$transaction_id = '0';
+		$transaction_details = null;
+
+		if ( ! empty( $data['transaction_id'] ) )
+			$transaction_id = $data['transaction_id'];
+
+		if ( ! empty( $data['transaction_details'] ) )
+			$transaction_details = $data['transaction_details'];
+
 		foreach ( $attendees as $attendee ) {
+
+			update_post_meta( $attendee->ID, 'tix_transaction_id', $transaction_id );
+			update_post_meta( $attendee->ID, 'tix_transaction_details', $transaction_details );
+
 			if ( $this::PAYMENT_STATUS_CANCELLED == $result ) {
 				$this->log( __( 'Payment was cancelled.', 'camptix' ), $attendee->ID );
 				$attendee->post_status = 'cancel';

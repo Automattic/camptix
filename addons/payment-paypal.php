@@ -97,9 +97,9 @@ class CampTix_Payment_Gateway extends CampTix_Addon {
 		return $payment_methods;
 	}
 
-	function payment_result( $payment_token, $result ) {
+	function payment_result( $payment_token, $result, $data = array() ) {
 		global $camptix;
-		return $camptix->payment_result( $payment_token, $result );
+		return $camptix->payment_result( $payment_token, $result, $data );
 	}
 
 	function redirect_with_error_flags( $query_args = array() ) {
@@ -343,7 +343,10 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 				$this->log( sprintf( __( 'Payment details for %s', 'camptix'), $txn_id ), null, $txn, 'payment' );
 
 				if ( $payment_status == 'Completed' ) {
-					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED );
+					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED, array(
+						'transaction_id' => $txn_id,
+						'transaction_details' => $txn,
+					) );
 				} else {
 					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_PENDING );
 				}
