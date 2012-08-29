@@ -9,23 +9,56 @@ class CampTix_Payment_Gateway extends CampTix_Addon {
 	public $name = false;
 	public $description = false;
 
+	public $supported_currencies = false;
+
 	function __construct() {
+		global $camptix;
+
 		parent::__construct();
 
 		add_filter( 'camptix_available_payment_methods', array( $this, '_camptix_available_payment_methods' ) );
-		add_action( 'camptix_payment_checkout', array( $this, '_camptix_payment_checkout' ), 10, 2 );
-		add_action( 'camptix_payment_settings_fields', array( $this, '_camptix_payment_settings_fields' ), 10, 1 );
 		add_filter( 'camptix_validate_options', array( $this, '_camptix_validate_options' ) );
+		add_filter( 'camptix_get_payment_method_by_id', array( $this, '_camptix_get_payment_method_by_id' ), 10, 2 );
+
+		if ( ! $this->id )
+			die( 'id not specified in a payment gateway' );
+
+		if ( ! $this->name )
+			die( 'name not specified in a payment gateway' );
+
+		if ( ! $this->description )
+			die( 'description not specified in a payment gateway' );
+
+		if ( ! is_array( $this->supported_currencies ) || count( $this->supported_currencies ) < 1 )
+			die( 'supported currencies not specified in a payment gateway' );
+
+		$this->camptix_options = $camptix->get_options();
 	}
 
-	function _camptix_payment_settings_fields( $payment_method ) {
-		if ( $this->id == $payment_method )
-			$this->payment_settings_fields();
+	function supports_currency( $currency ) {
+		return ( in_array( $currency, $this->supported_currencies ) );
 	}
 
-	function _camptix_payment_checkout( $payment_method, $payment_token ) {
-		if ( $this->id == $payment_method )
-			$this->payment_checkout( $payment_token );
+	function _camptix_get_payment_method_by_id( $payment_method, $id ) {
+		if ( $this->id == $id )
+			$payment_method = $this;
+
+		return $payment_method;
+	}
+
+	function _camptix_settings_section_callback() {
+		echo '<p>' . $this->description . '</p>';
+		printf( '<p>' . __( 'Supported currencies: <code>%s</code>.', 'camptix' ) . '</p>', implode( '</code>, <code>', $this->supported_currencies ) );
+	}
+
+	function _camptix_settings_enabled_callback( $args = array() ) {
+		if ( in_array( $this->camptix_options['currency'], $this->supported_currencies ) )
+			return $this->field_yesno( $args );
+
+		?>
+		Disabled
+		<p class="description"><?php printf( __( '%s is not supported by this payment gateway.', 'camptix' ), '<code>' . $this->camptix_options['currency'] . '</code>' ); ?></p>
+		<?php
 	}
 
 	function _camptix_validate_options( $camptix_options ) {
@@ -159,13 +192,11 @@ class CampTix_Payment_Gateway extends CampTix_Addon {
 	}
 
 	function get_payment_options() {
-		global $camptix;
-		$camptix_options = $camptix->get_options();
 		$payment_options = array();
 		$option_key = "payment_options_{$this->id}";
 
-		if ( isset( $camptix_options[ $option_key ] ) )
-			$payment_options = (array) $camptix_options[ $option_key ];
+		if ( isset( $this->camptix_options[ $option_key ] ) )
+			$payment_options = (array) $this->camptix_options[ $option_key ];
 
 		return $payment_options;
 	}
@@ -176,6 +207,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 	public $id = 'paypal';
 	public $name = 'PayPal';
 	public $description = 'PayPal Express Checkout';
+	public $supported_currencies = array( 'USD', 'EUR', 'CAD', 'NOK', 'PLN', 'JPY' );
 
 	protected $options = array();
 	protected $error_flags = array();
@@ -184,13 +216,13 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 	 * Runs during camptix_init, @see CampTix_Addon
 	 */
 	function camptix_init() {
+		global $camptix;
 
 		$this->options = array_merge( array(
 			'api_username' => 'seller_1336582765_biz_api1.automattic.com',
 			'api_password' => '1336582791',
 			'api_signature' => 'AAIC4ZQTUrzRU3RisBfEDkKUjdmwAnhS47jgmW1pnLf4G517HvqUlxkD',
 			'sandbox' => true,
-			'currency' => 'USD',
 		), $this->get_payment_options() );
 
 		add_action( 'template_redirect', array( $this, 'template_redirect' ) );
@@ -348,6 +380,9 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 		if ( ! $payment_token || empty( $payment_token ) )
 			return false;
 
+		if ( ! in_array( $this->camptix_options['currency'], $this->supported_currencies ) )
+			die( __( 'The selected currency is not supported by this payment gateway.', 'camptix' ) );
+
 		$return_url = add_query_arg( array(
 			'tix_action' => 'payment_return',
 			'tix_payment_token' => $payment_token,
@@ -395,11 +430,9 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 	}
 
 	function fill_payload_with_order( &$payload, $order ) {
-		global $camptix;
 		$event_name = 'Event';
-		$camptix_options = $camptix->get_options();
-		if ( isset( $camptix_options['event_name'] ) )
-			$event_name = $camptix_options['event_name'];
+		if ( isset( $this->camptix_options['event_name'] ) )
+			$event_name = $this->camptix_options['event_name'];
 
 		$i = 0;
 		foreach ( $order['items'] as $item ) {
@@ -413,7 +446,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 		$payload['PAYMENTREQUEST_0_ITEMAMT'] = $order['total'];
 		$payload['PAYMENTREQUEST_0_AMT'] = $order['total'];
-		$payload['PAYMENTREQUEST_0_CURRENCYCODE'] = $this->options['currency'];
+		$payload['PAYMENTREQUEST_0_CURRENCYCODE'] = $this->camptix_options['currency'];
 		return $payload;
 	}
 
@@ -438,6 +471,7 @@ class CampTix_Payment_Gateway_Blackhole extends CampTix_Payment_Gateway {
 	public $id = 'blackhole';
 	public $name = 'Blackhole';
 	public $description = 'Will always result in a successful payment.';
+	public $supported_currencies = array( 'USD' );
 
 	protected $options;
 

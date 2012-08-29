@@ -956,7 +956,7 @@ class CampTix_Plugin {
 			return $this->options;
 
 		$default_options = apply_filters( 'camptix_default_options', array(
-			'paypal_currency' => 'USD',
+			'currency' => 'USD',
 			'event_name' => get_bloginfo( 'name' ),
 			'version' => $this->version,
 			'reservations_enabled' => false,
@@ -1046,17 +1046,20 @@ class CampTix_Plugin {
 			case 'general':
 				add_settings_section( 'general', __( 'General Configuration', 'camptix' ), array( $this, 'menu_setup_section_general' ), 'camptix_options' );
 				$this->add_settings_field_helper( 'event_name', __( 'Event Name', 'camptix' ), 'field_text' );
-				$this->add_settings_field_helper( 'paypal_currency', __( 'Currency', 'camptix' ), 'field_currency' );
+				$this->add_settings_field_helper( 'currency', __( 'Currency', 'camptix' ), 'field_currency' );
 				break;
 			case 'payment':
 				// add_settings_section( 'general', __( 'Payment Configuration', 'camptix' ), array( $this, 'menu_setup_section_payment' ), 'camptix_options' );
 				foreach ( $this->get_available_payment_methods() as $key => $payment_method ) {
-					add_settings_section( 'payment_' . $key, $payment_method['name'], '__return_false', 'camptix_options' );
-					add_settings_field( 'payment_method_' . $key . '_enabled', __( 'Enabled', 'camptix' ), array( $this, 'field_yesno' ), 'camptix_options', 'payment_' . $key, array(
+					$payment_method = $this->get_payment_method_by_id( $key );
+
+					add_settings_section( 'payment_' . $key, $payment_method->name, array( $payment_method, '_camptix_settings_section_callback' ), 'camptix_options' );
+					add_settings_field( 'payment_method_' . $key . '_enabled', __( 'Enabled', 'camptix' ), array( $payment_method, '_camptix_settings_enabled_callback' ), 'camptix_options', 'payment_' . $key, array(
 						'name' => "camptix_options[payment_methods][{$key}]",
 						'value' => isset( $this->options['payment_methods'][$key] ) ? (bool) $this->options['payment_methods'][$key] : false,
 					) );
-					do_action( "camptix_payment_settings_fields", $key );
+
+					$payment_method->payment_settings_fields();
 				}
 				break;
 			case 'beta':
@@ -1125,8 +1128,8 @@ class CampTix_Plugin {
 		if ( isset( $input['event_name'] ) )
 			$output['event_name'] = sanitize_text_field( $input['event_name'] );
 
-		if ( isset( $input['paypal_currency'] ) )
-			$output['paypal_currency'] = $input['paypal_currency'];
+		if ( isset( $input['currency'] ) )
+			$output['currency'] = $input['currency'];
 
 		$yesno_fields = array(
 			// 'paypal_sandbox',
@@ -1241,6 +1244,7 @@ class CampTix_Plugin {
 				?></option>
 			<?php endforeach; ?>
 		</select>
+		<p class="description"><?php _e( 'Make sure you select a currency that is supported by all the payment gateways you plan to use.', 'camptix' ); ?></p>
 		<?php
 	}
 
@@ -1286,7 +1290,7 @@ class CampTix_Plugin {
 	 */
 	function append_currency( $price, $nbsp = true, $currency_key = false ) {
 		$currencies = $this->get_currencies();
-		$currency = $currencies[$this->options['paypal_currency']];
+		$currency = $currencies[$this->options['currency']];
 		if ( $currency_key )
 			$currency = $currencies[$currency_key];
 
@@ -2604,7 +2608,7 @@ class CampTix_Plugin {
 		<div class="misc-pub-section">
 			<span class="left"><?php _e( 'Price:', 'camptix' ); ?></span>
 			<?php if ( $purchased <= 0 ) : ?>
-			<input type="text" name="tix_price" class="small-text" value="<?php echo esc_attr( number_format( (float) get_post_meta( get_the_ID(), 'tix_price', true ), 2, '.', '' ) ); ?>" autocomplete="off" /> <?php echo esc_html( $this->options['paypal_currency'] ); ?>
+			<input type="text" name="tix_price" class="small-text" value="<?php echo esc_attr( number_format( (float) get_post_meta( get_the_ID(), 'tix_price', true ), 2, '.', '' ) ); ?>" autocomplete="off" /> <?php echo esc_html( $this->options['currency'] ); ?>
 			<?php else: ?>
 			<span><?php echo esc_html( $this->append_currency( get_post_meta( get_the_ID(), 'tix_price', true ) ) ); ?></span><br />
 			<p class="description" style="margin-top: 10px;"><?php _e( 'You can not change the price because one or more tickets have already been purchased.', 'camptix' ); ?></p>
@@ -3014,7 +3018,7 @@ class CampTix_Plugin {
 		<div class="misc-pub-section">
 			<span class="left"><?php _e( 'Discount:', 'camptix' ); ?></span>
 			<?php if ( $used <= 0 ) : ?>
-				<input type="text" name="tix_discount_price" class="small-text" style="width: 57px;" value="<?php echo esc_attr( $discount_price ); ?>" autocomplete="off" /> <?php echo esc_html( $this->options['paypal_currency'] ); ?><br />
+				<input type="text" name="tix_discount_price" class="small-text" style="width: 57px;" value="<?php echo esc_attr( $discount_price ); ?>" autocomplete="off" /> <?php echo esc_html( $this->options['currency'] ); ?><br />
 				<span class="left">&nbsp;</span>
 				<input type="number" min="0" name="tix_discount_percent" style="margin-top: 2px;" class="small-text" value="<?php echo esc_attr( $discount_percent ); ?>" autocomplete="off" /> %
 			<?php else: ?>
@@ -5080,7 +5084,10 @@ class CampTix_Plugin {
 
 		// Do we need to pay?
 		if ( $this->order['total'] > 0 ) {
-			do_action( "camptix_payment_checkout", $payment_method, $payment_token );
+
+			$payment_method = $this->get_payment_method_by_id( $payment_method );
+			$payment_method->payment_checkout( $payment_token );
+
 		} else { // free beer for everyone!
 			$this->payment_result( $payment_token, $this::PAYMENT_STATUS_COMPLETED );
 		}
@@ -5245,6 +5252,14 @@ class CampTix_Plugin {
 		return true;
 	}
 
+	/**
+	 * Returns a payment gateway class object by id/key.
+	 */
+	function get_payment_method_by_id( $id ) {
+		$payment_method = apply_filters( 'camptix_get_payment_method_by_id', null, $id );
+		return $payment_method;
+	}
+
 	function get_available_payment_methods() {
 		return (array) apply_filters( 'camptix_available_payment_methods', array() );
 	}
@@ -5253,7 +5268,8 @@ class CampTix_Plugin {
 		$enabled = array();
 		foreach ( $this->get_available_payment_methods() as $key => $method )
 			if ( isset( $this->options['payment_methods'][ $key ] ) && $this->options['payment_methods'][ $key ] )
-				$enabled[ $key ] = $method;
+				if ( $this->get_payment_method_by_id( $key )->supports_currency( $this->options['currency'] ) )
+					$enabled[ $key ] = $method;
 
 		return $enabled;
 	}
