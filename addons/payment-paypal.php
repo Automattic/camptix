@@ -511,11 +511,9 @@ class CampTix_Payment_Gateway_Blackhole extends CampTix_Payment_Gateway {
 		do_action( 'camptix_before_payment', $payment_token );
 
 		if ( $this->options['always_succeed'] )
-			$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED );
+			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED );
 		else
-			$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
-
-		die();
+			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 	}
 }
 

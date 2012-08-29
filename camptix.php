@@ -3827,8 +3827,8 @@ class CampTix_Plugin {
 		if ( isset( $this->error_flags['no_receipt_email'] ) )
 			$this->error( __( 'The chosen receipt e-mail address is either empty or invalid.', 'camptix' ) );
 
-		if ( isset( $this->error_flags['paypal_http_error'] ) )
-			$this->error( __( 'An HTTP error has occurred, looks like PayPal is not responding. Please try again later.', 'camptix' ) );
+		if ( isset( $this->error_flags['payment_failed'] ) )
+			$this->error( __( 'An payment error has occurred, looks like chosen payment gateway is not responding. Please try again later.', 'camptix' ) );
 
 		if ( isset( $this->error_flags['invalid_payment_method'] ) )
 			$this->error( __( 'You have selected an invalid payment method. Please try again.', 'camptix' ) );
@@ -5073,6 +5073,10 @@ class CampTix_Plugin {
 			$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
 			$payment_method_obj->payment_checkout( $payment_token );
 
+			// Check whether there were any immediate payment errors.
+			if ( $this->error_flags )
+				return $this->form_attendee_info();
+
 		} else { // free beer for everyone!
 			$this->payment_result( $payment_token, $this::PAYMENT_STATUS_COMPLETED );
 		}
@@ -5332,9 +5336,16 @@ class CampTix_Plugin {
 
 		} elseif ( $this::PAYMENT_STATUS_FAILED == $result ) {
 
-			$this->error_flag( 'payment_failed' );
-			$this->redirect_with_error_flags();
-			die();
+			// If payment errors were immediate (right on the checkout page), return.
+			if ( 'checkout' == get_query_var( 'tix_action' ) ) {
+				$this->error_flag( 'payment_failed' );
+				return;
+
+			} else {
+				$this->error_flag( 'payment_failed' );
+				$this->redirect_with_error_flags();
+				die();
+			}
 
 		}
 	}
