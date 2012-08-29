@@ -426,10 +426,8 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 			wp_redirect( esc_url_raw( $url ) );
 		} else {
 			// print_r($response);
-			$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
+			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 		}
-
-		die();
 	}
 
 	function fill_payload_with_order( &$payload, $order ) {
