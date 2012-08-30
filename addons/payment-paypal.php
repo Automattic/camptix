@@ -344,7 +344,10 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 				if ( $payment_status == 'Completed' ) {
 					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED, array(
 						'transaction_id' => $txn_id,
-						'transaction_details' => $txn,
+						'transaction_details' => array(
+							// @todo maybe add more info about the payment
+							'raw' => $txn,
+						),
 					) );
 				} else {
 					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_PENDING );

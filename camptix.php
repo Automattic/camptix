@@ -3118,17 +3118,16 @@ class CampTix_Plugin {
 			$txn_url = get_admin_url( 0, '/edit.php?post_type=tix_attendee' );
 			$txn_url = add_query_arg( 's', $txn_id, $txn_url );
 
-			$status = isset( $txn['PAYMENTSTATUS'] ) ? $txn['PAYMENTSTATUS'] : $txn['PAYMENTINFO_0_PAYMENTSTATUS'];
 			$rows[] = array( __( 'Transaction ID', 'camptix' ), sprintf( '<a href="%s">%s</a>', $txn_url, $txn_id ) );
-			$rows[] = array( __( 'Payment Status', 'camptix' ), $status );
 
-			if ( isset( $txn['PAYMENTINFO_0_PENDINGREASON'] ) && $status == 'Pending' )
+			/*if ( isset( $txn['PAYMENTINFO_0_PENDINGREASON'] ) && $status == 'Pending' )
 				$rows[] = array( __( 'Pending Reason', 'camptix' ), $txn['PAYMENTINFO_0_PENDINGREASON'] );
 			if ( isset( $txn['PENDINGREASON'] ) && $status == 'Pending' )
 				$rows[] = array( __( 'Pending Reason', 'camptix' ), $txn['PENDINGREASON'] );
 
 			if ( isset( $txn['EMAIL'] ) )
 				$rows[] = array( __( 'Buyer E-mail', 'camptix' ), esc_html( $txn['EMAIL'] ) );
+			*/
 		}
 
 		$coupon_id = get_post_meta( $post->ID, 'tix_coupon_id', true );
