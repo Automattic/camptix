@@ -3993,7 +3993,6 @@ class CampTix_Plugin {
 
 				<p class="tix-submit">
 					<?php if ( $total > 0 ) : ?>
-					<!--<input type="submit" value="" style="background: transparent url('https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif') 0 0 no-repeat; border: none; width: 145px; height: 42px;" />-->
 					<select name="tix_payment_method">
 						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
 							<option value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
@@ -4306,6 +4305,7 @@ class CampTix_Plugin {
 	}
 
 	function form_refund_request() {
+		die( 'needs implementation' );
 		if ( ! $this->options['refunds_enabled'] || ! isset( $_REQUEST['tix_access_token'] ) || empty( $_REQUEST['tix_access_token'] ) ) {
 			$this->error_flags['invalid_access_token'] = true;
 			$this->redirect_with_error_flags();
@@ -4483,6 +4483,7 @@ class CampTix_Plugin {
 	 * Return true if an attendee_id is refundable.
 	 */
 	function is_refundable( $attendee_id ) {
+		die( 'needs implementation' );
 		if ( ! $this->options['refunds_enabled'] )
 			return false;
 
@@ -4803,48 +4804,6 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Use this method to clear up the pending queue, runs hourly via cron.
-	 */
-	function paypal_review_pending_payments() {
-		global $post;
-
-		$q = new WP_Query( array(
-			'posts_per_page' => 10,
-			'post_type' => 'tix_attendee',
-			'post_status' => array( 'pending' ),
-			'update_post_term_cache' => false,
-		) );
-
-		while ( $q->have_posts() ) {
-			$q->the_post();
-			$txn_id = get_post_meta( $post->ID, 'tix_paypal_transaction_id', true );
-			$payload = array(
-				'METHOD' => 'GetTransactionDetails',
-				'TRANSACTIONID' => $txn_id,
-			);
-			$txn = wp_parse_args( wp_remote_retrieve_body( $this->paypal_request( $payload ) ) );
-			if ( isset( $txn['ACK'], $txn['PAYMENTSTATUS'] ) && $txn['ACK'] == 'Success' ) {
-
-				// Record the new txn and publish attendee if completed.
-				update_post_meta( $post->ID, 'tix_paypal_transaction_details', $txn );
-				if ( $txn['PAYMENTSTATUS'] == 'Completed' ) {
-					$post->post_status = 'publish';
-					wp_update_post( $post );
-				}
-
-				if ( $txn['PAYMENTSTATUS'] == 'Failed' ) {
-					$post->post_status = 'failed';
-					wp_update_post( $post );
-				}
-
-				$this->log( sprintf( __( 'Reviewing PayPal transaction, payment status: %s', 'camptix' ), $txn['PAYMENTSTATUS'] ), $post->ID, $txn );
-			} else {
-				$this->log( sprintf( __( 'Could not review PayPal transaction: %s', 'camptix' ), $txn_id ), $post->ID, $txn );
-			}
-		}
-	}
-
-	/**
 	 * Review Timeout Payments
 	 *
 	 * This routine looks up old draft attendee posts and puts
@@ -4895,25 +4854,8 @@ class CampTix_Plugin {
 		$this->log( sprintf( __( 'Reviewed timeout payments and set %d attendees to timeout status.', 'camptix' ), $processed ) );
 	}
 
-	function get_attendees_by_txn_id( $txn_id ) {
-		$attendees = get_posts( array(
-			'post_type' => 'tix_attendee',
-			'posts_per_page' => -1,
-			'post_status' => 'any',
-			'meta_query' => array(
-				array(
-					'key' => 'tix_paypal_transaction_id',
-					'compare' => '=',
-					'value' => $txn_id,
-					'type' => 'CHAR',
-				),
-			),
-		) );
-		return $attendees;
-	}
-
 	/**
-	 * Step 3: redirects to PayPal, returns to $this->paypal_return
+	 * Step 3: Uses a payment method to perform a checkout.
 	 */
 	function form_checkout() {
 
@@ -5336,9 +5278,14 @@ class CampTix_Plugin {
 
 		} elseif ( $this::PAYMENT_STATUS_FAILED == $result ) {
 
+			$error_code = 0;
+			if ( ! empty( $data['error_code'] ) )
+				$error_code = $data['error_code'];
+
 			// If payment errors were immediate (right on the checkout page), return.
 			if ( 'checkout' == get_query_var( 'tix_action' ) ) {
 				$this->error_flag( 'payment_failed' );
+				// $this->error_data['boogie'] = 'woogie'; // @todo Add error data and parse it
 				return;
 
 			} else {

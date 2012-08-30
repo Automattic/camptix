@@ -117,7 +117,7 @@ class CampTix_Payment_Gateway extends CampTix_Addon {
 		return $camptix->get_tickets_url();
 	}
 
-	function log( $message, $post_id = 0, $data = null, $module = 'general' ) {
+	function log( $message, $post_id = 0, $data = null, $module = 'payment' ) {
 		global $camptix;
 		return $camptix->log( $message, $post_id, $data, $module );
 	}
@@ -282,8 +282,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 		 * @todo maybe check tix_paypal_token for security.
 		 */
 
-		$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_CANCELLED );
-		die();
+		return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_CANCELLED );
 	}
 
 	function payment_return() {
@@ -340,7 +339,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 				$txn_id = $txn['PAYMENTINFO_0_TRANSACTIONID'];
 				$payment_status = $txn['PAYMENTINFO_0_PAYMENTSTATUS'];
 
-				$this->log( sprintf( __( 'Payment details for %s', 'camptix'), $txn_id ), null, $txn, 'payment' );
+				$this->log( sprintf( __( 'Payment details for %s', 'camptix'), $txn_id ), null, $txn );
 
 				if ( $payment_status == 'Completed' ) {
 					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED, array(
@@ -351,11 +350,11 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_PENDING );
 				}
 			} else {
-				$this->log( __( 'Payment cancelled due to an HTTP error during DoExpressCheckoutPayment.', 'camptix' ), null, $request, 'payment' );
+				$this->log( __( 'Error during DoExpressCheckoutPayment.', 'camptix' ), null, $request );
 				$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 			}
 		} else {
-			$this->log( __( 'Payment cancelled due to an HTTP error during GetExpressCheckoutDetails.', 'camptix' ), null, $request, 'payment' );
+			$this->log( __( 'Error during GetExpressCheckoutDetails.', 'camptix' ), null, $request );
 			$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 		}
 
@@ -425,8 +424,11 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 			$url = add_query_arg( 'token', $token, $url );
 			wp_redirect( esc_url_raw( $url ) );
 		} else {
-			// print_r($response);
-			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
+			$this->log( 'Error during SetExpressCheckout.', null, $response );
+			$error_code = isset( $response['L_ERRORCODE0'] ) ? $response['L_ERRORCODE0'] : 0;
+			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED, array(
+				'error_code' => $error_code,
+			) );
 		}
 	}
 
