@@ -4480,9 +4480,11 @@ class CampTix_Plugin {
 
 	/**
 	 * Return true if an attendee_id is refundable.
+	 * @todo implement
 	 */
 	function is_refundable( $attendee_id ) {
-		die( 'needs implementation' );
+		return false;
+
 		if ( ! $this->options['refunds_enabled'] )
 			return false;
 
@@ -5211,7 +5213,7 @@ class CampTix_Plugin {
 		$attendees = get_posts( array(
 			'posts_per_page' => -1,
 			'post_type' => 'tix_attendee',
-			'post_status' => array( 'draft' ),
+			'post_status' => 'any',
 			'meta_query' => array(
 				array(
 					'key' => 'tix_payment_token',
@@ -5222,8 +5224,19 @@ class CampTix_Plugin {
 			),
 		) );
 
-		$transaction_id = '0';
+		if ( ! $attendees )
+			die( 'the attendees have gone somewhere.' );
+
+		$transaction_id = null;
 		$transaction_details = null;
+		$attendees_status = $attendees[0]->post_status;
+		$status_changed = false;
+
+		// If this is not the first payment result, let's get the old txn details before updating.
+		if ( $attendees_status != 'draft' ) {
+			$transaction_id = get_post_meta( $attendees[0]->ID, 'tix_transaction_id', true );
+			$transaction_details = get_post_meta( $attendees[0]->ID, 'tix_transaction_details', true );
+		}
 
 		if ( ! empty( $data['transaction_id'] ) )
 			$transaction_id = $data['transaction_id'];
@@ -5233,67 +5246,96 @@ class CampTix_Plugin {
 
 		foreach ( $attendees as $attendee ) {
 
+			$old_post_status = $attendee->post_status;
+
 			update_post_meta( $attendee->ID, 'tix_transaction_id', $transaction_id );
 			update_post_meta( $attendee->ID, 'tix_transaction_details', $transaction_details );
 
 			if ( $this::PAYMENT_STATUS_CANCELLED == $result ) {
-				$this->log( __( 'Payment was cancelled.', 'camptix' ), $attendee->ID );
 				$attendee->post_status = 'cancel';
 				wp_update_post( $attendee );
-				continue;
 			}
 
 			if ( $this::PAYMENT_STATUS_FAILED == $result ) {
-				$this->log( __( 'Payment has failed.', 'camptix' ), $attendee->ID );
 				$attendee->post_status = 'failed';
 				wp_update_post( $attendee );
-				continue;
 			}
 
 			if ( $this::PAYMENT_STATUS_COMPLETED == $result ) {
-				$this->log( __( 'Payment was completed.', 'camptix' ), $attendee->ID );
 				$attendee->post_status = 'publish';
 				wp_update_post( $attendee );
-				continue;
+			}
+
+			if ( $this::PAYMENT_STATUS_PENDING == $result ) {
+				$attendee->post_status = 'pending';
+				wp_update_post( $attendee );
+			}
+
+			if ( $old_post_status != $attendee->post_status ) {
+				$status_changed = true;
+				$this->log( sprintf( __( 'Attendee status has been changed to %s', 'camptix' ), $attendee->post_status ), $attendee->ID );
+			} else {
+
 			}
 		}
 
-		if ( $this::PAYMENT_STATUS_CANCELLED == $result ) {
+		// If the status hasn't changed, there's nothing much we can do here.
+		if ( ! $status_changed )
+			return;
 
-			$this->error_flag( 'payment_cancelled' );
-			$this->redirect_with_error_flags();
-			die();
+		// Let's make a clean exit out of all of this.
+		switch ( $result ) :
 
-		} elseif ( $this::PAYMENT_STATUS_COMPLETED == $result ) {
-
-			// Send out the tickets and receipt
-			$this->email_tickets( $payment_token );
-
-			// Show the purchased tickets.
-			$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
-			$url = add_query_arg( array( 'tix_action' => 'access_tickets', 'tix_access_token' => $access_token ), $this->get_tickets_url() );
-			wp_safe_redirect( $url . '#tix' );
-			die();
-
-		} elseif ( $this::PAYMENT_STATUS_FAILED == $result ) {
-
-			$error_code = 0;
-			if ( ! empty( $data['error_code'] ) )
-				$error_code = $data['error_code'];
-
-			// If payment errors were immediate (right on the checkout page), return.
-			if ( 'checkout' == get_query_var( 'tix_action' ) ) {
-				$this->error_flag( 'payment_failed' );
-				// $this->error_data['boogie'] = 'woogie'; // @todo Add error data and parse it
-				return;
-
-			} else {
-				$this->error_flag( 'payment_failed' );
+			case $this::PAYMENT_STATUS_CANCELLED :
+				$this->error_flag( 'payment_cancelled' );
 				$this->redirect_with_error_flags();
 				die();
-			}
+				break;
 
-		}
+			case $this::PAYMENT_STATUS_COMPLETED :
+				// Send out the tickets and receipt
+				$this->email_tickets( $payment_token );
+
+				// Show the purchased tickets.
+				$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
+				$url = add_query_arg( array( 'tix_action' => 'access_tickets', 'tix_access_token' => $access_token ), $this->get_tickets_url() );
+				wp_safe_redirect( $url . '#tix' );
+				die();
+				break;
+
+			case $this::PAYMENT_STATUS_FAILED :
+				$error_code = 0;
+				if ( ! empty( $data['error_code'] ) )
+					$error_code = $data['error_code'];
+
+				// If payment errors were immediate (right on the checkout page), return.
+				if ( 'checkout' == get_query_var( 'tix_action' ) ) {
+					$this->error_flag( 'payment_failed' );
+					// $this->error_data['boogie'] = 'woogie'; // @todo Add error data and parse it
+					return;
+
+				} else {
+					$this->error_flag( 'payment_failed' );
+					$this->redirect_with_error_flags();
+					die();
+				}
+				break;
+
+			case $this::PAYMENT_STATUS_PENDING :
+				// Send out the tickets and receipt
+				$this->email_tickets( $payment_token );
+
+				// Show the purchased tickets.
+				$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
+				$url = add_query_arg( array( 'tix_action' => 'access_tickets', 'tix_access_token' => $access_token ), $this->get_tickets_url() );
+				wp_safe_redirect( $url . '#tix' );
+				die();
+				break;
+
+			default:
+				break;
+
+		endswitch;
 	}
 
 	function email_tickets( $payment_token = false ) {

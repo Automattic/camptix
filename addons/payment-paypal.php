@@ -313,7 +313,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 			$payload = array(
 				'METHOD' => 'DoExpressCheckoutPayment',
-				'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
+				// 'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
 				'TOKEN' => $paypal_token,
 				'PAYERID' => $payer_id,
 				'PAYMENTREQUEST_0_NOTIFYURL' => esc_url_raw( add_query_arg( 'tix_paypal_ipn', 1, trailingslashit( home_url() ) ) ),
@@ -342,7 +342,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 				$this->log( sprintf( __( 'Payment details for %s', 'camptix'), $txn_id ), null, $txn );
 
 				if ( $payment_status == 'Completed' ) {
-					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED, array(
+					return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED, array(
 						'transaction_id' => $txn_id,
 						'transaction_details' => array(
 							// @todo maybe add more info about the payment
@@ -350,15 +350,15 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 						),
 					) );
 				} else {
-					$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_PENDING );
+					return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_PENDING );
 				}
 			} else {
 				$this->log( __( 'Error during DoExpressCheckoutPayment.', 'camptix' ), null, $request );
-				$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
+				return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 			}
 		} else {
 			$this->log( __( 'Error during GetExpressCheckoutDetails.', 'camptix' ), null, $request );
-			$this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
+			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 		}
 
 		die();
@@ -403,7 +403,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 		$payload = array(
 			'METHOD' => 'SetExpressCheckout',
 			'PAYMENTREQUEST_0_PAYMENTACTION' => 'Sale',
-			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
+			// 'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
 			'RETURNURL' => $return_url,
 			'CANCELURL' => $cancel_url,
 			'ALLOWNOTE' => 0,
