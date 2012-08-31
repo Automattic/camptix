@@ -3316,6 +3316,9 @@ class CampTix_Plugin {
 			'tix_coupon',
 			'tix_reservation_id',
 			'tix_ticket_id',
+			'tix_access_token',
+			'tix_edit_token',
+			'tix_payment_token',
 		);
 		$data = array( 'timestamp' => time() );
 
