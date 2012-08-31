@@ -5412,7 +5412,7 @@ class CampTix_Plugin {
 
 			// If the status is pending, let the buyer know about that in the receipt.
 			if ( 'pending' == $to_status )
-				$payment_status = '\n\n' . sprintf( __( 'Your payment status is: %s. You will receive a notification e-mail once your payment is completed.', 'camptix' ), 'pending' );
+				$payment_status =  sprintf( __( 'Your payment status is: %s. You will receive a notification e-mail once your payment is completed.', 'camptix' ), 'pending' ) . "\n\n";
 
 			if ( count( $attendees ) == 1 ) {
 
