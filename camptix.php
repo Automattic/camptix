@@ -5426,8 +5426,8 @@ class CampTix_Plugin {
 
 			} elseif ( count( $attendees ) > 1 ) {
 
-				$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\n%s%s", 'camptix' ), $receipt_content, $edit_link, $payment_status, $signature );
-				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
+				$content = sprintf( __( "Hey there!\n\nYou have purchased the following tickets:\n\n%s\n\nYou can edit the information for all the purchased tickets at any time before the event, by visiting the following link:\n\n%s\n\n%s%s", 'camptix' ), $receipt_content, $edit_link, $payment_status, $signature );
+				$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['event_name'] );
 
 				$this->log( sprintf( __( 'Sent a receipt to %s.', 'camptix' ), $receipt_email ), $attendees[0]->ID );
 				$this->wp_mail( $receipt_email, $subject, $content );
