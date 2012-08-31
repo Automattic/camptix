@@ -5442,7 +5442,7 @@ class CampTix_Plugin {
 			$subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['event_name'] );
 			$content = sprintf( __( "Hey there!\n\nYour payment for %s has been completed, looking forward to seeing you at the event! You can access and change your tickets information by visiting the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $edit_link );
 
-			$this = sprintf( __( 'Sending completed e-mail notification after IPN to %s.', 'camptix' ), $receipt_email, $attendees[0]->ID );
+			$this->log( sprintf( __( 'Sending completed e-mail notification after IPN to %s.', 'camptix' ), $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 
