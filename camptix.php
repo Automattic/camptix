@@ -5402,7 +5402,7 @@ class CampTix_Plugin {
 		}
 
 		/**
-		 * Let's ow e-mail a receipt!
+		 * Let's now e-mail the receipt, directly after a purchas has been made.
 		 */
 		if ( $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
 			$edit_link = $this->get_access_tickets_link( $access_token );
@@ -5432,6 +5432,26 @@ class CampTix_Plugin {
 				$this->log( sprintf( __( 'Sent a receipt to %s.', 'camptix' ), $receipt_email ), $attendees[0]->ID );
 				$this->wp_mail( $receipt_email, $subject, $content );
 			}
+		}
+
+		/**
+		 * This is mainly for notifications that would set the status after an IPN.
+		 */
+		if ( $from_status == 'pending' && $to_status == 'publish' ) {
+			$edit_link = $this->get_access_tickets_link( $access_token );
+			$subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['event_name'] );
+			$content = sprintf( __( "Hey there!\n\nYour payment for %s has been completed, looking forward to seeing you at the event! You can access and change your tickets information by visiting the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $edit_link );
+
+			$this = sprintf( __( 'Sending completed e-mail notification after IPN to %s.', 'camptix' ), $receipt_email, $attendees[0]->ID );
+			$this->wp_mail( $receipt_email, $subject, $content );
+		}
+
+		if ( $from_status == 'pending' && $to_status == 'failed' ) {
+			$subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['event_name'] );
+			$content = sprintf( __( "Hey there!\n\nWe're so sorry, but it looks like your payment for %s has failed! Please check your payment transactions for more details. If you still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $this->get_tickets_url() );
+
+			$this = sprintf( __( 'Sending failed e-mail notification after IPN to %s.', 'camptix' ), $receipt_email, $attendees[0]->ID );
+			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 	}
 
