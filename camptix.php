@@ -18,9 +18,9 @@ class CampTix_Plugin {
 
 	public $debug;
 	public $beta_features_enabled;
-	public $version = 20120703;
-	public $css_version = 20120821;
-	public $js_version = 20120821;
+	public $version = 20120831;
+	public $css_version = 20120831;
+	public $js_version = 20120831;
 	public $caps;
 
 	public $addons = array();
@@ -947,16 +947,8 @@ class CampTix_Plugin {
 		return $states;
 	}
 
-	/**
-	 * Returns an array of options stored in the database, or a set of defaults.
-	 */
-	function get_options() {
-
-		// Allow other plugins to get CampTix options.
-		if ( isset( $this->options ) && is_array( $this->options ) && ! empty( $this->options ) )
-			return $this->options;
-
-		$default_options = apply_filters( 'camptix_default_options', array(
+	function get_default_options() {
+		return apply_filters( 'camptix_default_options', array(
 			'currency' => 'USD',
 			'event_name' => get_bloginfo( 'name' ),
 			'version' => $this->version,
@@ -966,29 +958,34 @@ class CampTix_Plugin {
 			'archived' => false,
 			'payment_methods' => array(),
 		) );
+	}
 
+	/**
+	 * Returns an array of options stored in the database, or a set of defaults.
+	 */
+	function get_options() {
+
+		// Allow other plugins to get CampTix options.
+		if ( isset( $this->options ) && is_array( $this->options ) && ! empty( $this->options ) )
+			return $this->options;
+
+		$default_options = $this->get_default_options();
  		$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
 
 		// Allow plugins to hi-jack or read the options.
 		$options = apply_filters( 'camptix_options', $options );
 
 		/*$options['version'] = 0;
-		update_option( 'camptix_options', $options );*/
+		update_option( 'camptix_options', $options );
+		die();/**/
 
 		// Let's see if we need to run an upgrade scenario.
 		if ( $options['version'] < $this->version ) {
 
-			if ( current_user_can( $this->caps['manage_options'] ) && isset( $_GET['tix_do_upgrade'] ) ) {
-				$new_version = $this->upgrade( $options['version'] );
-				if ( $new_version > $options['version'] ) {
-					$options['version'] = $new_version;
-					update_option( 'camptix_options', $options );
-					$this->admin_notice( sprintf( __( 'CampTix upgrade successful. Current version: %s.', 'camptix' ), $new_version ) );
-				}
-			} else {
-				$more = current_user_can( $this->caps['manage_options'] ) ? sprintf( ' <a href="%s">' . __( 'Click here to upgrade now.', 'camptix' ) . '</a>', esc_url( add_query_arg( 'tix_do_upgrade', 1, admin_url( 'index.php' ) ) ) ) : '';
-				$this->admin_notice( __( 'CampTix upgrade required!', 'camptix' ) . $more );
-			}
+			$new_version = $this->upgrade( $options['version'] );
+			$options['version'] = $new_version;
+			update_option( 'camptix_options', $options );
+
 		}
 
 		if ( current_user_can( $this->caps['manage_options'] ) && isset( $_GET['tix_reset_version'] ) ) {
@@ -1003,23 +1000,100 @@ class CampTix_Plugin {
 	 * Runs when get_option decides that the current version is out of date.
 	 */
 	function upgrade( $from ) {
-		if ( ! current_user_can( $this->caps['manage_options'] ) )
-			return;
 
-		$current_user = wp_get_current_user();
-		$this->log( sprintf( __( 'Running upgrade script, thanks %s.', 'camptix' ), $current_user->user_login ), 0, null, 'upgrade' );
+		$this->log( __( 'Running upgrade script.', 'camptix' ), 0, null, 'upgrade' );
 
 		/**
-		 * Example upgrade routine.
+		 * Payment Gateways Upgrade Routine
 		 */
-		if ( $from < 20120620 ) {
+		if ( $from < 20120831 ) {
 			$this->log( sprintf( __( 'Upgrading from %s to %s.', 'camptix' ), $from, 20120620 ), 0, null, 'upgrade' );
 
 			/**
-			 * Do upgrade stuff here.
+			 * Update options.
 			 */
+			$default_options = $this->get_default_options();
+	 		$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
 
-			$from = 20120620;
+	 		if ( ! isset( $options['payment_options_paypal'] ) )
+	 			$options['payment_options_paypal'] = array();
+
+	 		if ( isset( $options['paypal_api_username'] ) )
+				$options['payment_options_paypal']['api_username'] = $options['paypal_api_username'];
+
+			if ( isset( $options['paypal_api_password'] ) )
+				$options['payment_options_paypal']['api_password'] = $options['paypal_api_password'];
+
+			if ( isset( $options['paypal_api_signature'] ) )
+				$options['payment_options_paypal']['api_signature'] = $options['paypal_api_signature'];
+
+			if ( isset( $options['paypal_currency'] ) )
+				$options['currency'] = $options['paypal_currency'];
+
+			if ( isset( $options['paypal_statement_subject'] ) )
+				$options['event_name'] = $options['paypal_statement_subject'];
+
+			if ( isset( $options['paypal_sandbox'] ) )
+				$options['payment_options_paypal']['sandbox'] = (bool) $options['paypal_sandbox'];
+
+			$options['refunds_enabled'] = false;
+			$options['refund_all_enabled'] = false;
+
+			// @todo unset old options
+
+			$this->log( "Going to update options", null, $options, 'upgrade' );
+
+			$paged = 1;
+			while ( $attendees = get_posts( array(
+				'post_type' => 'tix_attendee',
+				'posts_per_page' => 200,
+				'post_status' => array( 'publish', 'pending', 'failed', 'refund' ),
+				'paged' => $paged++,
+				'fields' => 'ids', // ! no post objects
+				'orderby' => 'ID',
+				'order' => 'ASC',
+				'cache_results' => false, // no caching
+			) ) ) {
+
+				/**
+				 * TL;DR: Use prepare_metadata_for to preload meta, set $this->filter_post_meta = false; when done.
+				 * @see Summarize and export in Tools for more comments on this approach.
+				 */
+				$this->filter_post_meta = $this->prepare_metadata_for( $attendees );
+
+				foreach ( $attendees as $attendee_id ) {
+
+					$transaction_id = get_post_meta( $attendee_id, 'tix_paypal_transaction_id', true );
+					update_post_meta( $attendee_id, 'tix_transaction_id', $transaction_id );
+
+					$transaction_details = get_post_meta( $attendee_id, 'tix_paypal_transaction_details', true );
+					update_post_meta( $attendee_id, 'tix_transaction_details', array(
+						'raw' => $transaction_details,
+					) );
+
+					// A dummy payment token. No need for rands because we don't want to mess up payment tokens in the same purchase.
+					$access_token = get_post_meta( $attendee_id, 'tix_access_token', true );
+					$payment_token = md5( 'payment-token-from-access-' . $access_token );
+					update_post_meta( $attendee_id, 'tix_payment_token', $payment_token );
+
+					// @todo unset old meta keys
+
+					// Update post for other actions to kick in (and generate searchable content, etc.)
+					wp_update_post( array( 'ID' => $attendee_id ) );
+
+					// Commented out because we're not doing any caching.
+					// Delete caches individually rather than clean_post_cache( $attendee_id ),
+					// prevents querying for children posts, saves a bunch of queries :)
+					// wp_cache_delete( $attendee_id, 'posts' );
+					// wp_cache_delete( $attendee_id, 'post_meta' );
+				}
+
+				// Clear prepared metadata.
+				$this->filter_post_meta = false;
+			}
+
+			$this->log( 'Updated attendees data.', null, null, 'upgrade' );
+			$from = 20120831;
 		}
 
 		$this->log( sprintf( __( 'Upgrade complete, current version: %s.', 'camptix' ), $this->version ), 0, null, 'upgrade' );
