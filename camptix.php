@@ -5450,7 +5450,7 @@ class CampTix_Plugin {
 			$subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['event_name'] );
 			$content = sprintf( __( "Hey there!\n\nWe're so sorry, but it looks like your payment for %s has failed! Please check your payment transactions for more details. If you still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $this->get_tickets_url() );
 
-			$this = sprintf( __( 'Sending failed e-mail notification after IPN to %s.', 'camptix' ), $receipt_email, $attendees[0]->ID );
+			$this->log( sprintf( __( 'Sending failed e-mail notification after IPN to %s.', 'camptix' ), $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 	}
