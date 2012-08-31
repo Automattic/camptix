@@ -3688,6 +3688,9 @@ class CampTix_Plugin {
 		if ( isset( $redirected_error_flags['cannot_refund'] ) )
 			$this->error( __( 'Your refund request can not be processed. Please try again later or contact support.', 'camptix' ) );
 
+		if ( isset( $redirected_error_flags['invalid_reservation'] ) )
+			$this->error( __( 'Sorry, but the reservation you are trying to use has been cancelled or has expired.', 'camptix' ) );
+
 		ob_start();
 		?>
 		<div id="tix">
@@ -5062,10 +5065,10 @@ class CampTix_Plugin {
 		}
 
 		// Then check the reservation.
-		if ( isset( $order['tix_reservation_id'], $order['tix_reservation_token'] ) ) {
-			$reservation = $this->get_reservation( $order['tix_reservation_token'] );
+		if ( isset( $order['reservation_id'], $order['reservation_token'] ) ) {
+			$reservation = $this->get_reservation( $order['reservation_token'] );
 
-			if ( $reservation && $reservation['id'] == strtolower( $order['tix_reservation_id'] ) && $this->is_reservation_valid_for_use( $reservation['token'] ) ) {
+			if ( $reservation && $reservation['id'] == strtolower( $order['reservation_id'] ) && $this->is_reservation_valid_for_use( $reservation['token'] ) ) {
 				$via_reservation = $reservation['token'];
 			} else {
 				$this->error_flags['invalid_reservation'] = true;
@@ -5117,6 +5120,7 @@ class CampTix_Plugin {
 
 			if ( $ticket->tix_remaining < 1 ) {
 				$this->error_flag( 'tickets_excess' );
+				echo 'setting tickets excess';
 				continue;
 			}
 
