@@ -267,6 +267,21 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 		if ( 'payment_return' == get_query_var( 'tix_action' ) )
 			$this->payment_return();
+
+		if ( 'payment_notify' == get_query_var( 'tix_action' ) )
+			$this->payment_notify();
+	}
+
+	/**
+	 * PayPal IPN
+	 */
+	function payment_notify() {
+		global $camptix;
+
+		$payment_token = ( isset( $_REQUEST['tix_payment_token'] ) ) ? trim( $_REQUEST['tix_payment_token'] ) : '';
+		$this->log( "IPN POST", null, $_POST );
+		$this->log( "IPN GET", null, $_GET );
+		return;
 	}
 
 	function payment_cancel() {
@@ -297,6 +312,9 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 		$order = $this->get_order( $payment_token );
 
+		if ( ! $order )
+			die( 'could not find order' );
+
 		/**
 		 * @todo maybe check tix_paypal_token for security.
 		 */
@@ -311,12 +329,18 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 		if ( isset( $checkout_details['ACK'] ) && $checkout_details['ACK'] == 'Success' ) {
 
+			$notify_url = add_query_arg( array(
+				'tix_action' => 'payment_notify',
+				'tix_payment_token' => $payment_token,
+				'tix_payment_gateway' => 'paypal',
+			), $this->get_tickets_url() );
+
 			$payload = array(
 				'METHOD' => 'DoExpressCheckoutPayment',
 				// 'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
 				'TOKEN' => $paypal_token,
 				'PAYERID' => $payer_id,
-				'PAYMENTREQUEST_0_NOTIFYURL' => esc_url_raw( add_query_arg( 'tix_paypal_ipn', 1, trailingslashit( home_url() ) ) ),
+				'PAYMENTREQUEST_0_NOTIFYURL' => esc_url_raw( $notify_url ),
 			);
 
 			$this->fill_payload_with_order( $payload, $order );
