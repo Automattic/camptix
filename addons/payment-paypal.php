@@ -279,9 +279,73 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 		global $camptix;
 
 		$payment_token = ( isset( $_REQUEST['tix_payment_token'] ) ) ? trim( $_REQUEST['tix_payment_token'] ) : '';
+
+		// Verify the IPN came from PayPal.
+		$payload = stripslashes_deep( $_POST );
+		$response = $this->verify_ipn( $payload );
+		if ( wp_remote_retrieve_response_code( $response ) != '200' || wp_remote_retrieve_body( $response ) != 'VERIFIED' ) {
+			$this->log( __( 'Could not verify PayPal IPN.', 'camptix' ), 0, null );
+			return;
+		}
+
+		// Grab the txn id (or the parent id in case of refunds, cancels, etc)
+		$txn_id = isset( $payload['txn_id'] ) && ! empty( $payload['txn_id'] ) ? $payload['txn_id'] : 'None';
+		if ( isset( $payload['parent_txn_id'] ) && ! empty( $payload['parent_txn_id'] ) )
+			$txn_id = $payload['parent_txn_id'];
+
+		// Make sure we have a status
+		if ( empty( $payload['payment_status'] ) ) {
+			$this->log( sprintf( __( 'Received IPN with no payment status %s', 'camptix' ), $txn_id ), 0, $payload );
+			return;
+		}
+
+		// Fetch latest transaction details to avoid race conditions.
+		$txn_details_payload = array(
+			'METHOD' => 'GetTransactionDetails',
+			'TRANSACTIONID' => $txn_id,
+		);
+		$txn_details = wp_parse_args( wp_remote_retrieve_body( $this->request( $txn_details_payload ) ) );
+		if ( ! isset( $txn_details['ACK'] ) || $txn_details['ACK'] != 'Success' ) {
+			$this->log( sprintf( __( 'Fetching transaction after IPN failed %s.', 'camptix' ), $txn_id, 0, $txn_details ) );
+			return;
+		}
+
+		$this->log( sprintf( __( 'Payment details for %s via IPN', 'camptix'), $txn_id ), null, $txn_details );
+		$payment_status = $txn_details['PAYMENTSTATUS'];
+
+		$payment_data = array(
+			'transaction_id' => $txn_id,
+			'transaction_details' => array(
+				// @todo maybe add more info about the payment
+				'raw' => $txn_details,
+			),
+		);
+
+		return $this->payment_result( $payment_token, $this->get_status_from_string( $payment_status ), $payment_data );
+
 		$this->log( "IPN POST", null, $_POST );
 		$this->log( "IPN GET", null, $_GET );
 		return;
+	}
+
+	function get_status_from_string( $payment_status ) {
+		global $camptix;
+
+		$statuses = array(
+			'Completed' => $camptix::PAYMENT_STATUS_COMPLETED,
+			'Pending' => $camptix::PAYMENT_STATUS_PENDING,
+			'Cancelled' => $camptix::PAYMENT_STATUS_CANCELLED,
+			'Failed' => $camptix::PAYMENT_STATUS_FAILED,
+			'Denied' => $camptix::PAYMENT_STATUS_FAILED,
+			'Refunded' => $camptix::PAYMENT_STATUS_REFUNDED,
+			'Reversed' => $camptix::PAYMENT_STATUS_REFUNDED,
+		);
+
+		// Return pending for unknows statuses.
+		if ( ! isset( $statuses[ $payment_status ] ) )
+			$payment_status = 'Pending';
+
+		return $statuses[ $payment_status ];
 	}
 
 	function payment_cancel() {
@@ -365,17 +429,16 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 				$this->log( sprintf( __( 'Payment details for %s', 'camptix'), $txn_id ), null, $txn );
 
-				if ( $payment_status == 'Completed' ) {
-					return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED, array(
-						'transaction_id' => $txn_id,
-						'transaction_details' => array(
-							// @todo maybe add more info about the payment
-							'raw' => $txn,
-						),
-					) );
-				} else {
-					return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_PENDING );
-				}
+				$payment_data = array(
+					'transaction_id' => $txn_id,
+					'transaction_details' => array(
+						// @todo maybe add more info about the payment
+						'raw' => $txn,
+					),
+				);
+
+				return $this->payment_result( $payment_token, $this->get_status_from_string( $payment_status ), $payment_data );
+
 			} else {
 				$this->log( __( 'Error during DoExpressCheckoutPayment.', 'camptix' ), null, $request );
 				return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
@@ -492,6 +555,15 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 			'VERSION' => '88.0', // https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_PreviousAPIVersionsNVP
 		), (array) $payload );
 
+		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => 20 ) );
+	}
+
+	/**
+	 * Validate an IPN request
+	 */
+	function verify_ipn( $payload = array() ) {
+		$url = $this->options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr';
+		$payload = 'cmd=_notify-validate&' . http_build_query( $payload );
 		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => 20 ) );
 	}
 }
