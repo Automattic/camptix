@@ -219,9 +219,9 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 		global $camptix;
 
 		$this->options = array_merge( array(
-			'api_username' => 'seller_1336582765_biz_api1.automattic.com',
-			'api_password' => '1336582791',
-			'api_signature' => 'AAIC4ZQTUrzRU3RisBfEDkKUjdmwAnhS47jgmW1pnLf4G517HvqUlxkD',
+			'api_username' => '',
+			'api_password' => '',
+			'api_signature' => '',
 			'sandbox' => true,
 		), $this->get_payment_options() );
 
