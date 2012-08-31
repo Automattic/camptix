@@ -5385,7 +5385,7 @@ class CampTix_Plugin {
 		 * but only if the payment was from draft to completed or pending.For non-draft to ... tickets
 		 * we send out a receipt only.
 		 */
-		if ( count( $attendees > 1 ) && $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
+		if ( count( $attendees ) > 1 && $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
 			foreach ( $attendees as $attendee ) {
 				$attendee_email = get_post_meta( $attendee->ID, 'tix_email', true );
 				$edit_token = get_post_meta( $attendee->ID, 'tix_edit_token', true );
