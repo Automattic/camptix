@@ -5281,8 +5281,17 @@ class CampTix_Plugin {
 		}
 
 		// If the status hasn't changed, there's nothing much we can do here.
-		if ( ! $status_changed )
+		if ( ! $status_changed ) {
+			$this->log( sprintf( __( 'Received payment result for %s but status has not changed.', 'camptix' ), $transaction_id ) );
 			return;
+		}
+
+		// We'll need these for proper e-mail notifications.
+		$from_status = $attendees_status;
+		$to_status = $attendees[0]->post_status;
+
+		// Send out the tickets and receipt if necessary.
+		$this->email_tickets( $payment_token, $from_status, $to_status );
 
 		// Let's make a clean exit out of all of this.
 		switch ( $result ) :
@@ -5294,8 +5303,6 @@ class CampTix_Plugin {
 				break;
 
 			case $this::PAYMENT_STATUS_COMPLETED :
-				// Send out the tickets and receipt
-				$this->email_tickets( $payment_token );
 
 				// Show the purchased tickets.
 				$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
@@ -5323,8 +5330,6 @@ class CampTix_Plugin {
 				break;
 
 			case $this::PAYMENT_STATUS_PENDING :
-				// Send out the tickets and receipt
-				$this->email_tickets( $payment_token );
 
 				// Show the purchased tickets.
 				$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
@@ -5339,14 +5344,14 @@ class CampTix_Plugin {
 		endswitch;
 	}
 
-	function email_tickets( $payment_token = false ) {
+	function email_tickets( $payment_token = false, $from_status = 'draft', $to_status = 'publish' ) {
 		if ( ! $payment_token )
 			return;
 
 		$attendees = get_posts( array(
 			'posts_per_page' => -1,
 			'post_type' => 'tix_attendee',
-			'post_status' => array( 'publish', 'pending' ),
+			'post_status' => 'any',
 			'meta_query' => array(
 				array(
 					'key' => 'tix_payment_token',
@@ -5375,37 +5380,58 @@ class CampTix_Plugin {
 
 		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $order['total'], false ) );
 
-		if ( count( $attendees ) == 1 ) {
-
-			$edit_link = $this->get_access_tickets_link( $access_token );
-			$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $receipt_content, $edit_link );
-			$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
-			$this->log( __( 'Single purchase, so sent ticket and receipt in one e-mail.', 'camptix' ), $attendees[0]->ID );
-			$this->wp_mail( $receipt_email, $subject, $content );
-
-			do_action( 'camptix_ticket_emailed', $attendees[0]->ID );
-
-		} else {
-
-			// Send tickets
+		/**
+		 * If there's more than one attendee we should e-mail a separate ticket to each attendee,
+		 * but only if the payment was from draft to completed or pending.For non-draft to ... tickets
+		 * we send out a receipt only.
+		 */
+		if ( count( $attendees > 1 ) && $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
 			foreach ( $attendees as $attendee ) {
 				$attendee_email = get_post_meta( $attendee->ID, 'tix_email', true );
 				$edit_token = get_post_meta( $attendee->ID, 'tix_edit_token', true );
 				$edit_link = $this->get_edit_attendee_link( $attendee->ID, $edit_token );
-				$content = sprintf( __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $edit_link );
 
-				$this->log( sprintf( __( 'Sent ticket e-mail to %s', 'camptix' ), $attendee_email ), $attendee->ID );
-				$this->log( sprintf( __( 'Sent receipt to %s.', 'camptix' ), $receipt_email ), $attendee->ID );
-				$this->wp_mail( $attendee_email, sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] ), $content );
+				$content = sprintf( __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $edit_link );
+				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
+
+				$this->log( sprintf( __( 'Sent ticket e-mail to %s and receipt to %s.', 'camptix' ), $attendee_email, $receipt_email ), $attendee->ID );
+				$this->wp_mail( $attendee_email, $subject, $content );
 
 				do_action( 'camptix_ticket_emailed', $attendee->ID );
 			}
+		}
 
-			// Send a receipt
+		/**
+		 * Let's ow e-mail a receipt!
+		 */
+		if ( $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
 			$edit_link = $this->get_access_tickets_link( $access_token );
-			$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $receipt_content, $edit_link );
-			$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['event_name'] );
-			$this->wp_mail( $receipt_email, $subject, $content );
+
+			$signature = __( 'Let us know if you have any questions!', 'camptix' );
+			$payment_status = '';
+
+			// If the status is pending, let the buyer know about that in the receipt.
+			if ( 'pending' == $to_status )
+				$payment_status = '\n\n' . sprintf( __( 'Your payment status is: %s. You will receive a notification e-mail once your payment is completed.', 'camptix' ), 'pending' );
+
+			if ( count( $attendees ) == 1 ) {
+
+				$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\n%s%s", 'camptix' ), $receipt_content, $edit_link, $payment_status, $signature );
+				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
+
+				$this->log( sprintf( __( 'Sent a ticket and receipt to %s.', 'camptix' ), $receipt_email ), $attendees[0]->ID );
+				$this->wp_mail( $receipt_email, $subject, $content );
+
+				do_action( 'camptix_ticket_emailed', $attendees[0]->ID );
+
+			} elseif ( count( $attendees ) > 1 ) {
+
+				$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\n%s%s", 'camptix' ), $receipt_content, $edit_link, $payment_status, $signature );
+				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
+
+				$this->log( sprintf( __( 'Sent a receipt to %s.', 'camptix' ), $receipt_email ), $attendees[0]->ID );
+				$this->wp_mail( $receipt_email, $subject, $content );
+			}
 		}
 	}
 
