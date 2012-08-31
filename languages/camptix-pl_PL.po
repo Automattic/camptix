@@ -1,0 +1,1490 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: CampTix\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-08-27 13:32+0100\n"
+"PO-Revision-Date: 2012-08-30 11:05+0100\n"
+"Last-Translator: Lukasz Wojcik <kontakt@lukaszwojcik.net>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop;__\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: D:\\Wordcamp\\Automattic-camptix-f8f6079\n"
+"X-Poedit-SearchPath-1: D:\\Wordcamp\\Automattic-camptix-f8f6079/addons\n"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:177
+msgid "Once every 10 minutes"
+msgstr "Co 10 minut"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:201
+msgid "Executing e-mail job."
+msgstr "Rozpocznij wysyłanie wiadomości"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:248
+#, php-format
+msgid "%s is not a valid e-mail, removing from queue."
+msgstr "%s nie jest prawidłowym adresem, usunięto z kolejki."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:257
+#, php-format
+msgid "E-mail successfully sent to %s"
+msgstr "E-mail został wysłany do %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:259
+#, php-format
+msgid "Could not send e-mail to %s, removing from queue."
+msgstr "Nie udało się wysłać e-mail do %s, zostanie on usunięty z kolejki."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:274
+#, php-format
+msgid "Processed %d recipients. %d recipients remaining."
+msgstr "Obsłużono odbiorców: %d. Pozostali odbiorcy: %d."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:285
+msgid "Email job complete and published."
+msgstr "Zadanie e-mail ukończone i opublikowane."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:380
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1601
+msgid "None"
+msgstr "Brak"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:456
+msgid "Price"
+msgstr "Cena"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:457
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:595
+msgid "Quantity"
+msgstr "Ilość"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:458
+msgid "Purchased"
+msgstr "Zakupionych"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:459
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:596
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:652
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1866
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1875
+msgid "Remaining"
+msgstr "Pozostało"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:460
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:598
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2486
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2493
+msgid "Availability"
+msgstr "Dostępność"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:491
+#, php-format
+msgid "(%d reserved)"
+msgstr "(%d zajęte)"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:500
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:639
+msgid "Auto"
+msgstr "Auto"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:502
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:641
+#, php-format
+msgid "%s &mdash; %s"
+msgstr "%s &mdash; %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:512
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:867
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3090
+msgid "E-mail"
+msgstr "E-mail"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:513
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:751
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3091
+msgid "Ticket"
+msgstr "Bilet"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:514
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:831
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1969
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3119
+msgid "Coupon"
+msgstr "Kupon"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:529
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3131
+msgid "Reservation"
+msgstr "Rezerwacja"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:531
+msgid "Ticket Price"
+msgstr "Cena biletu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:532
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3122
+msgid "Order Total"
+msgstr "Całkowite zamówienie"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:597
+msgid "Discount"
+msgstr "Zniżka"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:599
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:750
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:756
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:761
+msgid "Tickets"
+msgstr "Bilety"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:651
+msgid "Sent"
+msgstr "Wyślij"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:653
+msgid "Total"
+msgstr "Razem"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:752
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:755
+msgid "New Ticket"
+msgstr "Nowy bilet"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:753
+msgid "Add New Ticket"
+msgstr "Dodaj nowy bilet"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:754
+msgid "Edit Ticket"
+msgstr "Edytuj bilet"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:757
+msgid "View Ticket"
+msgstr "Wyświetl bilety"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:758
+msgid "Search Tickets"
+msgstr "Szukaj biletów"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:759
+msgid "No tickets found"
+msgstr "Nie znaleziono biletów"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:760
+msgid "No tickets found in trash"
+msgstr "Nie znaleziono biletów w koszu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:791
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:797
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:802
+msgid "Attendees"
+msgstr "Uczestnicy"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:792
+msgid "Attendee"
+msgstr "Uczestnik"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:793
+msgid "New Attendee"
+msgstr "Nowy uczestnik"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:794
+msgid "Add New Attendee"
+msgstr "Dodaj nowego uczestnika"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:795
+msgid "Edit Attendee"
+msgstr "Edytuj uczestnika"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:796
+msgid "Add Attendee"
+msgstr "Dodaj uczestnika"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:798
+msgid "View Attendee"
+msgstr "Wyświetl uczestnika"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:799
+msgid "Search Attendees"
+msgstr "Szukaj uczestników"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:800
+msgid "No attendees found"
+msgstr "Nie znaleziono uczestników"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:801
+msgid "No attendees found in trash"
+msgstr "Nie znaleziono uczestników w koszu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:830
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:836
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:841
+msgid "Coupons"
+msgstr "Kody rabatowe"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:832
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:835
+msgid "New Coupon"
+msgstr "Nowy kod rabatowy"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:833
+msgid "Add New Coupon"
+msgstr "Dodaj nowy kod rabatowy"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:834
+msgid "Edit Coupon"
+msgstr "Edytuj kod rabatowy"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:837
+msgid "View Coupon"
+msgstr "Zobacz kod rabatowy"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:838
+msgid "Search Coupons"
+msgstr "Szukaj kodu rabatowego"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:839
+msgid "No coupons found"
+msgstr "Nie znaleziono kodó rabatowych"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:840
+msgid "No coupons found in trash"
+msgstr "Nie znaleziono kodów rabatowych w koszu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:866
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:872
+msgid "E-mails"
+msgstr "E-maile"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:868
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:871
+msgid "New E-mail"
+msgstr "nowy e-mail"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:869
+msgid "Add New E-mail"
+msgstr "Dodaj nowy e-mail"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:870
+msgid "Edit E-mail"
+msgstr "Edytuj e-mail"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:873
+msgid "View E-mail"
+msgstr "Podejrzyj e-mail"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:874
+msgid "Search E-mails"
+msgstr "Wyszukaj e-maile"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:875
+msgid "No e-mails found"
+msgstr "Nie znaleziono e-maili"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:876
+msgid "No e-mails found in trash"
+msgstr "Nie znaleziono e-maili w koszu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:877
+msgid "E-mails (debug)"
+msgstr "E-maile (tryb debug)"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:932
+msgid "Timeout"
+msgstr "Przekroczono limit czasu oczekiwania"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:935
+msgid "Failed"
+msgstr "Niepowodzenie"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:938
+msgid "Cancelled"
+msgstr "Anulowany"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:941
+msgid "Refunded"
+msgstr "Zwrócony"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:983
+#, php-format
+msgid "CampTix upgrade successful. Current version: %s."
+msgstr "Pomyslnie zaktualizowano CampTix. Obecna wersja: %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:986
+msgid "Click here to upgrade now."
+msgstr "Kliknij tutaj aby aktualizować teraz"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:987
+msgid "CampTix upgrade required!"
+msgstr "CampTix wymaga aktualizacji!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1007
+#, php-format
+msgid "Running upgrade script, thanks %s."
+msgstr "Uruchamianie skryptu aktualizacji, dzięki %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1013
+#, php-format
+msgid "Upgrading from %s to %s."
+msgstr "Aktualizowanie z %s do %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1022
+#, php-format
+msgid "Upgrade complete, current version: %s."
+msgstr "Aktualizacja zakończona, obecna wersja: %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1045
+msgid "PayPal Configuration"
+msgstr "Konfiguracja PayPal"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1046
+msgid "API Username"
+msgstr "Nazwa użytkownika API"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1047
+msgid "API Password"
+msgstr "Hasło API"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1048
+msgid "API Signature"
+msgstr "Sygnatura API"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1049
+msgid "Statement Subject"
+msgstr "Temat oświadczenia"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1050
+msgid "Currency"
+msgstr "Waluta"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1051
+msgid "Sandbox Mode"
+msgstr "Tryb piaskownicy"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1052
+#, php-format
+msgid ""
+"The PayPal Sandbox is a way to test payments without using real accounts and "
+"transactions. If you'd like to use Sandbox Mode, you'll need to create a %s "
+"account and obtain the API credentials for your sandbox user."
+msgstr ""
+"Piaskownica PayPal pozwala testować płatności bez używania prawdziwych kont "
+"i transakcji.  Jeżeli chcesz skorzystać z trybu Piaskownicy, musisz utworzyć "
+"konto %s i uzyskać dane dostępowe API dla Twojego konta użytkownika w "
+"Piaskownicy."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1052
+msgid "PayPal Developer"
+msgstr "Developer PayPal"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1060
+msgid "Beta Features"
+msgstr "Beta funkcje"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1062
+msgid "Enable Reservations"
+msgstr "Uruchom rezerwacje"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1063
+msgid ""
+"Reservations is a way to make sure that a certain group of people, can "
+"always purchase their tickets, even if you sell out fast."
+msgstr ""
+"Rezerwacje umożliwiają grupie osób nabycie biletów w każdej chwili, nawet "
+"jeśli szybko się rozchodzą."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1066
+msgid "Enable Refunds"
+msgstr "Aktywuj zwroty"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1067
+msgid ""
+"This will allows your customers to refund their tickets purchase by filling "
+"out a simple refund form."
+msgstr ""
+"W ten sposób Twoi klienci będą mogli złożyć wniosek o zwrot pieniędzy "
+"poprzez wypełnienie prostego formularza."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1070
+msgid "Enable Refund All"
+msgstr "Aktywuj zwroty wszystkich"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1071
+msgid "Allows to refund all purchased tickets by an admin via the Tools menu."
+msgstr ""
+"Umozliwia administratorowi dokonanie zwrotu pieniędzy za wszystkie bilety "
+"poprzez menu Narzędzia."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1073
+msgid "Archived Event"
+msgstr "Wydarzenie archiwalne."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1074
+msgid "Archived events are read-only."
+msgstr "Wydarzenia archiwalne są tylko do odczytu."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1082
+msgid ""
+"Beta features are things that are being worked on in CampTix, but are not "
+"quite finished yet. You can try them out, but we do not recommend doing that "
+"in a live environment on a real event. If you have any kind of feedback on "
+"any of the beta features, please let us know."
+msgstr ""
+"Funkcje beta to rzeczy, nad którymi pracujemy w CampTix, ale nie są jeszcze "
+"w pełni ukończone. Możesz je wypróbować, ale odradzamy robienie tego w "
+"środowisku produkcyjnym. Jeżeli masz jakieś uwagi odnośnie jakichkolwiek "
+"funkcji testowych, skontaktuj się z nami."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1086
+msgid ""
+"Enter your PayPal API credentials in the form below. Note, that these "
+"<strong>are not</strong> your PayPal username and password. Learn more about "
+"<a href=\"https://cms.paypal.com/us/cgi-bin/?cmd=_render-"
+"content&content_ID=developer/e_howto_api_ECAPICredentials\">Obtaining API "
+"Credentials</a> at PayPal."
+msgstr ""
+"Wprowadź swoje dane API PayPal do formularza poniżej. Zwróć uwagę, że "
+"<strong>nie jest</strong> to login i hasło Twojego konta Paypal. Dowiedz się "
+"więcej, jak <a href=\"https://cms.paypal.com/us/cgi-bin/?cmd=_render-"
+"content&content_ID=developer/e_howto_api_ECAPICredentials\">uzyskać dostęp "
+"do API</a> Paypal."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1153
+msgid "Options updated."
+msgstr "Ustawienia zaktualizowane"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1245
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1283
+msgid "U.S. Dollar"
+msgstr "Dolar amerykański"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1249
+msgid "Euro"
+msgstr "Euro"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1253
+msgid "Canadian Dollar"
+msgstr "Dolar kanadyjski"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1257
+msgid "Norwegian Krone"
+msgstr "Korona norweska"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1261
+msgid "Polish Zloty"
+msgstr "Polski złoty"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1265
+msgid "Japanese Yen"
+msgstr "Jen japoński"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1297
+msgid "Tools"
+msgstr "Narzędzia"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1298
+msgid "Setup"
+msgstr "Ustawienia"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1353
+#, php-format
+msgid "Current time on server: %s"
+msgstr "Aktualny czas na serwerze: %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1378
+msgid "PayPal"
+msgstr "PayPal"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1382
+msgid "Beta"
+msgstr "Beta"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1435
+msgid "Summarize"
+msgstr "Podsumuj"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1436
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1869
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1878
+msgid "Revenue"
+msgstr "Dochód"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1437
+msgid "Export"
+msgstr "Eksportuj"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1438
+msgid "Notify"
+msgstr "Powiadom"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1442
+msgid "Refund"
+msgstr "Zwrot pieniędzy"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1496
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1534
+msgid "Count"
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1622
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1864
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1873
+msgid "Ticket type"
+msgstr "Rodzaj biletu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1623
+msgid "Coupon code"
+msgstr "Kod rabatowy"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1624
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1966
+msgid "Purchase date"
+msgstr "Data zakupu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1625
+msgid "Purchase time"
+msgstr "Czas zakupu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1626
+msgid "Purchase date and time"
+msgstr "Data i czas zakupu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1627
+msgid "Purchase day of week"
+msgstr "Dzień tygodnia zakupu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1865
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1874
+msgid "Sold"
+msgstr "Sprzedano"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1867
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1876
+msgid "Sub-Total"
+msgstr "Suma częściowa"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1868
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1877
+msgid "Discounted"
+msgstr "Rabat"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1882
+#, php-format
+msgid ""
+"<strong>Woah!</strong> The revenue total does not match with the PayPal "
+"transactions total. The actual total is: <strong>%s</strong>. Something "
+"somewhere has gone wrong, please report this."
+msgstr ""
+"<strong>O nie!</strong> Dochód całkowity nie zgadza się z sumą transakcji z "
+"PayPala. Aktualny dochód wynosi <strong>%s</strong>. Coś gdzieś poszło źle, "
+"zgłoś błąd."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1886
+#, php-format
+msgid "Revenue report generated in %s seconds."
+msgstr "Wygenerowano zestawienie dochodów w %s sekund."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1940
+msgid "Format not supported."
+msgstr "Format nie jest obsługiwany."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1961
+msgid "Attendee ID"
+msgstr "ID uczestnika"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1962
+msgid "Ticket Type"
+msgstr "Rodzaj biletu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1963
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3088
+msgid "First Name"
+msgstr "Imię"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1964
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3089
+msgid "Last Name"
+msgstr "Nazwisko"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1965
+msgid "E-mail Address"
+msgstr "Adress e-mail"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1967
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2260
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3087
+msgid "Status"
+msgstr "Status"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:1968
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3104
+msgid "Transaction ID"
+msgstr "ID transakcji"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2064
+#, php-format
+msgid "Finished %s data export in %s seconds."
+msgstr "Ukończono eksport danych %s w ciągu %s sekund."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2088
+msgid "Please enter a subject line."
+msgstr "Proszę wprowadźtemat wiadomości."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2091
+msgid "Please enter the e-mail body."
+msgstr "Proszę wprowadź treść wiadomości."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2094
+msgid "Please select at least one ticket group."
+msgstr "Wybierz przynajmniej jedną grupę biletową."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2138
+#, php-format
+msgid "Your e-mail job has been queued for %s recipients."
+msgstr "Twoje zadanie e-mail zostało zakolejkowane dla liczby odbiorców: %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2139
+#, php-format
+msgid "Created e-mail job with %s recipients."
+msgstr "Utworzono zadanie e-mail z liczbą odbiorców: %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2236
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2239
+msgid "Preview"
+msgstr "Podgląd"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2238
+msgid "Send E-mails"
+msgstr "Wyślij wiadomości"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2252
+msgid "History"
+msgstr "Historia"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2257
+msgid "Subject"
+msgstr "Temat"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2258
+msgid "Updated"
+msgstr "Zaktualizowano"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2258
+#, php-format
+msgid "%1$s at %2$s"
+msgstr "%1$s o %2$s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2259
+msgid "Author"
+msgstr "Autor"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2320
+msgid "Looks like you have missed a checkbox or two. Try again!"
+msgstr ""
+"Wygląda na to, że pominąłeś jakieś pola w formularzu. Spróbuj jeszcze raz!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2326
+#, php-format
+msgid "Setting all transactions to refund, thanks %s."
+msgstr "Ustawianie zwrotu kosztów na wszystkich transakcjach, dzięki %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2345
+#, php-format
+msgid "Attendee set to refund by %s"
+msgstr "Uczestnik otrzyma zwrot kosztów przez %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2350
+#, php-format
+msgid "A refund job has been queued for %d attendees."
+msgstr "Zaplanowano zwrot kosztów dla %d uczestników."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2373
+#, php-format
+msgid ""
+"A refund job is in progress, with %d attendees left in the queue. Next run "
+"in %d seconds."
+msgstr ""
+"Trwa proces zwrotu kosztów, pozostało %d uczestników w kolejce. Następna "
+"kolejka za %d sekund."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2403
+msgid "Refund all job complete."
+msgstr "Ukończono proces zwrotu kosztów."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2448
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2455
+#, php-format
+msgid "Refunded transaction %s."
+msgstr "Ukończono transakcję %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2464
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2469
+#, php-format
+msgid "Could not refund %s."
+msgstr "Nie udało się przeprowadzić zwrotu pieniędzy dla %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2476
+msgid "No transaction id for this attendee, not refunding."
+msgstr ""
+"Brak ID transakcji dla tego uczestnika, zwrot nie zostanie przeprowadzony."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2485
+msgid "Ticket Options"
+msgstr "Opcje biletów"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2487
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3135
+msgid "Questions"
+msgstr "Pytania"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2490
+msgid "Reservations"
+msgstr "Rezerwacje"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2492
+msgid "Coupon Options"
+msgstr "Opcje kodów rabatowych"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2495
+msgid "Attendee Information"
+msgstr "Informacje o uczestniku"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2497
+msgid "Publish"
+msgstr "Publikuj"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2516
+msgid "Save"
+msgstr "Zapisz"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2538
+msgid "M j, Y @ G:i"
+msgstr "M j, Y @ G:i"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2540
+#, php-format
+msgid "Created: <b>%1$s</b>"
+msgstr "Utworzono: <b>%1$s</b>"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2543
+msgid "Publish <b>immediately</b>"
+msgstr "Publikuj <b>natychmiast</b>"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2563
+msgid "Delete Permanently"
+msgstr "Usuń trwale"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2565
+msgid "Move to Trash"
+msgstr "Przenieś do kosza"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2572
+msgid "Save Attendee"
+msgstr "Zapisz uczestnika"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2772
+msgid "Text input"
+msgstr "Pole tekstowe"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2773
+msgid "Dropdown Select"
+msgstr "Lista rozwijana"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2774
+msgid "Checkbox"
+msgstr "Pole wyboru"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2871
+#, php-format
+msgid "Add a %1$s or an %2$s."
+msgstr "Dodaj %1$s lub %2$s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2872
+msgid "new question"
+msgstr "nowe pytanie"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:2873
+msgid "existing one"
+msgstr "istniejące pytanie"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3086
+msgid "General"
+msgstr "Ogólne"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3092
+msgid "Edit Token"
+msgstr "Edytuj token"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3093
+msgid "Access Token"
+msgstr "Token dostępu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3096
+msgid "Transaction"
+msgstr "Transakcja"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3105
+msgid "Payment Status"
+msgstr "Status płatności"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3108
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3110
+msgid "Pending Reason"
+msgstr "Powód odmowy"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3113
+msgid "Buyer E-mail"
+msgstr "E-mail kupującego"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3242
+msgid "Created a new reservation."
+msgstr "Utworzono nową rezerwację"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3253
+msgid "Released a reservation."
+msgstr "Zwolniono rezerwację."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3273
+msgid "Cancelled a reservation."
+msgstr "Anulowano rezerwację"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3278
+msgid "Saved ticket post with form data."
+msgstr "Zapisano wpis biletu z danymi formularza."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3325
+msgid "Saved attendee post with post data."
+msgstr "Zapisano wpis uczestnika z danymi wpisu."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3379
+msgid "Saved coupon post with form data."
+msgstr "Zapisano wpis kodu promocyjnego z danymi formularza."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3498
+#, php-format
+msgid "Discounted %s"
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3501
+#, php-format
+msgid "Discounted %s%%"
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3573
+msgid "Something is terribly wrong, extra > 0 after stripping extra coupons"
+msgstr ""
+"Coś jest bardzo nie w porządku, po obcięciu nadmiarowych kuponów wyszło, że "
+"nadmiarowe > 0"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3620
+msgid "Something is seriously wrong, did_template_redirect is false."
+msgstr "Coś jest bardzo nie w porządku, did_template_redirect zwraca fałsz."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3621
+msgid "An error has occurred."
+msgstr "Wystąpił błąd."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3639
+msgid ""
+"Ticket sales are in sandbox mode. All purchases during sandbox mode will be "
+"deleted."
+msgstr ""
+"Sprzedaż biletów odbywa się w trybie piaskownicy. Wszystkie transakcje "
+"dokonane w tym czasie zostaną usunięte."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3642
+msgid "Sorry, but the coupon you have entered seems to be invalid or expired."
+msgstr ""
+"Przykro nam, ale wprowadzony przez Ciebie kupon jest błędny lub nieaktualny."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3645
+msgid ""
+"Sorry, but the reservation you are trying to use seems to be invalid or "
+"expired."
+msgstr ""
+"Przykro nam, ale używana przez Ciebie rezerwacja wygląda na błędną lub "
+"nieaktualną."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3648
+msgid ""
+"Sorry, but there are currently no tickets for sale. Please try again later."
+msgstr ""
+"Przykro nam, aktualnie nie mamy biletów na sprzedaż. Proszę spróbować "
+"później."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3651
+msgid "Your coupon has been applied, awesome!"
+msgstr "Twój kod rabatowy został przyjęty. Świetnie!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3654
+msgid "You are using a reservation, cool!"
+msgstr "Uzywasz systemu rezerwacji. Cudownie!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3658
+msgid "Please select at least one ticket."
+msgstr "Proszę wybierz co najmniej jeden bilet."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3661
+msgid ""
+"It looks like somebody took that last ticket before you, sorry! You try a "
+"different ticket."
+msgstr ""
+"Wygląda na to, że ktoś zgarnął ostatni bilet przed Tobą. Przykro nam. Może "
+"spróbujesz zarezerwowac inny rodzaj biletu?"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3666
+#, php-format
+msgid "PayPal Error: %s"
+msgstr "Błąd PayPal: %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3668
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3835
+msgid ""
+"An HTTP error has occurred, looks like PayPal is not responding. Please try "
+"again later."
+msgstr ""
+"Wystąpił błąd HTTP. Wygląda na to, że PayPal nie odpowiada. Proszę spróbuj "
+"później."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3672
+msgid ""
+"It looks like somebody grabbed those tickets before you could complete the "
+"purchase. You have not been charged, please try again."
+msgstr ""
+"Wygląda na to, że ktoś wykupił te bilety zanim zdążyłeś dokończyć "
+"transakcję. Opłata nie została naliczona, spróbuj jeszcze raz."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3675
+msgid ""
+"It looks like somebody has used the coupon before you could complete your "
+"purchase. You have not been charged, please try again."
+msgstr ""
+"Wygląda na to, że ktoś wykorzystał ten kupon zanim zdążyłeś dokończyć "
+"transakcję. Opłata nie została naliczona, spróbuj jeszcze raz."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3678
+msgid ""
+"It looks like the coupon you are trying to use has expired before you could "
+"complete your purchase. You have not been charged, please try again."
+msgstr ""
+"Wygląda na to, że użyty przez Ciebie kupon zdezaktualizował się zanim "
+"zdążyłeś dokończyć transakcję. Opłata nie została naliczona, spróbuj jeszcze "
+"raz."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3681
+msgid "Your access token does not seem to be valid."
+msgstr "Twój token dostępowy wygląda na nieprawidłowy."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3684
+msgid ""
+"It looks like you have cancelled your PayPal transaction. Feel free to try "
+"again!"
+msgstr ""
+"Wygląda na to, że anulowałeś transakcję via PayPal. Śmiało, spróbuj jeszcze "
+"raz!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3687
+msgid "The edit link you are trying to use is either invalid or has expired."
+msgstr "Link do edycji, którego próbujesz użyć, jest błędny lub nieaktualny."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3690
+msgid ""
+"Your refund request can not be processed. Please try again later or contact "
+"support."
+msgstr ""
+"Twój wniosek o zwrot nie może zostać przyjęty. Spróbuj później lub "
+"skontaktuj się z administratorem."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3768
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3902
+#, php-format
+msgid "Using coupon: <strong>%s</strong>"
+msgstr "Wykorzystany kupon: <strong>%s</strong>"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3815
+msgid ""
+"It looks like you have chosen more tickets than we have left! We have "
+"stripped the extra ones."
+msgstr ""
+"Wygląda na to, że zamówiłeś więcej biletów niż jesteśmy w stanie dostarczyć! "
+"Zmniejszyliśmy zamówienie."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3817
+msgid ""
+"It looks like somebody purchased a ticket before you could finish your "
+"purchase. Please review your order and try again."
+msgstr ""
+"Wygląda na to, że ktoś już kupił bilet zanim zdążyłeś dokończyć transakcję. "
+"Sprawdź swoje zamówienie i spróbuj jeszcze raz."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3821
+msgid ""
+"You have exceeded the coupon limits, so we have stripped down the extra "
+"tickets."
+msgstr "Przekroczyłeś limity kodu promocyjnego, usunęliśmy nadwyżkowe bilety."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3823
+msgid ""
+"It looks like somebody used the same coupon before you could finish your "
+"purchase. Please review your order and try again."
+msgstr ""
+"Wygląda na to, że ktoś użył tego samego kodu promocyjnego zanim zdążyłeś "
+"ukończyś transakcję. Sprawdź swoje zamówienie i spróbuj jeszcze raz."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3826
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4205
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4220
+msgid "Please fill in all required fields."
+msgstr "Proszę wypełnić wszystkie wymagane pola."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3829
+msgid "The e-mail address you have entered seems to be invalid."
+msgstr "Wprowadzony adress e-mail wygląda na błedny."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3832
+msgid "The chosen receipt e-mail address is either empty or invalid."
+msgstr "Wybrany adres e-mail jest pusty lub nieprawidłowy."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3838
+msgid "Looks like you're trying to use an invalid or expired coupon."
+msgstr ""
+"Wygląda na to, że próbujesz użyć blądnego lub wykorzystanego kodu rabatowego."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:3841
+msgid "You're using a coupon, cool!"
+msgstr "Używasz kodu promocyjnego. Świetnie!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4050
+msgid "Please note that the payment for this set of tickets is still pending."
+msgstr "Zwróć uwagę, że ten zestaw biletów wciąż oczekuje na płatność."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4130
+#, php-format
+msgid "Change of plans? Made a mistake? Don't worry, you can %s."
+msgstr "Zmiana planów? Pomyliłeś się? Nie przejmuj się, możesz %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4130
+msgid "request a refund"
+msgstr "poprosic o zwrot"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4171
+msgid "This attendee is not published."
+msgstr "Ten uczestnik nie został opublikowany."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4185
+msgid "Please note that the payment for this ticket is still pending."
+msgstr "Zwróć uwagę, że ten bilet wciąż oczekuje na płatność."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4208
+msgid "You have entered an invalid e-mail, please try again."
+msgstr "Wprowadziłeś błędny adres e-mail, spróbuj jeszcze raz."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4225
+msgid "Your information has not been changed!"
+msgstr "Twoje informacje nie zostały zmienione!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4240
+msgid "Your information has been saved!"
+msgstr "Twoje dane zostały zapisane!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4241
+msgid "Changed attendee data from frontend."
+msgstr "Zmieniono dane uczestnika z poziomu frontendu."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4381
+msgid "You have to agree to the terms to request a refund."
+msgstr "Musisz zaakceptować zasady, aby ubiegać się o zwrot kosztów"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4394
+#, php-format
+msgid "Refunded %s by user request in %s."
+msgstr "Dokonano zwrotu %s na żądanie użytkownika w %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4395
+msgid "Refund reason attached with data."
+msgstr "Powód zwrotu został załączony razem z danymi."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4400
+msgid "Your tickets have been successfully refunded."
+msgstr "Twoje bilety"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4404
+msgid "Can not refund the transaction at this time. Please try again later."
+msgstr "Nie można ukończyć zwrotu w tym momencie. Spróbuj ponownie później."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4835
+#, php-format
+msgid "Reviewing PayPal transaction, payment status: %s"
+msgstr "Sprawdzenie transakcji PayPal, status płatności: %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4837
+#, php-format
+msgid "Could not review PayPal transaction: %s"
+msgstr "Nie udało się dokonać przeglądu transakcji: %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4890
+#, php-format
+msgid "Reviewed timeout payments and set %d attendees to timeout status."
+msgstr ""
+"Sprawdzono przeterminowane płatności i ustawiono przekroczony termin u %d "
+"uczestników."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4937
+msgid "Unexpected total!"
+msgstr "Nieoczekiwana suma!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4955
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5491
+#, php-format
+msgid "Coupon used: %s"
+msgstr "Użyty kod promocyjny: %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:4957
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5493
+#, php-format
+msgid "Total: %s"
+msgstr "Razem: %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5010
+#, php-format
+msgid "Returned from PayPal with status: %s"
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5019
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5470
+#, php-format
+msgid "Receipt has been sent to %s"
+msgstr "Potwierdzenie zostało wysłane do %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5046
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5498
+#, php-format
+msgid ""
+"Hey there!\n"
+"\n"
+"You have purchased the following tickets:\n"
+"\n"
+"%s\n"
+"\n"
+"You can edit the information for all the purchased tickets at any time "
+"before the event, by visiting the following link:\n"
+"\n"
+"%s\n"
+"\n"
+"Let us know if you have any questions!"
+msgstr ""
+"Witaj!\n"
+"\n"
+"Dokonałeś zakupu następujących biletów:\n"
+"\n"
+"%s\n"
+"\n"
+"Możesz w każdej chwili zmienić informacje dla każdego zakupionego biletu w "
+"każdej chwili przed wydarzeniem, po kliknięciu w poniższy link:\n"
+"\n"
+"%s\n"
+"\n"
+"W razie jakichkolwiek pytań skontaktuj się z nami!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5047
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5499
+#, php-format
+msgid "Your Tickets to %s"
+msgstr "Twoje bilety na %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5053
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5504
+#, php-format
+msgid ""
+"Hey there!\n"
+"\n"
+"You have purchased the following ticket:\n"
+"\n"
+"%s\n"
+"\n"
+"You can edit the information for the purchased ticket at any time before the "
+"event, by visiting the following link:\n"
+"\n"
+"%s\n"
+"\n"
+"Let us know if you have any questions!"
+msgstr ""
+"Witaj!\n"
+"\n"
+"Zakupiłeś następujące bilety:\n"
+"\n"
+"%s\n"
+"\n"
+"Możesz edytować informacje o zakupionych biletach w dowolnym okresie przed "
+"wydarzeniem, odwiedzając poniższą stronę:\n"
+"\n"
+"%s\n"
+"\n"
+"Jeżeli masz pytania, skontaktuj się z nami!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5054
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5269
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5505
+#, php-format
+msgid "Your Ticket to %s"
+msgstr "Twój bilet na %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5055
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5506
+msgid "Single purchase, so sent ticket and receipt in one e-mail."
+msgstr "Pojedynczy zakup, więc bilet i potwierdzenie wysłane w jednym mailu."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5059
+#, php-format
+msgid ""
+"Your payment status is: %s. You will receive a notification e-mail once your "
+"payment is completed."
+msgstr ""
+"Status Twojej płatności to: %s. Otrzymasz e-mail z powiadomieniem, gdy "
+"płatność zostanie zrealizowana."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5072
+msgid "Payment cancelled due to an HTTP error during DoExpressCheckoutPayment."
+msgstr ""
+"Płatność anulowana z powodu błędu HTTP w trakcie wykonywania "
+"DoExpressCheckoutPayment."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5085
+msgid ""
+"Payment cancelled due to an HTTP error during GetExpressCheckoutDetails."
+msgstr ""
+"Płatność anulowana z powodu błędu HTTP w trakcie wykonywania "
+"GetExpressCheckoutDetails."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5092
+msgid "Attendee not found in paypal_return."
+msgstr "Nie znaleziono uczestnika w paypal_return."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5122
+msgid "Transaction was cancelled at PayPal."
+msgstr "Transakcja została anulowana przez PayPal."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5138
+msgid "Could not verify PayPal IPN."
+msgstr "Nie można zweryfikować PayPal IPN."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5150
+#, php-format
+msgid "Received IPN without attendees association %s"
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5156
+#, php-format
+msgid "Received IPN with no payment status %s"
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5168
+#, php-format
+msgid "Fetching transaction after IPN failed %s."
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5176
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5188
+#, php-format
+msgid "Your Payment for %s"
+msgstr "Twoja płatność za %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5181
+#, php-format
+msgid ""
+"Hey there!\n"
+"\n"
+"Your payment for %s has been completed, looking forward to seeing you at the "
+"event! You can access and change your tickets information by visiting the "
+"following link:\n"
+"\n"
+"%s\n"
+"\n"
+"Let us know if you need any help!"
+msgstr ""
+"Witaj!\n"
+"\n"
+"Twoja płatność za %s została ukończona, czekamy z niecierpliwością na Twoje "
+"przybycie! Możesz w każdej chwili przejrzeć lub zmienić informacje o "
+"biletach po kliknięciu w poniższy link:\n"
+"\n"
+"%s\n"
+"\n"
+"Gdybyś potrzebował pomocy, skontaktuj się z nami!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5184
+#, php-format
+msgid "Sending completed notification after ipn to %s."
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5193
+#, php-format
+msgid ""
+"Hey there!\n"
+"\n"
+"We're so sorry, but it looks like your payment for %s has failed! Please "
+"check your PayPal transactions for more details. If you still wish to attend "
+"the event, feel free to purchase a new ticket using the following link:\n"
+"\n"
+"%s\n"
+"\n"
+"Let us know if you need any help!"
+msgstr ""
+"Witaj!\n"
+"\n"
+"Bardzo nam przykro, ale wygląda na to, że płatność za %s nie została "
+"ukończona! Sprawdź swoje transakcje via PayPal w celu uzyskania węcej "
+"szczegółów. Jeżeli nadal chcesz wziąć udział w wydarzeniu, zamów nowy bilet "
+"po kliknięciu w poniższy link:\n"
+"\n"
+"%s\n"
+"\n"
+"Gdybyś potrzebował pomocy, skontaktuj się z nami!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5196
+#, php-format
+msgid "Sent failed notification after ipn to %s."
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5226
+msgid "status not updated"
+msgstr "status niezaktualizowany"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5226
+msgid "updating status"
+msgstr "aktualizacja statusu"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5227
+#, php-format
+msgid "IPN result via payload: %s (via txn: %s), %s."
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5230
+#, php-format
+msgid "Updated transaction details for %s."
+msgstr "Zmieniono szczegóły transakcji dla %s."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5267
+#, php-format
+msgid ""
+"Hi there!\n"
+"\n"
+"Thank you so much for purchasing a ticket and hope to see you soon at our "
+"event. You can edit your information at any time before the event, by "
+"visiting the following link:\n"
+"\n"
+"%s\n"
+"\n"
+"Let us know if you have any questions!"
+msgstr ""
+"Witaj!\n"
+"\n"
+"Dziękujemy za zakup biletu i oczekujemy z niecierpliwością na Twoje "
+"przybycie. Możesz zmieniać swoje informacje w dowolnym momencie przed "
+"wydarzeniem po kliknięciu w poniższy link:\n"
+"\n"
+"%s\n"
+"\n"
+"W razie dalszych pytań skontaktuj się z nami."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5270
+#, php-format
+msgid "Sent ticket e-mail to %s"
+msgstr "E-mail z biletem wysłany do %s"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5394
+msgid "Created attendee draft."
+msgstr "Utworzono brudnopis uczestnika."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5468
+msgid "Attendee published due to order total being 0."
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5547
+msgid "An unknown error has occurred. Please try again later."
+msgstr "Wystąpił nieokreślony błąd. Spróbuj ponownie później."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5549
+msgid "Please return to PayPal to select new funding sources."
+msgstr "Proszę wróć do konta PayPal aby wybrać inne źródło płatności."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5550
+msgid ""
+"The transaction cannot complete successfully. Please use an alternative "
+"payment method."
+msgstr ""
+"Transakcja nie może zostać ukończona. Proszę użyć innych metod płatności."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5551
+msgid ""
+"This transaction cannot be processed at this time. Please try again later."
+msgstr ""
+"Transakcja nie może zostać zrealizowana w tym momencie. Spróbuj ponownie "
+"później."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5552
+msgid ""
+"This Express Checkout session belongs to a different customer. Please try a "
+"new purchase."
+msgstr ""
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5666
+#, php-format
+msgid "Generated attendees list in %s seconds"
+msgstr "Wygenerowano listę uczestników w ciągu %s sekund."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5697
+msgid "Please fill in all fields."
+msgstr "Proszę wypełnić wszystkie pola"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5700
+msgid "The e-mail address you have entered does not seem to be valid."
+msgstr "Wprowadzony adres e-mail nie wygląda na prawidłowy."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5740
+msgid "The information you have entered is incorrect. Please try again."
+msgstr "Wprowadzone informacje nie są poprawne. Proszę, spróbuj ponownie."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5756
+msgid "An error has occured."
+msgstr "Wystąpił błąd."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5795
+msgid ""
+"Looks like you logged in from a different computer. Please log in again."
+msgstr ""
+"Wygląda na to, że jesteśzalogowany na innym komputerze. Proszę zaloguj się "
+"ponownie."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5817
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5823
+msgid "Sorry, but your ticket does not allow you to view this content."
+msgstr "Przepraszamy. Twój bilet nie pozwala na dostęp do tej zawartości. "
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5829
+msgid "Success! Enjoy your content!"
+msgstr "Udało się! Ciesz się zawartością!"
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:5834
+msgid ""
+"The content on this page is private. Please log in using the form below."
+msgstr ""
+"Traści na tej stronie są prywatne. Proszę zaloguj się korzystając z "
+"formularza poniżej."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:6015
+msgid ""
+"CampTix is in <strong>archive mode</strong>. Please do not make any changes."
+msgstr ""
+"CampTix pracuje w <strong>trybie archiwum</strong>. Proszę nie wprowadzać "
+"żadnych zmian."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:6124
+msgid "Please register your CampTix addons before CampTix is initialized."
+msgstr "Zarejestruj swoje dodatki do Camptix przed uruchomieniem CampTix."
+
+#: D:\Wordcamp\Automattic-camptix-f8f6079/camptix.php:6129
+msgid "The CampTix addon you are trying to register does not exist."
+msgstr "Dodatek do Camptix, który próbujesz zarejestrować, nie istnieje."
