@@ -401,7 +401,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 
 			$payload = array(
 				'METHOD' => 'DoExpressCheckoutPayment',
-				// 'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
+				'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
 				'TOKEN' => $paypal_token,
 				'PAYERID' => $payer_id,
 				'PAYMENTREQUEST_0_NOTIFYURL' => esc_url_raw( $notify_url ),
@@ -490,7 +490,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 		$payload = array(
 			'METHOD' => 'SetExpressCheckout',
 			'PAYMENTREQUEST_0_PAYMENTACTION' => 'Sale',
-			// 'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
+			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
 			'RETURNURL' => $return_url,
 			'CANCELURL' => $cancel_url,
 			'ALLOWNOTE' => 0,
