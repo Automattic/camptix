@@ -1005,12 +1005,14 @@ class CampTix_Plugin {
 	 */
 	function upgrade( $from ) {
 
+		set_time_limit( 60*60 ); // Give it an hour to update.
 		$this->log( __( 'Running upgrade script.', 'camptix' ), 0, null, 'upgrade' );
 
 		/**
 		 * Payment Methods Upgrade Routine
 		 */
 		if ( $from < 20120831 ) {
+			$start_20120831 = microtime( true );
 			$this->log( sprintf( __( 'Upgrading from %s to %s.', 'camptix' ), $from, 20120620 ), 0, null, 'upgrade' );
 
 			// Because these run after get_options.
@@ -1044,17 +1046,26 @@ class CampTix_Plugin {
 			if ( isset( $options['paypal_sandbox'] ) )
 				$options['payment_options_paypal']['sandbox'] = (bool) $options['paypal_sandbox'];
 
-			$options['payment_methods'] = array( 'paypal' );
+			// Enable PayPal payment method by default.
+			$options['payment_methods'] = array( 'paypal' => 1 );
 
+			// Disable refunds (beta).
 			$options['refunds_enabled'] = false;
 			$options['refund_all_enabled'] = false;
 
-			// @todo unset old options
+			$this->log( __( 'Going to update options', 'camptix' ), null, $options, 'upgrade' );
 
-			$this->log( "Going to update options", null, $options, 'upgrade' );
+			// Delete old options.
+			unset( $options['paypal_api_username'] );
+			unset( $options['paypal_api_password'] );
+			unset( $options['paypal_api_signature'] );
+			unset( $options['paypal_currency'] );
+			unset( $options['paypal_statement_subject'] );
+			unset( $options['paypal_sandbox'] );
+
 			update_option( 'camptix_options', $options );
 
-			$paged = 1;
+			$paged = 1; $count = 0;
 			while ( $attendees = get_posts( array(
 				'post_type' => 'tix_attendee',
 				'posts_per_page' => 200,
@@ -1079,7 +1090,9 @@ class CampTix_Plugin {
 					$payment_token = md5( 'payment-token-from-access-' . $access_token );
 					update_post_meta( $attendee_id, 'tix_payment_token', $payment_token );
 
-					// @todo unset old meta keys
+					// Delete old meta keys
+					delete_post_meta( $attendee_id, 'tix_paypal_transaction_id' );
+					delete_post_meta( $attendee_id, 'tix_paypal_transaction_details' );
 
 					// Update post for other actions to kick in (and generate searchable content, etc.)
 					wp_update_post( $attendee );
@@ -1088,11 +1101,14 @@ class CampTix_Plugin {
 					// prevents querying for children posts, saves a bunch of queries :)
 					wp_cache_delete( $attendee_id, 'posts' );
 					wp_cache_delete( $attendee_id, 'post_meta' );
+
+					$count++;
 				}
 
 			}
 
-			$this->log( 'Updated attendees data.', null, null, 'upgrade' );
+			$end_20120831 = microtime( true );
+			$this->log( sprintf( __( 'Updated %d attendees data in %f seconds.', 'camptix' ), $count, $end_20120831 - $start_20120831 ), null, null, 'upgrade' );
 			$from = 20120831;
 		}
 
