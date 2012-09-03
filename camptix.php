@@ -1047,7 +1047,7 @@ class CampTix_Plugin {
 			// @todo unset old options
 
 			$this->log( "Going to update options", null, $options, 'upgrade' );
-			update_option( 'camptix_options', $optios );
+			update_option( 'camptix_options', $options );
 
 			$paged = 1;
 			while ( $attendees = get_posts( array(
