@@ -984,6 +984,9 @@ class CampTix_Plugin {
 		if ( $options['version'] < $this->version ) {
 
 			$new_version = $this->upgrade( $options['version'] );
+
+			// Read options again in case of update options.
+			$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
 			$options['version'] = $new_version;
 			update_option( 'camptix_options', $options );
 
@@ -1040,6 +1043,8 @@ class CampTix_Plugin {
 
 			if ( isset( $options['paypal_sandbox'] ) )
 				$options['payment_options_paypal']['sandbox'] = (bool) $options['paypal_sandbox'];
+
+			$options['payment_methods'] = array( 'paypal' );
 
 			$options['refunds_enabled'] = false;
 			$options['refund_all_enabled'] = false;
