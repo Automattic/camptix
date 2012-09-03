@@ -5385,15 +5385,23 @@ class CampTix_Plugin {
 			}
 		}
 
-		// If the status hasn't changed, there's nothing much we can do here.
-		if ( ! $status_changed ) {
-			$this->log( sprintf( __( 'Received payment result for %s but status has not changed.', 'camptix' ), $transaction_id ) );
-			return;
-		}
-
 		// We'll need these for proper e-mail notifications.
 		$from_status = $attendees_status;
 		$to_status = $attendees[0]->post_status;
+
+		// If the status hasn't changed, there's nothing much we can do here.
+		if ( ! $status_changed ) {
+			$this->log( sprintf( __( 'Received payment result for %s but status has not changed.', 'camptix' ), $transaction_id ) );
+
+			if ( in_array( $to_status, array( 'pending', 'publish' ) ) ) {
+				// Show the purchased tickets.
+				$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
+				$url = add_query_arg( array( 'tix_action' => 'access_tickets', 'tix_access_token' => $access_token ), $this->get_tickets_url() );
+				wp_safe_redirect( $url . '#tix' );
+				die();
+			}
+			return;
+		}
 
 		// Send out the tickets and receipt if necessary.
 		$this->email_tickets( $payment_token, $from_status, $to_status );
