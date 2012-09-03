@@ -1,9 +1,9 @@
 <?php
 /**
- * PayPal Payment Gateway for CampTix
+ * PayPal Payment Method for CampTix
  */
 
-class CampTix_Payment_Gateway extends CampTix_Addon {
+class CampTix_Payment_Method extends CampTix_Addon {
 
 	public $id = false;
 	public $name = false;
@@ -21,16 +21,16 @@ class CampTix_Payment_Gateway extends CampTix_Addon {
 		add_filter( 'camptix_get_payment_method_by_id', array( $this, '_camptix_get_payment_method_by_id' ), 10, 2 );
 
 		if ( ! $this->id )
-			die( 'id not specified in a payment gateway' );
+			die( 'id not specified in a payment method' );
 
 		if ( ! $this->name )
-			die( 'name not specified in a payment gateway' );
+			die( 'name not specified in a payment method' );
 
 		if ( ! $this->description )
-			die( 'description not specified in a payment gateway' );
+			die( 'description not specified in a payment method' );
 
 		if ( ! is_array( $this->supported_currencies ) || count( $this->supported_currencies ) < 1 )
-			die( 'supported currencies not specified in a payment gateway' );
+			die( 'supported currencies not specified in a payment method' );
 
 		$this->camptix_options = $camptix->get_options();
 	}
@@ -57,7 +57,7 @@ class CampTix_Payment_Gateway extends CampTix_Addon {
 
 		?>
 		Disabled
-		<p class="description"><?php printf( __( '%s is not supported by this payment gateway.', 'camptix' ), '<code>' . $this->camptix_options['currency'] . '</code>' ); ?></p>
+		<p class="description"><?php printf( __( '%s is not supported by this payment method.', 'camptix' ), '<code>' . $this->camptix_options['currency'] . '</code>' ); ?></p>
 		<?php
 	}
 
@@ -202,7 +202,7 @@ class CampTix_Payment_Gateway extends CampTix_Addon {
 	}
 }
 
-class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
+class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 	public $id = 'paypal';
 	public $name = 'PayPal';
@@ -259,7 +259,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 	}
 
 	function template_redirect() {
-		if ( ! isset( $_REQUEST['tix_payment_gateway'] ) || 'paypal' != $_REQUEST['tix_payment_gateway'] )
+		if ( ! isset( $_REQUEST['tix_payment_method'] ) || 'paypal' != $_REQUEST['tix_payment_method'] )
 			return;
 
 		if ( 'payment_cancel' == get_query_var( 'tix_action' ) )
@@ -396,7 +396,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 			$notify_url = add_query_arg( array(
 				'tix_action' => 'payment_notify',
 				'tix_payment_token' => $payment_token,
-				'tix_payment_gateway' => 'paypal',
+				'tix_payment_method' => 'paypal',
 			), $this->get_tickets_url() );
 
 			$payload = array(
@@ -473,18 +473,18 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 			return false;
 
 		if ( ! in_array( $this->camptix_options['currency'], $this->supported_currencies ) )
-			die( __( 'The selected currency is not supported by this payment gateway.', 'camptix' ) );
+			die( __( 'The selected currency is not supported by this payment method.', 'camptix' ) );
 
 		$return_url = add_query_arg( array(
 			'tix_action' => 'payment_return',
 			'tix_payment_token' => $payment_token,
-			'tix_payment_gateway' => 'paypal',
+			'tix_payment_method' => 'paypal',
 		), $this->get_tickets_url() );
 
 		$cancel_url = add_query_arg( array(
 			'tix_action' => 'payment_cancel',
 			'tix_payment_token' => $payment_token,
-			'tix_payment_gateway' => 'paypal',
+			'tix_payment_method' => 'paypal',
 		), $this->get_tickets_url() );
 
 		$payload = array(
@@ -568,7 +568,7 @@ class CampTix_Payment_Gateway_PayPal extends CampTix_Payment_Gateway {
 	}
 }
 
-class CampTix_Payment_Gateway_Blackhole extends CampTix_Payment_Gateway {
+class CampTix_Payment_Method_Blackhole extends CampTix_Payment_Method {
 
 	public $id = 'blackhole';
 	public $name = 'Blackhole';
@@ -609,13 +609,21 @@ class CampTix_Payment_Gateway_Blackhole extends CampTix_Payment_Gateway {
 		$order = $this->get_order( $payment_token );
 		do_action( 'camptix_before_payment', $payment_token );
 
+		$payment_data = array(
+			'transaction_id' => 'tix-blackhole-' . md5( sprintf( 'tix-blackhole-%s-%s-%s', print_r( $order, true ), time(), rand( 1, 9999 ) ) ),
+			'transaction_details' => array(
+				// @todo maybe add more info about the payment
+				'raw' => array( 'payment_method' => 'blackhole' ),
+			),
+		);
+
 		if ( $this->options['always_succeed'] )
-			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED );
+			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED, $payment_data );
 		else
 			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 	}
 }
 
 // Register this class as a CampTix Addon.
-camptix_register_addon( 'CampTix_Payment_Gateway_PayPal' );
-camptix_register_addon( 'CampTix_Payment_Gateway_Blackhole' );
+camptix_register_addon( 'CampTix_Payment_Method_PayPal' );
+camptix_register_addon( 'CampTix_Payment_Method_Blackhole' );

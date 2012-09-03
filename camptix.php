@@ -1004,7 +1004,7 @@ class CampTix_Plugin {
 		$this->log( __( 'Running upgrade script.', 'camptix' ), 0, null, 'upgrade' );
 
 		/**
-		 * Payment Gateways Upgrade Routine
+		 * Payment Methods Upgrade Routine
 		 */
 		if ( $from < 20120831 ) {
 			$this->log( sprintf( __( 'Upgrading from %s to %s.', 'camptix' ), $from, 20120620 ), 0, null, 'upgrade' );
@@ -1319,7 +1319,7 @@ class CampTix_Plugin {
 				?></option>
 			<?php endforeach; ?>
 		</select>
-		<p class="description"><?php _e( 'Make sure you select a currency that is supported by all the payment gateways you plan to use.', 'camptix' ); ?></p>
+		<p class="description"><?php _e( 'Make sure you select a currency that is supported by all the payment methods you plan to use.', 'camptix' ); ?></p>
 		<?php
 	}
 
@@ -3909,7 +3909,7 @@ class CampTix_Plugin {
 			$this->error( __( 'The chosen receipt e-mail address is either empty or invalid.', 'camptix' ) );
 
 		if ( isset( $this->error_flags['payment_failed'] ) )
-			$this->error( __( 'An payment error has occurred, looks like chosen payment gateway is not responding. Please try again later.', 'camptix' ) );
+			$this->error( __( 'An payment error has occurred, looks like chosen payment method is not responding. Please try again later.', 'camptix' ) );
 
 		if ( isset( $this->error_flags['invalid_payment_method'] ) )
 			$this->error( __( 'You have selected an invalid payment method. Please try again.', 'camptix' ) );
@@ -5268,7 +5268,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Returns a payment gateway class object by id/key.
+	 * Returns a payment method class object by id/key.
 	 */
 	function get_payment_method_by_id( $id ) {
 		$payment_method = apply_filters( 'camptix_get_payment_method_by_id', null, $id );
