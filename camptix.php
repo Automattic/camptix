@@ -1052,7 +1052,8 @@ class CampTix_Plugin {
 				'orderby' => 'ID',
 			) ) ) {
 
-				foreach ( $attendees as $attendee_id ) {
+				foreach ( $attendees as $attendee ) {
+					$attendee_id = $attendee->ID;
 
 					$transaction_id = get_post_meta( $attendee_id, 'tix_paypal_transaction_id', true );
 					update_post_meta( $attendee_id, 'tix_transaction_id', $transaction_id );
