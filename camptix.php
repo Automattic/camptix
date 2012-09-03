@@ -1071,7 +1071,7 @@ class CampTix_Plugin {
 					// @todo unset old meta keys
 
 					// Update post for other actions to kick in (and generate searchable content, etc.)
-					wp_update_post( array( 'ID' => $attendee_id ) );
+					wp_update_post( $attendee );
 
 					// Delete caches individually rather than clean_post_cache( $attendee_id ),
 					// prevents querying for children posts, saves a bunch of queries :)
