@@ -149,6 +149,7 @@ class CampTix_Plugin {
 		$this->custom_columns();
 		$this->register_post_types();
 		$this->register_post_statuses();
+		
 
 		do_action( 'camptix_init' );
 	}
@@ -1009,6 +1010,10 @@ class CampTix_Plugin {
 		if ( $from < 20120831 ) {
 			$this->log( sprintf( __( 'Upgrading from %s to %s.', 'camptix' ), $from, 20120620 ), 0, null, 'upgrade' );
 
+			// Because these run after get_options.
+			$this->register_post_types();
+			$this->register_post_statuses();
+
 			/**
 			 * Update options.
 			 */
@@ -1042,6 +1047,7 @@ class CampTix_Plugin {
 			// @todo unset old options
 
 			$this->log( "Going to update options", null, $options, 'upgrade' );
+			update_option( 'camptix_options', $optios );
 
 			$paged = 1;
 			while ( $attendees = get_posts( array(
