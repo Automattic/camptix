@@ -1049,17 +1049,8 @@ class CampTix_Plugin {
 				'posts_per_page' => 200,
 				'post_status' => array( 'publish', 'pending', 'failed', 'refund' ),
 				'paged' => $paged++,
-				'fields' => 'ids', // ! no post objects
 				'orderby' => 'ID',
-				'order' => 'ASC',
-				'cache_results' => false, // no caching
 			) ) ) {
-
-				/**
-				 * TL;DR: Use prepare_metadata_for to preload meta, set $this->filter_post_meta = false; when done.
-				 * @see Summarize and export in Tools for more comments on this approach.
-				 */
-				$this->filter_post_meta = $this->prepare_metadata_for( $attendees );
 
 				foreach ( $attendees as $attendee_id ) {
 
@@ -1081,15 +1072,12 @@ class CampTix_Plugin {
 					// Update post for other actions to kick in (and generate searchable content, etc.)
 					wp_update_post( array( 'ID' => $attendee_id ) );
 
-					// Commented out because we're not doing any caching.
 					// Delete caches individually rather than clean_post_cache( $attendee_id ),
 					// prevents querying for children posts, saves a bunch of queries :)
-					// wp_cache_delete( $attendee_id, 'posts' );
-					// wp_cache_delete( $attendee_id, 'post_meta' );
+					wp_cache_delete( $attendee_id, 'posts' );
+					wp_cache_delete( $attendee_id, 'post_meta' );
 				}
 
-				// Clear prepared metadata.
-				$this->filter_post_meta = false;
 			}
 
 			$this->log( 'Updated attendees data.', null, null, 'upgrade' );
