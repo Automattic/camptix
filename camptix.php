@@ -983,12 +983,19 @@ class CampTix_Plugin {
 		// Let's see if we need to run an upgrade scenario.
 		if ( $options['version'] < $this->version ) {
 
-			$new_version = $this->upgrade( $options['version'] );
+			// Lock to prevent concurrent upgrades.
+			$doing_upgrade = get_option( 'camptix_doing_upgrade', false );
 
-			// Read options again in case of update options.
-			$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
-			$options['version'] = $new_version;
-			update_option( 'camptix_options', $options );
+			if ( ! $doing_upgrade ) {
+				update_option( 'camptix_doing_upgrade', true );
+				$new_version = $this->upgrade( $options['version'] );
+				delete_option( 'camptix_doing_upgrade' );
+
+				// Read options again in case of update options.
+				$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
+				$options['version'] = $new_version;
+				update_option( 'camptix_options', $options );
+			}
 
 		}
 
