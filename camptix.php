@@ -1063,12 +1063,12 @@ class CampTix_Plugin {
 			$this->log( __( 'Going to update options', 'camptix' ), null, $options, 'upgrade' );
 
 			// Delete old options.
-			unset( $options['paypal_api_username'] );
+			/*unset( $options['paypal_api_username'] );
 			unset( $options['paypal_api_password'] );
 			unset( $options['paypal_api_signature'] );
 			unset( $options['paypal_currency'] );
 			unset( $options['paypal_statement_subject'] );
-			unset( $options['paypal_sandbox'] );
+			unset( $options['paypal_sandbox'] );*/
 
 			update_option( 'camptix_options', $options );
 
@@ -1098,8 +1098,8 @@ class CampTix_Plugin {
 					update_post_meta( $attendee_id, 'tix_payment_token', $payment_token );
 
 					// Delete old meta keys
-					delete_post_meta( $attendee_id, 'tix_paypal_transaction_id' );
-					delete_post_meta( $attendee_id, 'tix_paypal_transaction_details' );
+					/*delete_post_meta( $attendee_id, 'tix_paypal_transaction_id' );
+					delete_post_meta( $attendee_id, 'tix_paypal_transaction_details' );*/
 
 					// Update post for other actions to kick in (and generate searchable content, etc.)
 					wp_update_post( $attendee );
