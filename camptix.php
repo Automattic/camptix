@@ -3393,6 +3393,7 @@ class CampTix_Plugin {
 			'tix_access_token',
 			'tix_edit_token',
 			'tix_payment_token',
+			'tix_payment_method',
 		);
 		$data = array( 'timestamp' => time() );
 
@@ -4075,7 +4076,7 @@ class CampTix_Plugin {
 					<?php if ( $total > 0 ) : ?>
 					<select name="tix_payment_method">
 						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
-							<option value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
+							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
 						<?php endforeach; ?>
 					</select>
 					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
