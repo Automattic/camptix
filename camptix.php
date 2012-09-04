@@ -4972,8 +4972,9 @@ class CampTix_Plugin {
 
 		if ( isset( $_POST['tix_payment_method'] ) && array_key_exists( $_POST['tix_payment_method'], $this->get_enabled_payment_methods() ) )
 			$payment_method = $_POST['tix_payment_method'];
-		else
+		elseif ( $this->order['price'] > 0 ) {
 			$this->error_flags['invalid_payment_method'] = true;
+		}
 
 		foreach( (array) $_POST['tix_attendee_info'] as $i => $attendee_info ) {
 			$attendee = new stdClass;
