@@ -687,7 +687,7 @@ class CampTix_Plugin {
 	 * Hooked to load-edit.php, adds user options for hidden columns if absent.
 	 */
 	function update_hidden_columns() {
-		if ( ! in_array( $_REQUEST['post_type'], array( 'tix_attendee', 'tix_ticket' ) ) )
+		if ( ! empty( $_REQUEST['post_type' ] ) && ! in_array( $_REQUEST['post_type'], array( 'tix_attendee', 'tix_ticket' ) ) )
 			return;
 
 		$user = wp_get_current_user();
