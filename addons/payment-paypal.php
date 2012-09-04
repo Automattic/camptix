@@ -255,6 +255,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		if ( isset( $input['api_signature'] ) )
 			$output['api_signature'] = $input['api_signature'];
 
+		if ( isset( $input['sandbox'] ) )
+			$output['sandbox'] = (bool) $input['sandbox'];
+
 		return $output;
 	}
 
