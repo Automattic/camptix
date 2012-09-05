@@ -1,223 +1,34 @@
 <?php
 /**
- * PayPal Payment Method for CampTix
+ * PayPal Express Checkout Payment Method for CampTix
+ *
+ * This class is a payment method for CampTix which implements
+ * PayPal Express Checkout. You can use this as a base to create
+ * your own redirect-based payment method for CampTix.
+ *
+ * @since CampTix 1.2
  */
-
-class CampTix_Payment_Method extends CampTix_Addon {
-
-	public $id = false;
-	public $name = false;
-	public $description = false;
-
-	public $supported_currencies = false;
-
-	function __construct() {
-		global $camptix;
-
-		parent::__construct();
-
-		add_filter( 'camptix_available_payment_methods', array( $this, '_camptix_available_payment_methods' ) );
-		add_filter( 'camptix_validate_options', array( $this, '_camptix_validate_options' ) );
-		add_filter( 'camptix_get_payment_method_by_id', array( $this, '_camptix_get_payment_method_by_id' ), 10, 2 );
-
-		if ( ! $this->id )
-			die( 'id not specified in a payment method' );
-
-		if ( ! $this->name )
-			die( 'name not specified in a payment method' );
-
-		if ( ! $this->description )
-			die( 'description not specified in a payment method' );
-
-		if ( ! is_array( $this->supported_currencies ) || count( $this->supported_currencies ) < 1 )
-			die( 'supported currencies not specified in a payment method' );
-
-		$this->camptix_options = $camptix->get_options();
-	}
-
-	function supports_currency( $currency ) {
-		return ( in_array( $currency, $this->supported_currencies ) );
-	}
-
-	function _camptix_get_payment_method_by_id( $payment_method, $id ) {
-		if ( $this->id == $id )
-			$payment_method = $this;
-
-		return $payment_method;
-	}
-
-	function _camptix_settings_section_callback() {
-		echo '<p>' . $this->description . '</p>';
-		printf( '<p>' . __( 'Supported currencies: <code>%s</code>.', 'camptix' ) . '</p>', implode( '</code>, <code>', $this->supported_currencies ) );
-	}
-
-	function _camptix_settings_enabled_callback( $args = array() ) {
-		if ( in_array( $this->camptix_options['currency'], $this->supported_currencies ) )
-			return $this->field_yesno( $args );
-
-		?>
-		Disabled
-		<p class="description"><?php printf( __( '%s is not supported by this payment method.', 'camptix' ), '<code>' . $this->camptix_options['currency'] . '</code>' ); ?></p>
-		<?php
-	}
-
-	function _camptix_validate_options( $camptix_options ) {
-		$post_key = "camptix_payment_options_{$this->id}";
-		$option_key = "payment_options_{$this->id}";
-
-		if ( ! isset( $_POST[ $post_key ] ) )
-			return $camptix_options;
-
-		$input = $_POST[ $post_key ];
-		$output = $this->validate_options( $input );
-		$camptix_options[ $option_key ] = $output;
-
-		return $camptix_options;
-	}
-
-	function validate_options( $input ) {
-		return array();
-	}
-
-	function payment_checkout( $payment_token ) {
-		die( __FUNCTION__ . ' not implemented' );
-	}
-
-	function payment_settings_fields() {
-		return;
-	}
-
-	function _camptix_available_payment_methods( $payment_methods ) {
-		if ( $this->id && $this->name && $this->description )
-			$payment_methods[ $this->id ] = array(
-				'name' => $this->name,
-				'description' => $this->description,
-			);
-
-		return $payment_methods;
-	}
-
-	function payment_result( $payment_token, $result, $data = array() ) {
-		global $camptix;
-		return $camptix->payment_result( $payment_token, $result, $data );
-	}
-
-	function redirect_with_error_flags( $query_args = array() ) {
-		global $camptix;
-		$camptix->redirect_with_error_flags( $query_args );
-	}
-
-	function error_flag( $flag ) {
-		global $camptix;
-		$camptix->error_flag( $flag );
-	}
-
-	function get_tickets_url() {
-		global $camptix;
-		return $camptix->get_tickets_url();
-	}
-
-	function log( $message, $post_id = 0, $data = null, $module = 'payment' ) {
-		global $camptix;
-		return $camptix->log( $message, $post_id, $data, $module );
-	}
-
-	function get_order( $payment_token = false ) {
-		if ( ! $payment_token )
-			return array();
-
-		$attendees = get_posts( array(
-			'posts_per_page' => 1,
-			'post_type' => 'tix_attendee',
-			'post_status' => 'any',
-			'meta_query' => array(
-				array(
-					'key' => 'tix_payment_token',
-					'compare' => '=',
-					'value' => $payment_token,
-					'type' => 'CHAR',
-				),
-			),
-		) );
-
-		if ( ! $attendees )
-			return array();
-
-		return (array) get_post_meta( $attendees[0]->ID, 'tix_order', true );
-	}
-
-	/**
-	 * A text input for the Settings API, name and value attributes
-	 * should be specified in $args. Same goes for the rest.
-	 */
-	function field_text( $args ) {
-		?>
-		<input type="text" name="<?php echo esc_attr( $args['name'] ); ?>" value="<?php echo esc_attr( $args['value'] ); ?>" class="regular-text" />
-		<?php
-	}
-
-	/**
-	 * A checkbox field for the Settings API.
-	 */
-	function field_checkbox( $args ) {
-		?>
-		<input type="checkbox" name="<?php echo esc_attr( $args['name'] ); ?>" value="1" <?php checked( $args['value'] ); ?> />
-		<?php
-	}
-
-	/**
-	 * A yes-no field for the Settings API.
-	 */
-	function field_yesno( $args ) {
-		?>
-		<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="1" <?php checked( $args['value'], true ); ?>> <?php _e( 'Yes', 'camptix' ); ?></label>
-		<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="0" <?php checked( $args['value'], false ); ?>> <?php _e( 'No', 'camptix' ); ?></label>
-
-		<?php if ( isset( $args['description'] ) ) : ?>
-		<p class="description"><?php echo $args['description']; ?></p>
-		<?php endif; ?>
-		<?php
-	}
-
-	function settings_field_name_attr( $name ) {
-		return esc_attr( "camptix_payment_options_{$this->id}[{$name}]" );
-	}
-
-	function add_settings_field_helper( $option_name, $title, $callback, $description = '' ) {
-		return add_settings_field( 'camptix_payment_' . $this->id . '_' . $option_name, $title, $callback, 'camptix_options', 'payment_' . $this->id, array(
-			'name' => $this->settings_field_name_attr( $option_name ),
-			'value' => $this->options[ $option_name ],
-			'description' => $description,
-		) );
-	}
-
-	function get_payment_options() {
-		$payment_options = array();
-		$option_key = "payment_options_{$this->id}";
-
-		if ( isset( $this->camptix_options[ $option_key ] ) )
-			$payment_options = (array) $this->camptix_options[ $option_key ];
-
-		return $payment_options;
-	}
-}
-
 class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
+	/**
+	 * The following variables are required for every payment method.
+	 */
 	public $id = 'paypal';
 	public $name = 'PayPal';
 	public $description = 'PayPal Express Checkout';
 	public $supported_currencies = array( 'USD', 'EUR', 'CAD', 'NOK', 'PLN', 'JPY' );
 
+	/**
+	 * We can have an array to store our options.
+	 * Use $this->get_payment_options() to retrieve them.
+	 */
 	protected $options = array();
-	protected $error_flags = array();
 
 	/**
-	 * Runs during camptix_init, @see CampTix_Addon
+	 * Runs during camptix_init, loads our options and sets some actions.
+	 * @see CampTix_Addon
 	 */
 	function camptix_init() {
-		global $camptix;
-
 		$this->options = array_merge( array(
 			'api_username' => '',
 			'api_password' => '',
@@ -229,7 +40,11 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Add settings to the payment options
+	 * This runs during settings field registration in CampTix for the
+	 * payment methods configuration screen. If your payment method has
+	 * options, this method is the place to add them to. You can use the
+	 * helper function to add typical settings fields. Don't forget to
+	 * validate them all in validate_options.
 	 */
 	function payment_settings_fields() {
 		$this->add_settings_field_helper( 'api_username', __( 'API Username', 'camptix' ), array( $this, 'field_text' ) );
@@ -241,7 +56,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Validate the above
+	 * Validate the above option. Runs automatically upon options save and is
+	 * given an $input array. Expects an $output array of filtered payment method options.
 	 */
 	function validate_options( $input ) {
 		$output = $this->options;
@@ -261,6 +77,10 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		return $output;
 	}
 
+	/**
+	 * For PayPal we'll watch for some additional CampTix actions which may be
+	 * fired from PayPal either with a redirect (cancel and return) or an IPN (notify).
+	 */
 	function template_redirect() {
 		if ( ! isset( $_REQUEST['tix_payment_method'] ) || 'paypal' != $_REQUEST['tix_payment_method'] )
 			return;
@@ -276,7 +96,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * PayPal IPN
+	 * Runs when PayPal sends an IPN signal with a payment token and a
+	 * payload in $_POST. Verify the payload and use $this->payment_result
+	 * to signal a transaction result back to CampTix.
 	 */
 	function payment_notify() {
 		global $camptix;
@@ -324,13 +146,16 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			),
 		);
 
+		/**
+		 * Returns the payment result back to CampTix. Don't be afraid to return a
+		 * payment result twice. In fact, it's typical for payment methods with IPN support.
+		 */
 		return $this->payment_result( $payment_token, $this->get_status_from_string( $payment_status ), $payment_data );
-
-		$this->log( "IPN POST", null, $_POST );
-		$this->log( "IPN GET", null, $_GET );
-		return;
 	}
 
+	/**
+	 * Helps convert payment statuses from PayPal responses, to CampTix payment statuses.
+	 */
 	function get_status_from_string( $payment_status ) {
 		global $camptix;
 
@@ -351,6 +176,10 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		return $statuses[ $payment_status ];
 	}
 
+	/**
+	 * Runs when the user cancels their payment during checkout at PayPal.
+	 * his will simply tell CampTix to put the created attendee drafts into to Cancelled state.
+	 */
 	function payment_cancel() {
 		global $camptix;
 
@@ -367,6 +196,13 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_CANCELLED );
 	}
 
+	/**
+	 * This runs when PayPal redirects the user back after the user has clicked
+	 * Pay Now on PayPal. At this point, the user hasn't been charged yet, so we
+	 * verify their order once more and fire DoExpressCheckoutPayment to produce
+	 * the charge. This method ends with a call to payment_result back to CampTix
+	 * which will redirect the user to their tickets page, send receipts, etc.
+	 */
 	function payment_return() {
 		global $camptix;
 
@@ -404,7 +240,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 			$payload = array(
 				'METHOD' => 'DoExpressCheckoutPayment',
-				'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
+				'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly', // @todo allow echecks with an option
 				'TOKEN' => $paypal_token,
 				'PAYERID' => $payer_id,
 				'PAYMENTREQUEST_0_NOTIFYURL' => esc_url_raw( $notify_url ),
@@ -432,6 +268,10 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 				$this->log( sprintf( __( 'Payment details for %s', 'camptix'), $txn_id ), null, $txn );
 
+				/**
+				 * Note that when returning a successful payment, CampTix will be
+				 * expecting the transaction_id and transaction_details array keys.
+				 */
 				$payment_data = array(
 					'transaction_id' => $txn_id,
 					'transaction_details' => array(
@@ -455,19 +295,11 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Called when the checkout process is initiated.
-	 *
-	 * $order = array(
-	 *     'items' => array(
-	 *         'id' => 123,
-	 *         'name' => 'Item Name',
-	 *         'description' => 'Item description',
-	 *         'price' => 10.99,
-	 *         'quantity' => 3,
-	 *     ),
-	 *     'coupon' => 'xyz',
-	 *     'total' => 123.45,
-	 * );
+	 * This method is the fire starter. It's called when the user initiates
+	 * a checkout process with the selected payment method. In PayPal's case,
+	 * if everything's okay, we redirect to the PayPal Express Checkout page with
+	 * the details of our transaction. If something's wrong, we return a failed
+	 * result back to CampTix immediately.
 	 */
 	function payment_checkout( $payment_token ) {
 		global $camptix;
@@ -493,7 +325,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		$payload = array(
 			'METHOD' => 'SetExpressCheckout',
 			'PAYMENTREQUEST_0_PAYMENTACTION' => 'Sale',
-			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly',
+			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly', // @todo allow echecks with an option
 			'RETURNURL' => $return_url,
 			'CANCELURL' => $cancel_url,
 			'ALLOWNOTE' => 0,
@@ -509,10 +341,6 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		if ( isset( $response['ACK'], $response['TOKEN'] ) && 'Success' == $response['ACK'] ) {
 			$token = $response['TOKEN'];
 
-			/*foreach ( $attendees as $attendee ) {
-				update_post_meta( $attendee->ID, 'tix_paypal_token', $token );
-			}*/
-
 			$url = $this->options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout';
 			$url = add_query_arg( 'token', $token, $url );
 			wp_redirect( esc_url_raw( $url ) );
@@ -525,6 +353,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		}
 	}
 
+	/**
+	 * Helper function for PayPal which fills a $payload array with items from the $order array.
+	 */
 	function fill_payload_with_order( &$payload, $order ) {
 		$event_name = 'Event';
 		if ( isset( $this->camptix_options['event_name'] ) )
@@ -540,6 +371,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			$i++;
 		}
 
+		/** @todo add coupon/reservation as a note. **/
+
 		$payload['PAYMENTREQUEST_0_ITEMAMT'] = $order['total'];
 		$payload['PAYMENTREQUEST_0_AMT'] = $order['total'];
 		$payload['PAYMENTREQUEST_0_CURRENCYCODE'] = $this->camptix_options['currency'];
@@ -547,7 +380,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Fire a POST request to PayPal.
+	 * Use this method to fire a POST request to the PayPal API.
 	 */
 	function request( $payload = array() ) {
 		$url = $this->options['sandbox'] ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
@@ -562,7 +395,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Validate an IPN request
+	 * Use this method to validate an incoming IPN request.
 	 */
 	function verify_ipn( $payload = array() ) {
 		$url = $this->options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr';
@@ -571,62 +404,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 }
 
-class CampTix_Payment_Method_Blackhole extends CampTix_Payment_Method {
-
-	public $id = 'blackhole';
-	public $name = 'Blackhole';
-	public $description = 'Will always result in a successful payment.';
-	public $supported_currencies = array( 'USD' );
-
-	protected $options;
-
-	function camptix_init() {
-		$this->options = array_merge( array(
-			'always_succeed' => true,
-		), $this->get_payment_options() );
-	}
-
-	/**
-	 * Add settings to the payment options
-	 */
-	function payment_settings_fields() {
-		$this->add_settings_field_helper( 'always_succeed', __( 'Always Succeed', 'camptix' ), array( $this, 'field_yesno' ) );
-	}
-
-	/**
-	 * Validate the above
-	 */
-	function validate_options( $input ) {
-		$output = $this->options;
-
-		if ( isset( $input['always_succeed'] ) )
-			$output['always_succeed'] = (bool) $input['always_succeed'];
-
-		return $output;
-	}
-
-	function payment_checkout( $payment_token ) {
-		global $camptix;
-
-		// Process $order and do something.
-		$order = $this->get_order( $payment_token );
-		do_action( 'camptix_before_payment', $payment_token );
-
-		$payment_data = array(
-			'transaction_id' => 'tix-blackhole-' . md5( sprintf( 'tix-blackhole-%s-%s-%s', print_r( $order, true ), time(), rand( 1, 9999 ) ) ),
-			'transaction_details' => array(
-				// @todo maybe add more info about the payment
-				'raw' => array( 'payment_method' => 'blackhole' ),
-			),
-		);
-
-		if ( $this->options['always_succeed'] )
-			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_COMPLETED, $payment_data );
-		else
-			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
-	}
-}
-
-// Register this class as a CampTix Addon.
+/**
+ * The last stage is to register your payment method with CampTix.
+ * Since the CampTix_Payment_Method class extends from CampTix_Addon,
+ * we use the camptix_register_addon function to register it.
+ */
 camptix_register_addon( 'CampTix_Payment_Method_PayPal' );
-camptix_register_addon( 'CampTix_Payment_Method_Blackhole' );

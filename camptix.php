@@ -51,6 +51,9 @@ class CampTix_Plugin {
 	function __construct() {
 		do_action( 'camptix_pre_init' );
 
+		require( dirname( __FILE__ ) . '/inc/class-camptix-addon.php' );
+		require( dirname( __FILE__ ) . '/inc/class-camptix-payment-method.php' );
+
 		// Addons
 		add_action( 'init', array( $this, 'load_addons' ), 8 );
 		add_action( 'camptix_load_addons', array( $this, 'load_default_addons' ) );
@@ -149,7 +152,6 @@ class CampTix_Plugin {
 		$this->custom_columns();
 		$this->register_post_types();
 		$this->register_post_statuses();
-		
 
 		do_action( 'camptix_init' );
 	}
@@ -6154,17 +6156,3 @@ class CampTix_Plugin {
 
 // Initialize the $camptix global.
 $GLOBALS['camptix'] = new CampTix_Plugin;
-
-function camptix_register_addon( $classname ) {
-	return $GLOBALS['camptix']->register_addon( $classname );
-}
-
-/**
- * If you're writing an addon, make sure you extend from this class.
- */
-abstract class CampTix_Addon {
-	public function __construct() {
-		add_action( 'camptix_init', array( $this, 'camptix_init' ) );
-	}
-	public function camptix_init() {}
-}
