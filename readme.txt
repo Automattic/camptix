@@ -7,7 +7,7 @@ Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Simple and Flexible ticketing plugin by WordCamp.org
+Simple and Flexible ticketing brought to you by WordCamp.org
 
 == Description ==
 
@@ -27,7 +27,7 @@ Feel free to post your feature requests, issues and pull requests to [CampTix on
 
 1. Download and extract CampTix in your `wp-content/plugins` directory
 1. Activate the plugin through the Plugins menu in WordPress
-1. Go to Tickets - Setup to configure your PayPal account
+1. Go to Tickets - Setup to configure your event settings and payment methods
 1. Creat a ticket or two, place the `[camptix]` shortcode on a Page
 1. Start selling!
 
@@ -44,6 +44,11 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.2 =
+* Added and API for payment methods
+* Added a couple of language packs
+* Minor cleanups and bugfixes
 
 = 1.1 =
 * Added JPY currency
