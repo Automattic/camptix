@@ -5381,6 +5381,7 @@ class CampTix_Plugin {
 
 			if ( $this::PAYMENT_STATUS_REFUNDED == $result ) {
 				$attendee->post_status = 'refund';
+				wp_update_post( $attendee );
 			}
 
 			if ( $old_post_status != $attendee->post_status ) {
