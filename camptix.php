@@ -5380,6 +5380,10 @@ class CampTix_Plugin {
 				wp_update_post( $attendee );
 			}
 
+			if ( $this::PAYMENT_STATUS_REFUNDED == $result ) {
+				$attendee->post_status = 'refund';
+			}
+
 			if ( $old_post_status != $attendee->post_status ) {
 				$status_changed = true;
 				$this->log( sprintf( __( 'Attendee status has been changed to %s', 'camptix' ), $attendee->post_status ), $attendee->ID );
@@ -5451,6 +5455,11 @@ class CampTix_Plugin {
 				$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
 				$url = add_query_arg( array( 'tix_action' => 'access_tickets', 'tix_access_token' => $access_token ), $this->get_tickets_url() );
 				wp_safe_redirect( $url . '#tix' );
+				die();
+				break;
+
+			case $this::PAYMENT_STATUS_REFUNDED :
+				// @todo what do we do when a purchase is refunded?
 				die();
 				break;
 
