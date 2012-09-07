@@ -82,6 +82,12 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * fired from PayPal either with a redirect (cancel and return) or an IPN (notify).
 	 */
 	function template_redirect() {
+
+		// Backwards compatibility with CampTix 1.1
+		if ( isset( $_GET['tix_paypal_ipn'] ) && $_GET['tix_paypal_ipn'] == 1 )
+			$this->payment_notify_back_compat();
+
+		// New version requests.
 		if ( ! isset( $_REQUEST['tix_payment_method'] ) || 'paypal' != $_REQUEST['tix_payment_method'] )
 			return;
 
@@ -93,10 +99,6 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		if ( 'payment_notify' == get_query_var( 'tix_action' ) )
 			$this->payment_notify();
-
-		// Backwards compatibility with CampTix 1.1
-		if ( isset( $_GET['tix_paypal_ipn'] ) && $_GET['tix_paypal_ipn'] == 1 )
-			$this->payment_notify_back_compat();
 	}
 
 	/**
@@ -169,7 +171,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			return;
 
 		$payload = stripslashes_deep( $_POST );
-		$transaction_id = $payload['txn_id'];
+		$transaction_id = ( isset( $payload['txn_id'] ) ) ? $payload['txn_id'] : null;
+		if ( isset( $payload['parent_txn_id'] ) && ! empty( $payload['parent_txn_id'] ) )
+			$transaction_id = $payload['parent_txn_id'];
 
 		if ( empty( $transaction_id ) ) {
 			$this->log( __( 'Received old-style IPN request with an empty transaction id.', 'camptix' ), null, $payload );
@@ -192,7 +196,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		) );
 
 		if ( ! $attendees ) {
-			$this->log( __( 'Received old-style IPN request. Could match to attendees by transaction id.', 'camptix' ), null, $payload );
+			$this->log( __( 'Received old-style IPN request. Could not match to attendee by transaction id.', 'camptix' ), null, $payload );
 			return;
 		}
 
