@@ -3270,7 +3270,7 @@ class CampTix_Plugin {
 	 */
 	function save_ticket_post( $post_id ) {
 
-		if ( ! is_wp_admin() )
+		if ( ! is_admin() )
 			return;
 
 		if ( wp_is_post_revision( $post_id ) || 'tix_ticket' != get_post_type( $post_id ) )
@@ -3454,7 +3454,7 @@ class CampTix_Plugin {
 	 * Saves coupon post meta, runs during save_post and not always in/by the admin.
 	 */
 	function save_coupon_post( $post_id ) {
-		if ( ! is_wp_admin() )
+		if ( ! is_admin() )
 			return;
 
 		if ( wp_is_post_revision( $post_id ) || 'tix_coupon' != get_post_type( $post_id ) )
