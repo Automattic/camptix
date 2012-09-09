@@ -3269,6 +3269,10 @@ class CampTix_Plugin {
 	 * the post type is saved, and not necessarily from the admin, which is why the nonce check.
 	 */
 	function save_ticket_post( $post_id ) {
+
+		if ( ! is_wp_admin() )
+			return;
+
 		if ( wp_is_post_revision( $post_id ) || 'tix_ticket' != get_post_type( $post_id ) )
 			return;
 
@@ -3276,9 +3280,12 @@ class CampTix_Plugin {
 		if ( ! isset( $_POST['action'] ) || 'editpost' != $_POST['action'] )
 			return;
 
+		/**
+		 * @todo figure out security issue with .org
+		 */
 		// Security check.
-		$nonce_action = 'update-tix_ticket_' . $post_id; // see edit-form-advanced.php
-		check_admin_referer( $nonce_action );
+		// $nonce_action = 'update-tix_ticket_' . $post_id; // see edit-form-advanced.php
+		// check_admin_referer( $nonce_action );
 
 		if ( isset( $_POST['tix_price'] ) )
 			update_post_meta( $post_id, 'tix_price', $_POST['tix_price'] );
@@ -3447,6 +3454,9 @@ class CampTix_Plugin {
 	 * Saves coupon post meta, runs during save_post and not always in/by the admin.
 	 */
 	function save_coupon_post( $post_id ) {
+		if ( ! is_wp_admin() )
+			return;
+
 		if ( wp_is_post_revision( $post_id ) || 'tix_coupon' != get_post_type( $post_id ) )
 			return;
 
@@ -3454,9 +3464,12 @@ class CampTix_Plugin {
 		if ( ! isset( $_POST['action'] ) || 'editpost' != $_POST['action'] )
 			return;
 
+		/**
+		 * @todo figure out security issue with .org
+		 */
 		// Security check.
-		$nonce_action = 'update-tix_coupon_' . $post_id; // see edit-form-advanced.php
-		check_admin_referer( $nonce_action );
+		// $nonce_action = 'update-tix_coupon_' . $post_id; // see edit-form-advanced.php
+		// check_admin_referer( $nonce_action );
 
 		if ( isset( $_POST['tix_discount_price'], $_POST['tix_discount_percent'] ) ) {
 			$price = (float) $_POST['tix_discount_price'];
