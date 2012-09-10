@@ -206,7 +206,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 					$this->log( sprintf( 'Viewing private content using %s', @$_SERVER['REMOTE_ADDR'] ), $attendee->ID, $_SERVER );
 				}
 			} else {
-				$this->camptix( __( 'The information you have entered is incorrect. Please try again.', 'camptix' ) );
+				$this->log( __( 'The information you have entered is incorrect. Please try again.', 'camptix' ) );
 			}
 		}
 	}
