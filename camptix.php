@@ -204,7 +204,7 @@ class CampTix_Plugin {
 			return;
 
 		$email = array_shift( $email );
-		$this->log( __( 'Executing e-mail job.', 'camptix' ), $email->ID, null, 'notify' );
+		$this->log( 'Executing e-mail job.', $email->ID, null, 'notify' );
 		$max = apply_filters( 'camptix_notify_recipients_batch_count', 200 ); // plugins can change this.
 
 		$recipients_data = $wpdb->get_results( $wpdb->prepare( "SELECT SQL_CALC_FOUND_ROWS meta_id, meta_value FROM $wpdb->postmeta WHERE $wpdb->postmeta.post_id = %d AND $wpdb->postmeta.meta_key = %s LIMIT %d;", $email->ID, 'tix_email_recipient_id', $max ) );
@@ -251,7 +251,7 @@ class CampTix_Plugin {
 						);
 
 						if ( ! is_email( $attendee_email ) ) {
-							$this->log( sprintf( __( '%s is not a valid e-mail, removing from queue.', 'camptix' ), $attendee_email, $email->ID ), $email->ID, $data, 'notify' );
+							$this->log( sprintf( '%s is not a valid e-mail, removing from queue.', $attendee_email ), $email->ID, $data, 'notify' );
 						} else {
 
 							$this->notify_shortcodes_attendee_id = $attendee_id;
@@ -260,9 +260,9 @@ class CampTix_Plugin {
 
 							// Attempt to send an e-mail.
 							if ( $this->wp_mail( $attendee_email, $email_title, $email_content ) ) {
-								$this->log( sprintf( __( 'E-mail successfully sent to %s', 'camptix' ), $attendee_email ), $email->ID, $data, 'notify' );
+								$this->log( sprintf( 'E-mail successfully sent to %s', $attendee_email ), $email->ID, $data, 'notify' );
 							} else {
-								$this->log( sprintf( __( 'Could not send e-mail to %s, removing from queue.', 'camptix' ), $attendee_email ), $email->ID, $data, 'notify' );
+								$this->log( sprintf( 'Could not send e-mail to %s, removing from queue.', $attendee_email ), $email->ID, $data, 'notify' );
 							}
 						}
 
@@ -277,7 +277,7 @@ class CampTix_Plugin {
 		}
 
 		//update_post_meta( $email->ID, 'tix_email_recipients', $recipients );
-		$this->log( sprintf( __( 'Processed %d recipients. %d recipients remaining.', 'camptix' ), $processed, $total - $processed ), $email->ID, null, 'notify' );
+		$this->log( sprintf( 'Processed %d recipients. %d recipients remaining.', $processed, $total - $processed ), $email->ID, null, 'notify' );
 
 		// Let's see if there's anything left.
 		if ( $total - $processed < 1 ) {
@@ -288,7 +288,7 @@ class CampTix_Plugin {
 				'post_status' => 'publish',
 			) );
 
-			$this->log( __( 'Email job complete and published.', 'camptix' ), $email->ID, null, 'notify' );
+			$this->log( 'Email job complete and published.', $email->ID, null, 'notify' );
 		}
 	}
 
@@ -1014,14 +1014,14 @@ class CampTix_Plugin {
 	function upgrade( $from ) {
 
 		set_time_limit( 60*60 ); // Give it an hour to update.
-		$this->log( __( 'Running upgrade script.', 'camptix' ), 0, null, 'upgrade' );
+		$this->log( 'Running upgrade script.', 0, null, 'upgrade' );
 
 		/**
 		 * Payment Methods Upgrade Routine
 		 */
 		if ( $from < 20120831 ) {
 			$start_20120831 = microtime( true );
-			$this->log( sprintf( __( 'Upgrading from %s to %s.', 'camptix' ), $from, 20120620 ), 0, null, 'upgrade' );
+			$this->log( sprintf( 'Upgrading from %s to %s.', $from, 20120620 ), 0, null, 'upgrade' );
 
 			// Because these run after get_options.
 			$this->register_post_types();
@@ -1061,7 +1061,7 @@ class CampTix_Plugin {
 			$options['refunds_enabled'] = false;
 			$options['refund_all_enabled'] = false;
 
-			$this->log( __( 'Going to update options', 'camptix' ), null, $options, 'upgrade' );
+			$this->log( 'Going to update options', null, $options, 'upgrade' );
 
 			// Delete old options.
 			/*unset( $options['paypal_api_username'] );
@@ -1116,11 +1116,11 @@ class CampTix_Plugin {
 			}
 
 			$end_20120831 = microtime( true );
-			$this->log( sprintf( __( 'Updated %d attendees data in %f seconds.', 'camptix' ), $count, $end_20120831 - $start_20120831 ), null, null, 'upgrade' );
+			$this->log( sprintf( 'Updated %d attendees data in %f seconds.', $count, $end_20120831 - $start_20120831 ), null, null, 'upgrade' );
 			$from = 20120831;
 		}
 
-		$this->log( sprintf( __( 'Upgrade complete, current version: %s.', 'camptix' ), $this->version ), 0, null, 'upgrade' );
+		$this->log( sprintf( 'Upgrade complete, current version: %s.', $this->version ), 0, null, 'upgrade' );
 		return $this->version;
 	}
 
@@ -1261,7 +1261,7 @@ class CampTix_Plugin {
 			'new' => $output,
 			'username' => $current_user->user_login,
 		);
-		$this->log( __( 'Options updated.', 'camptix' ), 0, $log_data );
+		$this->log( 'Options updated.', 0, $log_data );
 
 		$output = apply_filters( 'camptix_validate_options', $output );
 
@@ -2176,7 +2176,7 @@ class CampTix_Plugin {
 			if ( 'xml' == $format )
 				echo '</attendees>';
 
-			$this->log( sprintf( __( 'Finished %s data export in %s seconds.', 'camptix' ), $format, microtime(true) - $time_start ) );
+			$this->log( sprintf( 'Finished %s data export in %s seconds.', $format, microtime(true) - $time_start ) );
 			die();
 		}
 	}
@@ -2251,7 +2251,7 @@ class CampTix_Plugin {
 				// Add recipients as post meta.
 				if ( $email_id ) {
 					add_settings_error( 'camptix', 'none', sprintf( __( 'Your e-mail job has been queued for %s recipients.', 'camptix' ), count( $recipients ) ), 'updated' );
-					$this->log( sprintf( __( 'Created e-mail job with %s recipients.', 'camptix' ), count( $recipients ) ), $email_id, null, 'notify' );
+					$this->log( sprintf( 'Created e-mail job with %s recipients.', count( $recipients ) ), $email_id, null, 'notify' );
 
 					foreach ( $recipients as $recipient_id )
 						add_post_meta( $email_id, 'tix_email_recipient_id', $recipient_id );
@@ -2438,7 +2438,7 @@ class CampTix_Plugin {
 		}
 
 		$current_user = wp_get_current_user();
-		$this->log( sprintf( __( 'Setting all transactions to refund, thanks %s.', 'camptix' ), $current_user->user_login ), 0, null, 'refund' );
+		$this->log( sprintf( 'Setting all transactions to refund, thanks %s.', $current_user->user_login ), 0, null, 'refund' );
 		update_option( 'camptix_doing_refunds', true );
 
 		$count = 0;
@@ -2457,7 +2457,7 @@ class CampTix_Plugin {
 			// Mark attendee for refund
 			foreach ( $attendees as $attendee_id ) {
 				update_post_meta( $attendee_id, 'tix_pending_refund', 1 );
-				$this->log( sprintf( __( 'Attendee set to refund by %s', 'camptix' ), $current_user->user_login ), $attendee_id, null, 'refund' );
+				$this->log( sprintf( 'Attendee set to refund by %s', $current_user->user_login ), $attendee_id, null, 'refund' );
 				$count++;
 			}
 		}
@@ -2517,7 +2517,7 @@ class CampTix_Plugin {
 		) );
 
 		if ( ! $attendees ) {
-			$this->log( __( 'Refund all job complete.', 'camptix' ), 0, null, 'refund' );
+			$this->log( 'Refund all job complete.', 0, null, 'refund' );
 			delete_option( 'camptix_doing_refunds' );
 		}
 
@@ -2562,14 +2562,14 @@ class CampTix_Plugin {
 				// Tell PayPal to refund our transaction.
 				$txn = wp_parse_args( wp_remote_retrieve_body( $this->paypal_request( $payload ) ) );
 				if ( isset( $txn['ACK'], $txn['REFUNDTRANSACTIONID'] ) && $txn['ACK'] == 'Success' ) {
-					$this->log( sprintf( __( 'Refunded transaction %s.', 'camptix' ), $transaction_id ), $attendee->ID, $txn, 'refund' );
+					$this->log( sprintf( 'Refunded transaction %s.', $transaction_id ), $attendee->ID, $txn, 'refund' );
 					$attendee->post_status = 'refund';
 					wp_update_post( $attendee );
 
 					// Remove refund flag and set status to refunded for related attendees.
 					while ( $rel_attendees = get_posts( $rel_attendees_query ) ) {
 						foreach ( $rel_attendees as $rel_attendee ) {
-							$this->log( sprintf( __( 'Refunded transaction %s.', 'camptix' ), $transaction_id ), $rel_attendee->ID, $txn, 'refund' );
+							$this->log( sprintf( 'Refunded transaction %s.', $transaction_id ), $rel_attendee->ID, $txn, 'refund' );
 							delete_post_meta( $rel_attendee->ID, 'tix_pending_refund' );
 							$rel_attendee->post_status = 'refund';
 							wp_update_post( $rel_attendee );
@@ -2578,19 +2578,19 @@ class CampTix_Plugin {
 					}
 
 				} else {
-					$this->log( sprintf( __( 'Could not refund %s.', 'camptix' ), $transaction_id ), $attendee->ID, $txn, 'refund' );
+					$this->log( sprintf( 'Could not refund %s.', $transaction_id ), $attendee->ID, $txn, 'refund' );
 
 					// Let other attendees know they can not be refunded too.
 					while ( $rel_attendees = get_posts( $rel_attendees_query ) ) {
 						foreach ( $rel_attendees as $rel_attendee ) {
-							$this->log( sprintf( __( 'Could not refund %s.', 'camptix' ), $transaction_id ), $rel_attendee->ID, $txn, 'refund' );
+							$this->log( sprintf( 'Could not refund %s.', $transaction_id ), $rel_attendee->ID, $txn, 'refund' );
 							delete_post_meta( $rel_attendee->ID, 'tix_pending_refund' );
 							clean_post_cache( $rel_attendee->ID );
 						}
 					}
 				}
 			} else {
-				$this->log( __( 'No transaction id for this attendee, not refunding.', 'camptix' ), $attendee->ID, null, 'refund' );
+				$this->log( 'No transaction id for this attendee, not refunding.', $attendee->ID, null, 'refund' );
 			}
 		}
 	}
@@ -3362,7 +3362,7 @@ class CampTix_Plugin {
 
 				// Create the reservation.
 				add_post_meta( $post_id, 'tix_reservation', $reservation );
-				$this->log( __( 'Created a new reservation.', 'camptix' ), $post_id, $reservation );
+				$this->log( 'Created a new reservation.', $post_id, $reservation );
 			}
 
 			// Release a reservation.
@@ -3373,7 +3373,7 @@ class CampTix_Plugin {
 				$reservations = $this->get_reservations( $post_id );
 				if ( isset( $reservations[$release_token] ) ) {
 					delete_post_meta( $post_id, 'tix_reservation', $reservations[$release_token] );
-					$this->log( __( 'Released a reservation.', 'camptix' ), $post_id, $reservations[$release_token] );
+					$this->log( 'Released a reservation.', $post_id, $reservations[$release_token] );
 				}
 			}
 
@@ -3393,12 +3393,12 @@ class CampTix_Plugin {
 					update_post_meta( $post_id, 'tix_quantity', $ticket_quantity );
 
 					delete_post_meta( $post_id, 'tix_reservation', $reservations[$cancel_token] );
-					$this->log( __( 'Cancelled a reservation.', 'camptix' ), $post_id, $reservations[$cancel_token] );
+					$this->log( 'Cancelled a reservation.', $post_id, $reservations[$cancel_token] );
 				}
 			}
 		}
 
-		$this->log( __( 'Saved ticket post with form data.', 'camptix' ), $post_id, $_POST );
+		$this->log( 'Saved ticket post with form data.', $post_id, $_POST );
 
 		// Purge tickets page cache.
 		$this->flush_tickets_page();
@@ -3447,7 +3447,7 @@ class CampTix_Plugin {
 		add_action( 'save_post', array( $this, __FUNCTION__ ) );
 
 		if ( isset( $_POST ) && ! empty( $_POST ) && is_admin() )
-			$this->log( __( 'Saved attendee post with post data.', 'camptix' ), $post_id, $_POST );
+			$this->log( 'Saved attendee post with post data.', $post_id, $_POST );
 	}
 
 	/**
@@ -3507,7 +3507,7 @@ class CampTix_Plugin {
 			update_post_meta( $post_id, 'tix_coupon_end', $_POST['tix_coupon_end'] );
 		}
 
-		$this->log( __( 'Saved coupon post with form data.', 'camptix' ), $post_id, $_POST );
+		$this->log( 'Saved coupon post with form data.', $post_id, $_POST );
 	}
 
 	/**
@@ -3689,7 +3689,7 @@ class CampTix_Plugin {
 			}
 
 			if ( $extra > 0 )
-				$this->log( __( 'Something is terribly wrong, extra > 0 after stripping extra coupons', 'camptix' ), 0, null, 'critical' );
+				$this->log( 'Something is terribly wrong, extra > 0 after stripping extra coupons', 0, null, 'critical' );
 		}
 
 		if ( isset( $_POST['tix_tickets_selected'] ) ) {
@@ -3732,7 +3732,7 @@ class CampTix_Plugin {
 	 */
 	function shortcode_callback( $atts ) {
 		if ( ! $this->did_template_redirect ) {
-			$this->log( __( 'Something is seriously wrong, did_template_redirect is false.', 'camptix' ), 0, null, 'critical' );
+			$this->log( 'Something is seriously wrong, did_template_redirect is false.', 0, null, 'critical' );
 			return __( 'An error has occurred.', 'camptix' );
 		}
 
@@ -4360,7 +4360,7 @@ class CampTix_Plugin {
 				wp_update_post( $attendee ); // triggers save_attendee
 
 				$this->info( __( 'Your information has been saved!', 'camptix' ) );
-				$this->log( __( 'Changed attendee data from frontend.', 'camptix' ), $attendee->ID, $_POST );
+				$this->log( 'Changed attendee data from frontend.', $attendee->ID, $_POST );
 				$ticket_info = $new_ticket_info;
 				$answers = $new_answers;
 			}
@@ -4514,8 +4514,8 @@ class CampTix_Plugin {
 				if ( isset( $txn['ACK'], $txn['REFUNDTRANSACTIONID'] ) && $txn['ACK'] == 'Success' ) {
 					$refund_txn_id = $txn['REFUNDTRANSACTIONID'];
 					foreach ( $attendees as $attendee ) {
-						$this->log( sprintf( __( 'Refunded %s by user request in %s.', 'camptix' ), $transaction['TRANSACTIONID'], $refund_txn_id ), $attendee->ID, $txn, 'refund' );
-						$this->log( __( 'Refund reason attached with data.', 'camptix' ), $attendee->ID, $reason, 'refund' );
+						$this->log( sprintf( 'Refunded %s by user request in %s.', $transaction['TRANSACTIONID'], $refund_txn_id ), $attendee->ID, $txn, 'refund' );
+						$this->log( 'Refund reason attached with data.', $attendee->ID, $reason, 'refund' );
 						$attendee->post_status = 'refund';
 						wp_update_post( $attendee );
 					}
@@ -4971,7 +4971,7 @@ class CampTix_Plugin {
 				break;
 		}
 
-		$this->log( sprintf( __( 'Reviewed timeout payments and set %d attendees to timeout status.', 'camptix' ), $processed ) );
+		$this->log( sprintf( 'Reviewed timeout payments and set %d attendees to timeout status.', $processed ) );
 	}
 
 	/**
@@ -5078,7 +5078,7 @@ class CampTix_Plugin {
 			) );
 
 			if ( $post_id ) {
-				$this->log( __( 'Created attendee draft.', 'camptix' ), $post_id, $log_data );
+				$this->log( 'Created attendee draft.', $post_id, $log_data );
 
 				$edit_token = md5( sprintf( 'tix-edit-token-%d-%s-%s', $post_id, $access_token, time() ) );
 
@@ -5399,7 +5399,7 @@ class CampTix_Plugin {
 
 			if ( $old_post_status != $attendee->post_status ) {
 				$status_changed = true;
-				$this->log( sprintf( __( 'Attendee status has been changed to %s', 'camptix' ), $attendee->post_status ), $attendee->ID );
+				$this->log( sprintf( 'Attendee status has been changed to %s', $attendee->post_status ), $attendee->ID );
 			} else {
 
 			}
@@ -5411,7 +5411,7 @@ class CampTix_Plugin {
 
 		// If the status hasn't changed, there's nothing much we can do here.
 		if ( ! $status_changed ) {
-			$this->log( sprintf( __( 'Received payment result for %s but status has not changed.', 'camptix' ), $transaction_id ) );
+			$this->log( sprintf( 'Received payment result for %s but status has not changed.', $transaction_id ) );
 
 			if ( in_array( $to_status, array( 'pending', 'publish' ) ) ) {
 				// Show the purchased tickets.
@@ -5532,7 +5532,7 @@ class CampTix_Plugin {
 				$content = sprintf( __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $edit_link );
 				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
 
-				$this->log( sprintf( __( 'Sent ticket e-mail to %s and receipt to %s.', 'camptix' ), $attendee_email, $receipt_email ), $attendee->ID );
+				$this->log( sprintf( 'Sent ticket e-mail to %s and receipt to %s.', $attendee_email, $receipt_email ), $attendee->ID );
 				$this->wp_mail( $attendee_email, $subject, $content );
 
 				do_action( 'camptix_ticket_emailed', $attendee->ID );
@@ -5557,7 +5557,7 @@ class CampTix_Plugin {
 				$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\n%s%s", 'camptix' ), $receipt_content, $edit_link, $payment_status, $signature );
 				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
 
-				$this->log( sprintf( __( 'Sent a ticket and receipt to %s.', 'camptix' ), $receipt_email ), $attendees[0]->ID );
+				$this->log( sprintf( 'Sent a ticket and receipt to %s.', $receipt_email ), $attendees[0]->ID );
 				$this->wp_mail( $receipt_email, $subject, $content );
 
 				do_action( 'camptix_ticket_emailed', $attendees[0]->ID );
@@ -5567,7 +5567,7 @@ class CampTix_Plugin {
 				$content = sprintf( __( "Hey there!\n\nYou have purchased the following tickets:\n\n%s\n\nYou can edit the information for all the purchased tickets at any time before the event, by visiting the following link:\n\n%s\n\n%s%s", 'camptix' ), $receipt_content, $edit_link, $payment_status, $signature );
 				$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['event_name'] );
 
-				$this->log( sprintf( __( 'Sent a receipt to %s.', 'camptix' ), $receipt_email ), $attendees[0]->ID );
+				$this->log( sprintf( 'Sent a receipt to %s.', $receipt_email ), $attendees[0]->ID );
 				$this->wp_mail( $receipt_email, $subject, $content );
 			}
 		}
@@ -5580,7 +5580,7 @@ class CampTix_Plugin {
 			$subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['event_name'] );
 			$content = sprintf( __( "Hey there!\n\nYour payment for %s has been completed, looking forward to seeing you at the event! You can access and change your tickets information by visiting the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $edit_link );
 
-			$this->log( sprintf( __( 'Sending completed e-mail notification after IPN to %s.', 'camptix' ), $receipt_email ), $attendees[0]->ID );
+			$this->log( sprintf( 'Sending completed e-mail notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 
@@ -5588,7 +5588,7 @@ class CampTix_Plugin {
 			$subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['event_name'] );
 			$content = sprintf( __( "Hey there!\n\nWe're so sorry, but it looks like your payment for %s has failed! Please check your payment transactions for more details. If you still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $this->get_tickets_url() );
 
-			$this->log( sprintf( __( 'Sending failed e-mail notification after IPN to %s.', 'camptix' ), $receipt_email ), $attendees[0]->ID );
+			$this->log( sprintf( 'Sending failed e-mail notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 	}

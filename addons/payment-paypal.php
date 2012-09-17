@@ -109,7 +109,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		$payload = stripslashes_deep( $_POST );
 		$response = $this->verify_ipn( $payload );
 		if ( wp_remote_retrieve_response_code( $response ) != '200' || wp_remote_retrieve_body( $response ) != 'VERIFIED' ) {
-			$this->log( __( 'Could not verify PayPal IPN.', 'camptix' ), 0, null );
+			$this->log( 'Could not verify PayPal IPN.', 0, null );
 			return;
 		}
 
@@ -120,7 +120,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		// Make sure we have a status
 		if ( empty( $payload['payment_status'] ) ) {
-			$this->log( sprintf( __( 'Received IPN with no payment status %s', 'camptix' ), $txn_id ), 0, $payload );
+			$this->log( sprintf( 'Received IPN with no payment status %s', $txn_id ), 0, $payload );
 			return;
 		}
 
@@ -131,11 +131,11 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		);
 		$txn_details = wp_parse_args( wp_remote_retrieve_body( $this->request( $txn_details_payload ) ) );
 		if ( ! isset( $txn_details['ACK'] ) || $txn_details['ACK'] != 'Success' ) {
-			$this->log( sprintf( __( 'Fetching transaction after IPN failed %s.', 'camptix' ), $txn_id, 0, $txn_details ) );
+			$this->log( sprintf( 'Fetching transaction after IPN failed %s.', $txn_id, 0, $txn_details ) );
 			return;
 		}
 
-		$this->log( sprintf( __( 'Payment details for %s via IPN', 'camptix'), $txn_id ), null, $txn_details );
+		$this->log( sprintf( 'Payment details for %s via IPN', $txn_id ), null, $txn_details );
 		$payment_status = $txn_details['PAYMENTSTATUS'];
 
 		$payment_data = array(
@@ -266,7 +266,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				$txn_id = $txn['PAYMENTINFO_0_TRANSACTIONID'];
 				$payment_status = $txn['PAYMENTINFO_0_PAYMENTSTATUS'];
 
-				$this->log( sprintf( __( 'Payment details for %s', 'camptix'), $txn_id ), null, $txn );
+				$this->log( sprintf( 'Payment details for %s', $txn_id ), null, $txn );
 
 				/**
 				 * Note that when returning a successful payment, CampTix will be
@@ -283,11 +283,11 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				return $this->payment_result( $payment_token, $this->get_status_from_string( $payment_status ), $payment_data );
 
 			} else {
-				$this->log( __( 'Error during DoExpressCheckoutPayment.', 'camptix' ), null, $request );
+				$this->log( 'Error during DoExpressCheckoutPayment.', null, $request );
 				return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 			}
 		} else {
-			$this->log( __( 'Error during GetExpressCheckoutDetails.', 'camptix' ), null, $request );
+			$this->log( 'Error during GetExpressCheckoutDetails.', null, $request );
 			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
 		}
 
