@@ -82,6 +82,12 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * fired from PayPal either with a redirect (cancel and return) or an IPN (notify).
 	 */
 	function template_redirect() {
+
+		// Backwards compatibility with CampTix 1.1
+		if ( isset( $_GET['tix_paypal_ipn'] ) && $_GET['tix_paypal_ipn'] == 1 )
+			$this->payment_notify_back_compat();
+
+		// New version requests.
 		if ( ! isset( $_REQUEST['tix_payment_method'] ) || 'paypal' != $_REQUEST['tix_payment_method'] )
 			return;
 
@@ -151,6 +157,59 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		 * payment result twice. In fact, it's typical for payment methods with IPN support.
 		 */
 		return $this->payment_result( $payment_token, $this->get_status_from_string( $payment_status ), $payment_data );
+	}
+
+	/**
+	 * Backwards compatible PayPal IPN response.
+	 *
+	 * In CampTix 1.1 and below, CampTix has already sent requests to PayPal with
+	 * the old-style notify URL. This method, runs during template_redirect and
+	 * ensures that IPNs on old attendees still work.
+	 */
+	function payment_notify_back_compat() {
+		if ( ! isset( $_REQUEST['tix_paypal_ipn'] ) )
+			return;
+
+		$payload = stripslashes_deep( $_POST );
+		$transaction_id = ( isset( $payload['txn_id'] ) ) ? $payload['txn_id'] : null;
+		if ( isset( $payload['parent_txn_id'] ) && ! empty( $payload['parent_txn_id'] ) )
+			$transaction_id = $payload['parent_txn_id'];
+
+		if ( empty( $transaction_id ) ) {
+			$this->log( __( 'Received old-style IPN request with an empty transaction id.', 'camptix' ), null, $payload );
+			return;
+		}
+
+		/**
+		 * Find the attendees by transaction id.
+		 */
+		$attendees = get_posts( array(
+			'posts_per_page' => 1,
+			'post_type' => 'tix_attendee',
+			'post_status' => 'any',
+			'meta_query' => array(
+				array(
+					'key' => 'tix_transaction_id',
+					'value' => $transaction_id,
+				),
+			),
+		) );
+
+		if ( ! $attendees ) {
+			$this->log( __( 'Received old-style IPN request. Could not match to attendee by transaction id.', 'camptix' ), null, $payload );
+			return;
+		}
+
+		$payment_token = get_post_meta( $attendees[0]->ID, 'tix_payment_token', true );
+
+		if ( ! $payment_token ) {
+			$this->log( __( 'Received old-style IPN request. Could find a payment token by transaction id.', 'camptix' ), null, $payload );
+			return;
+		}
+
+		// Everything else is okay, so let's run the new notify scenario.
+		$_REQUEST['tix_payment_token'] = $payment_token;
+		return $this->payment_notify();
 	}
 
 	/**
