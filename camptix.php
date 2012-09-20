@@ -483,7 +483,9 @@ class CampTix_Plugin {
 				echo intval( get_post_meta( $post_id, 'tix_quantity', true ) );
 				break;
 			case 'tix_purchase_count':
-				echo $this->get_purchased_tickets_count( $post_id );
+				$attendees_url = get_admin_url( 0, '/edit.php?post_type=tix_attendee' );
+				$attendees_url = add_query_arg( 's', 'tix_ticket_id:' . intval( $post_id ), $attendees_url );
+				printf( '<a href="%s">%d</a>', esc_url( $attendees_url ), intval( $this->get_purchased_tickets_count( $post_id ) ) );
 				break;
 			case 'tix_remaining':
 				echo $this->get_remaining_tickets( $post_id );
