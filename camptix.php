@@ -1427,12 +1427,15 @@ class CampTix_Plugin {
 	function admin_menu_fix() {
 		global $self, $parent_file, $submenu_file, $plugin_page, $pagenow, $typenow;
 
+		// Make sure Coupons is selected when adding a new coupon
 		if ( 'post-new.php' == $pagenow && 'tix_coupon' == $typenow )
 			$submenu_file = 'edit.php?post_type=tix_coupon';
 
+		// Make sure Attendees is selected when adding a new attendee
 		if ( 'post-new.php' == $pagenow && 'tix_attendee' == $typenow )
 			$submenu_file = 'edit.php?post_type=tix_attendee';
 
+		// Make sure Tickets is selected when creating a new ticket
 		if ( 'post-new.php' == $pagenow && 'tix_ticket' == $typenow )
 			$submenu_file = 'edit.php?post_type=tix_ticket';
 	}
