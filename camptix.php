@@ -120,6 +120,7 @@ class CampTix_Plugin {
 
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'admin_head', array( $this, 'admin_menu_fix' ) );
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
 		add_action( 'admin_head', array( $this, 'admin_head' ) );
 
@@ -1415,6 +1416,25 @@ class CampTix_Plugin {
 		add_submenu_page( 'edit.php?post_type=tix_ticket', __( 'Tools', 'camptix' ), __( 'Tools', 'camptix' ), $this->caps['manage_tools'], 'camptix_tools', array( $this, 'menu_tools' ) );
 		add_submenu_page( 'edit.php?post_type=tix_ticket', __( 'Setup', 'camptix' ), __( 'Setup', 'camptix' ), $this->caps['manage_options'], 'camptix_options', array( $this, 'menu_setup' ) );
 		remove_submenu_page( 'edit.php?post_type=tix_ticket', 'post-new.php?post_type=tix_ticket' );
+	}
+
+	/**
+	 * When squeezing several custom post types under one top-level menu item, WordPress
+	 * tends to get confused which menu item is currently active, especially around post-new.php.
+	 * This function runs during admin_head and hacks into some of the global variables that are
+	 * used to construct the menu.
+	 */
+	function admin_menu_fix() {
+		global $self, $parent_file, $submenu_file, $plugin_page, $pagenow, $typenow;
+
+		if ( 'post-new.php' == $pagenow && 'tix_coupon' == $typenow )
+			$submenu_file = 'edit.php?post_type=tix_coupon';
+
+		if ( 'post-new.php' == $pagenow && 'tix_attendee' == $typenow )
+			$submenu_file = 'edit.php?post_type=tix_attendee';
+
+		if ( 'post-new.php' == $pagenow && 'tix_ticket' == $typenow )
+			$submenu_file = 'edit.php?post_type=tix_ticket';
 	}
 
 	/**
