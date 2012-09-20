@@ -5401,6 +5401,8 @@ class CampTix_Plugin {
 				wp_update_post( $attendee );
 			}
 
+			$this->log( sprintf( 'Payment result for %s.', $transaction_id ), $attendee->ID, $transaction_details );
+
 			if ( $old_post_status != $attendee->post_status ) {
 				$status_changed = true;
 				$this->log( sprintf( 'Attendee status has been changed to %s', $attendee->post_status ), $attendee->ID );
