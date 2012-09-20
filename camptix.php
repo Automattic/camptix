@@ -5517,6 +5517,7 @@ class CampTix_Plugin {
 			$receipt_content .= sprintf( '* ' . __( 'Coupon used: %s') . "\n", $order['coupon'] );
 
 		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $order['total'], false ) );
+		$signature = apply_filters( 'camptix_ticket_email_signature', __( 'Let us know if you have any questions!', 'camptix' ) );
 
 		/**
 		 * If there's more than one attendee we should e-mail a separate ticket to each attendee,
@@ -5529,7 +5530,7 @@ class CampTix_Plugin {
 				$edit_token = get_post_meta( $attendee->ID, 'tix_edit_token', true );
 				$edit_link = $this->get_edit_attendee_link( $attendee->ID, $edit_token );
 
-				$content = sprintf( __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n%s\n\nLet us know if you have any questions!", 'camptix' ), $edit_link );
+				$content = sprintf( __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n%s\n\n%s", 'camptix' ), $edit_link, $signature );
 				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
 
 				$this->log( sprintf( 'Sent ticket e-mail to %s and receipt to %s.', $attendee_email, $receipt_email ), $attendee->ID );
@@ -5545,7 +5546,6 @@ class CampTix_Plugin {
 		if ( $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
 			$edit_link = $this->get_access_tickets_link( $access_token );
 
-			$signature = __( 'Let us know if you have any questions!', 'camptix' );
 			$payment_status = '';
 
 			// If the status is pending, let the buyer know about that in the receipt.
@@ -5759,6 +5759,7 @@ class CampTix_Plugin {
 		if ( is_email( get_option( 'admin_email' ) ) && is_array( $headers ) )
 			$headers[] = sprintf( 'From: %s <%s>', $this->options['event_name'], get_option( 'admin_email' ) );
 
+		$this->log( sprintf( 'Sent e-mail to %s.', $to ), null, array( 'subject' => $subject, 'message' => $message ) );
 		return wp_mail( $to, $subject, $message, $headers, $attachments );
 	}
 
