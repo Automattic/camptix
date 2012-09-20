@@ -242,6 +242,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	function payment_cancel() {
 		global $camptix;
 
+		$this->log( sprintf( 'Running payment_cancel. Request data attached.' ), null, $_REQUEST );
+
 		$payment_token = ( isset( $_REQUEST['tix_payment_token'] ) ) ? trim( $_REQUEST['tix_payment_token'] ) : '';
 		$paypal_token = ( isset( $_REQUEST['token'] ) ) ? trim( $_REQUEST['token'] ) : '';
 
