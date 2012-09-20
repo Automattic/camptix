@@ -1379,6 +1379,10 @@ class CampTix_Plugin {
 				'label' => __( 'Japanese Yen', 'camptix' ),
 				'format' => 'JPY %s',
 			),
+			'GBP' => array(
+				'label' => __( 'Pound Sterling', 'camptix' ),
+				'format' => '£ %s',
+			),
 		) );
 	}
 
