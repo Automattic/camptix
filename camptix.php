@@ -553,7 +553,11 @@ class CampTix_Plugin {
 			case 'tix_ticket':
 				$ticket_id = intval( get_post_meta( $post_id, 'tix_ticket_id', true ) );
 				$ticket = get_post( $ticket_id );
-				edit_post_link( $ticket->post_title, '', '', $ticket_id );
+				if ( $ticket ) {
+					$attendees_url = get_admin_url( 0, '/edit.php?post_type=tix_attendee' );
+					$attendees_url = add_query_arg( 's', 'tix_ticket_id:' . intval( $ticket->ID ), $attendees_url );
+					printf( '<a href="%s">%s</a>', esc_url( $attendees_url ), esc_html( $ticket->post_title ) );
+				}
 				break;
 			case 'tix_email':
 				echo esc_html( get_post_meta( $post_id, 'tix_email', true ) );
@@ -562,7 +566,9 @@ class CampTix_Plugin {
 				$coupon_id = get_post_meta( $post_id, 'tix_coupon_id', true );
 				if ( $coupon_id ) {
 					$coupon = get_post_meta( $post_id, 'tix_coupon', true );
-					edit_post_link( $coupon, '', '', $coupon_id );
+					$attendees_url = get_admin_url( 0, '/edit.php?post_type=tix_attendee' );
+					$attendees_url = add_query_arg( 's', 'tix_coupon_id:' . intval( $coupon_id ), $attendees_url );
+					printf( '<a href="%s">%s</a>', esc_url( $attendees_url ), esc_html( $coupon ) );
 				}
 				break;
 			case 'tix_reservation':
