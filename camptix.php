@@ -600,6 +600,7 @@ class CampTix_Plugin {
 	 */
 	function manage_columns_coupon_filter( $columns ) {
 		$columns['tix_quantity'] = __( 'Quantity', 'camptix' );
+		$columns['tix_used'] = __( 'Used', 'camptix' );
 		$columns['tix_remaining'] = __( 'Remaining', 'camptix' );
 		$columns['tix_discount'] = __( 'Discount', 'camptix' );
 		$columns['tix_availability'] = __( 'Availability', 'camptix' );
@@ -618,6 +619,11 @@ class CampTix_Plugin {
 		switch ( $column ) {
 			case 'tix_quantity':
 				echo intval( get_post_meta( $post_id, 'tix_coupon_quantity', true ) );
+				break;
+			case 'tix_used':
+				$attendees_url = get_admin_url( 0, '/edit.php?post_type=tix_attendee' );
+				$attendees_url = add_query_arg( 's', 'tix_coupon_id:' . intval( $post_id ), $attendees_url );
+				printf( '<a href="%s">%d</a>', esc_url( $attendees_url ), $this->get_used_coupons_count( $post_id ) );
 				break;
 			case 'tix_remaining':
 				echo (int) $this->get_remaining_coupons( $post_id );
@@ -3446,6 +3452,7 @@ class CampTix_Plugin {
 			'tix_transaction_id',
 			'tix_questions',
 			'tix_coupon',
+			'tix_coupon_id',
 			'tix_reservation_id',
 			'tix_ticket_id',
 			'tix_access_token',
@@ -3456,7 +3463,8 @@ class CampTix_Plugin {
 		$data = array( 'timestamp' => time() );
 
 		foreach ( $search_meta_fields as $key )
-			$data[$key] = sprintf( "%s:%s", $key, maybe_serialize( get_post_meta( $post_id, $key, true ) ) );
+			if ( get_post_meta( $post_id, $key, true ) )
+				$data[$key] = sprintf( "%s:%s", $key, maybe_serialize( get_post_meta( $post_id, $key, true ) ) );
 
 		$first_name = get_post_meta( $post_id, 'tix_first_name', true );
 		$last_name = get_post_meta( $post_id, 'tix_last_name', true );
