@@ -98,7 +98,15 @@ function tix_contextual_help() {
 			'title' => 'Overview',
 			'id' => 'tix-overview',
 			'content' => "
-				<p>Coupons are codes, which people can use to get a discount on their ticket purchase, by entering the coupon title (not case sensitive) when selecting their tickets. A coupon can give either a flat amount off the ticket price, or a percentage to discount. A coupon can be applicable to one or more ticket types. The quantity and availability work in the same way as tickets do.</p>",
+				<p>Coupons are discount codes you can give to your attendees. The available fields are quite self-explanatory:</p>
+				<ul>
+					<li><strong>Title</strong> - the coupon code. This is the code people will type in to get their discount. It's not case sensitive, so Coupon will work the same as COUPON or cOuPOn.</li>
+					<li><strong>Discount</strong> - can either be a fixed amount or a percentage, which will be deducted from the ticket price. If a ticket price is $10 and the discount is set to $3 or 30%, people will be able to purchase the ticket for $7.</li>
+					<li><strong>Quantity</strong> - the maximum number of times this coupon can be used. Note, that if the coupon quantity is more than one, an event attendee can purchase as much tickets as the coupon quantity will allow them to. This means they are not restricted to a single coupon usage per purchaser. If you'd like a coupon to be used only once, create a coupon and set the quantity to one.</li>
+					<li><strong>Applies to</strong> - check the tickets that should be discounted when this coupon code is used. Note that when you create a new ticket, it will not automatically be discounted by the saved coupons. You will have to add them explicitly.</li>
+					<li><strong>Availability</strong> - similar to tickets availability, defines the date period when the coupon can be used.</li>
+				</ul>
+				<p>You can save the coupon as a draft at any point, but it has to be Published in order to work.</p>",
 		) );
 
 	} elseif ( $screen->id == 'ticket_page_tix_tools' ) {
