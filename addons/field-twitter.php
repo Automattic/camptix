@@ -54,7 +54,7 @@ class CampTix_Addon_Twitter_Field extends CampTix_Addon {
 
 			if ( $screen_name ) {
 				$url = 'http://twitter.com/' . $screen_name;
-				printf( '<a class="tix-field tix-attendee-twitter" href="%s">%s</a>', esc_url( $url ), esc_html( $screen_name ) );
+				printf( '<a class="tix-field tix-attendee-twitter" href="%s">@%s</a>', esc_url( $url ), esc_html( $screen_name ) );
 			}
 		}
 	}
