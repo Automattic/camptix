@@ -45,8 +45,12 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 		$start = microtime(true);
 		$transient_key = md5( 'tix-attendees' . print_r( $atts, true ) );
-		if ( false !== ( $cached = get_transient( $transient_key ) ) )
-			return $cached;
+		if ( false !== ( $cached = get_transient( $transient_key ) ) ) {
+			if ( ! is_array( $cached ) )
+				return $cached;
+			elseif ( $cached['time'] > get_option( 'camptix_last_purchase_time', 0 ) )
+				return $cached['content'];
+		}
 
 		// Cache for a month if archived or less if active.
 		$cache_time = ( $camptix_options['archived'] ) ? 60 * 60 * 24 * 30 : 60 * 60;
@@ -135,7 +139,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		wp_reset_postdata();
 		$content = ob_get_contents();
 		ob_end_clean();
-		set_transient( $transient_key, $content, $cache_time );
+		set_transient( $transient_key, array( 'content' => $content, 'time' => time() ), $cache_time );
 		return $content;
 	}
 
