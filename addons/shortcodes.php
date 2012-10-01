@@ -14,7 +14,10 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	 * Runs during camptix_init, @see CampTix_Addon
 	 */
 	function camptix_init() {
+		add_action( 'save_post', array( $this, 'save_post' ) );
+		add_action( 'shutdown', array( $this, 'shutdown' ) );
 		add_shortcode( 'camptix_attendees', array( $this, 'shortcode_attendees' ) );
+
 		add_shortcode( 'camptix_private', array( $this, 'shortcode_private' ) );
 		add_action( 'template_redirect', array( $this, 'shortcode_private_template_redirect' ) );
 	}
@@ -22,6 +25,36 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	function log( $message, $post_id = 0, $data = null, $module = 'shortcode' ) {
 		global $camptix;
 		return $camptix->log( $message, $post_id, $data, $module );
+	}
+
+	/**
+	 * Runs when a post is saved.
+	 */
+	function save_post( $post_id ) {
+		// Only real attendee posts.
+		if ( wp_is_post_revision( $post_id ) || 'tix_attendee' != get_post_type( $post_id ) )
+			return;
+
+		// Only non-draft attendees.
+		$post = get_post( $post_id );
+		if ( $post->post_status == 'draft' )
+			return;
+
+		// Signal to update the last modified time ( see $this->shutdown )
+		$this->update_last_modified = true;
+	}
+
+	/**
+	 * Runs during shutdown, right before php stops execution.
+	 */
+	function shutdown() {
+		global $camptix;
+
+		if ( ! isset( $this->update_last_modified ) || ! $this->update_last_modified )
+			return;
+
+		// Bump the last modified time if we've been told to ( see $this->save_post )
+		$camptix->update_stats( 'last_modified', time() );
 	}
 
 	/**
@@ -44,11 +77,15 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		wp_enqueue_script( 'camptix' );
 
 		$start = microtime(true);
+
+		// Serve from cache if cached copy is fresh.
 		$transient_key = md5( 'tix-attendees' . print_r( $atts, true ) );
 		if ( false !== ( $cached = get_transient( $transient_key ) ) ) {
 			if ( ! is_array( $cached ) )
-				return $cached;
-			elseif ( $cached['time'] > get_option( 'camptix_last_purchase_time', 0 ) )
+				return $cached; // back-compat
+
+			// Compare the cached time to the last modified time from stats.
+			elseif ( $cached['time'] > $camptix->get_stats( 'last_modified' ) )
 				return $cached['content'];
 		}
 

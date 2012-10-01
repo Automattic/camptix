@@ -1827,6 +1827,17 @@ class CampTix_Plugin {
 	}
 
 	/**
+	 * Returns an existing stats value or zero.
+	 */
+	function get_stats( $key ) {
+		$stats = get_option( 'camptix_stats', array() );
+		if ( isset( $stats[ $key ] ) )
+			return $stats[ $key ];
+
+		return 0;
+	}
+
+	/**
 	 * Runs during any post status transition. Mainly used to increment
 	 * stats for better network reporting.
 	 */
