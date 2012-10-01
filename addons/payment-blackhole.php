@@ -66,6 +66,7 @@ class CampTix_Payment_Method_Blackhole extends CampTix_Payment_Method {
 		// Process $order and do something.
 		$order = $this->get_order( $payment_token );
 		do_action( 'camptix_before_payment', $payment_token );
+		update_option( 'camptix_last_purchase_time', time() );
 
 		$payment_data = array(
 			'transaction_id' => 'tix-blackhole-' . md5( sprintf( 'tix-blackhole-%s-%s-%s', print_r( $order, true ), time(), rand( 1, 9999 ) ) ),
