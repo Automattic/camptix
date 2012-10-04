@@ -3852,9 +3852,6 @@ class CampTix_Plugin {
 		if ( ! $available_tickets )
 			$this->notice( __( 'Sorry, but there are currently no tickets for sale. Please try again later.', 'camptix' ) );
 
-		if ( $available_tickets && $this->coupon )
-			$this->info( __( 'Your coupon has been applied, awesome!', 'camptix' ) );
-
 		if ( $available_tickets && isset( $this->reservation ) && $this->reservation )
 			$this->info( __( 'You are using a reservation, cool!', 'camptix' ) );
 
@@ -3972,7 +3969,16 @@ class CampTix_Plugin {
 							<td colspan="4" style="text-align: right;">
 								<?php if ( $this->coupon ) : ?>
 									<input type="hidden" name="tix_coupon" value="<?php echo esc_attr( $this->coupon->post_title ); ?>" />
-									<?php printf( __( 'Using coupon: <strong>%s</strong>', 'camptix' ), esc_html( $this->coupon->post_title ) ); ?>
+									<?php
+										$discount_price = (float) $this->coupon->tix_discount_price;
+										$discount_percent = (float) $this->coupon->tix_discount_percent;
+										if ( $discount_price > 0 ) {
+											$discount_text = $this->append_currency( $discount_price );
+										} elseif ( $discount_percent > 0 ) {
+											$discount_text = $discount_percent . '%';
+										}
+									?>
+									<?php printf( __( 'Coupon Applied: <strong>%s</strong>, %s discount', 'camptix' ), esc_html( $this->coupon->post_title ), $discount_text ); ?>
 								<?php else : ?>
 								<a href="#" id="tix-coupon-link"><?php _e( 'Click here to enter a coupon code', 'camptix' ); ?></a>
 								<div id="tix-coupon-container" style="display: none;">
@@ -4106,7 +4112,16 @@ class CampTix_Plugin {
 						<tr>
 							<td colspan="3" style="text-align: right">
 								<?php if ( $this->coupon ) : ?>
-									<small><?php printf( __( 'Using coupon: <strong>%s</strong>', 'camptix' ), esc_html( $this->coupon->post_title ) ); ?></small>
+									<?php
+										$discount_price = (float) $this->coupon->tix_discount_price;
+										$discount_percent = (float) $this->coupon->tix_discount_percent;
+										if ( $discount_price > 0 ) {
+											$discount_text = $this->append_currency( $discount_price );
+										} elseif ( $discount_percent > 0 ) {
+											$discount_text = $discount_percent . '%';
+										}
+									?>
+									<small><?php printf( __( 'Coupon Applied: <strong>%s</strong>, %s discount', 'camptix' ), esc_html( $this->coupon->post_title ), $discount_text ); ?></small>
 								<?php endif; ?>
 							</td>
 							<td><strong><?php echo $this->append_currency( $total ); ?></strong></td>
