@@ -52,6 +52,7 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 * Invalidate attendees list shortcode when an attendee is changed
 * Improved admin columns in attendees, tickets and coupons
 * Added GBP currency to PayPal
+* Enabled meta logging addon by default
 * Added a couple of language packs
 * Minor cleanups and bugfixes
 
