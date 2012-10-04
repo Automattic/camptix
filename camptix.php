@@ -2720,6 +2720,14 @@ class CampTix_Plugin {
 					</div>
 					<?php endif; // $can_publish ?>
 
+					<div class="misc-pub-section">
+						<?php
+							$edit_token = get_post_meta( $post->ID, 'tix_edit_token', true );
+							$edit_link = $this->get_edit_attendee_link( $post->ID, $edit_token );
+						?>
+						<span><a href="<?php echo esc_url( $edit_link ); ?>"><?php _e( 'Edit Attendee Info', 'camptix' ); ?></a></span>
+					</div>
+
 				</div><!-- #misc-publishing-actions -->
 				<div class="clear"></div>
 			</div><!-- #minor-publishing -->
