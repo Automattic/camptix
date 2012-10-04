@@ -41,38 +41,73 @@
 	display: none;
 }
 
-.tix-ticket-questions span,
+/*.tix-ticket-questions span,
 .tix-ticket-reservations span {
 	display: inline-block;
 	padding: 8px 0 8px 0px;
 	margin: 0 0px;
-}
+}*/
 
 #tix_ticket_questions .inside {
 	margin: 0;
 	padding: 0;
 }
 
-.tix-ticket-questions span.tix-field-type {
-	padding-left: 8px;
-	display: inline-block;
+.tix-ticket-questions .tix-item-inner-left,
+.tix-ticket-questions .tix-item-inner-middle,
+.tix-ticket-questions .tix-item-inner-right {
+	padding-top: 8px;
+	padding-bottom: 4px;
+}
+
+.tix-ticket-questions .tix-item-inner-left {
 	width: 50px;
+	float: left;
+	text-align: right;
+}
+
+.tix-ticket-questions .tix-item-inner-middle {
+	margin-left: 58px;
+}
+
+.tix-ticket-questions .tix-item-inner-right {
+	float: right;
+	padding-left: 8px;
+	padding-right: 8px;
+	padding-top: 4px;
+}
+
+.tix-ticket-questions .tix-item-inner-right a {
+	display: inline-block;
+	padding-bottom: 2px;
+	text-decoration: none;
+	margin-right: 4px;
+	color: #999;
+}
+
+.tix-ticket-questions .tix-item-inner-right a:hover,
+.tix-ticket-questions .tix-item-inner-right a:focus {
+	color: #333;
+}
+
+.tix-ticket-questions span.tix-field-type {
 	font-size: 8px;
 	font-weight: 600;
-	text-align: right;
 	text-transform: uppercase;
 	color: #999;
 }
-.tix-ticket-questions .tix-item-sortable span.tix-field-type {
+.tix-ticket-questions .tix-item-sort-handle {
 	cursor: move;
 }
 .tix-ui-state-highlight {
 	background: white;
 }
 .tix-ticket-questions span.tix-field-name {
-	padding-left: 8px;
 }
 .tix-ticket-questions span.tix-field-values {
+	display: block;
+	margin-top: 4px;
+	margin-bottom: 4px;
 	color: #999;
 }
 .tix-ticket-questions .tix-item {
@@ -87,13 +122,7 @@
 }
 
 .tix-ticket-questions .tix-item-inner {
-	margin-right: 32px;
-}
 
-.tix-ticket-questions .tix-field-delete {
-	float: right;
-	margin-right: 12px;
-	margin-top: -2px;
 }
 
 .tix-item.tix-prototype {
@@ -110,9 +139,9 @@
 	color: #DD0000;
 	font-size: 14px;
 }
-.tix-item-inner {
-	white-space: nowrap;
-	overflow: hidden;
+
+.tix-add-question {
+	padding: 8px 8px 8px 58px;
 }
 
 #tix-add-question-new-form,

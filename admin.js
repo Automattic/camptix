@@ -60,7 +60,7 @@
 
 			$( ".tix-ui-sortable" ).sortable({
 				items: ".tix-item-sortable",
-				handle:'.tix-field-type',
+				handle:'.tix-item-sort-handle',
 				placeholder: "tix-item-highlight",
 				update: function(e, ui) {
 					tix_refresh_questions_order();
@@ -158,7 +158,10 @@
 				return false;
 			});
 
-			$( '.tix-field-delete a' ).live( 'click', function() {
+			$( '.tix-item-delete' ).live( 'click', function() {
+				if ( ! confirm( 'Are you sure you want to delete this question?' ) )
+					return false;
+
 				$(this).parents('.tix-item').remove();
 				tix_refresh_questions_order();
 				return false;

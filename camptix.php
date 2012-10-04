@@ -19,8 +19,8 @@ class CampTix_Plugin {
 	public $debug;
 	public $beta_features_enabled;
 	public $version = 20120831;
-	public $css_version = 20120831;
-	public $js_version = 20120831;
+	public $css_version = 20121004;
+	public $js_version = 20121004;
 	public $caps;
 
 	public $addons = array();
@@ -3000,10 +3000,16 @@ class CampTix_Plugin {
 			<div class="tix-ui-sortable">
 				<div class="tix-item tix-item-required">
 					<div>
-						<span class="tix-field-type"><?php _e( 'Default', 'camptix' ); ?></span>
-						<span class="tix-field-name"><?php _e( 'First name, last name and e-mail address', 'camptix' ); ?></span>
-						<span class="tix-field-required-star">*</span>
 						<input type="hidden" class="tix-field-order" value="0" />
+
+						<div class="tix-item-inner-left">
+							<span class="tix-field-type"><?php _e( 'Default', 'camptix' ); ?></span>
+						</div>
+						<div class="tix-item-inner-middle">
+							<span class="tix-field-name"><?php _e( 'First name, last name and e-mail address', 'camptix' ); ?></span>
+							<span class="tix-field-required-star">*</span>
+							<span class="tix-field-values"></span>
+						</div>
 					</div>
 				</div>
 				<?php
@@ -3017,7 +3023,6 @@ class CampTix_Plugin {
 					$item_class = $is_required ? 'tix-item-required' : '';
 				?>
 				<div class="tix-item tix-item-sortable <?php echo esc_attr( $item_class ); ?>">
-					<div class="tagchecklist tix-field-delete"><span><a class="ntdelbutton">X</a></span></div>
 					<div class="tix-item-inner">
 						<input type="hidden" class="tix-field-type" name="tix_questions[<?php echo $i; ?>][type]" value="<?php echo esc_attr( $question['type'] ); ?>" />
 						<input type="hidden" class="tix-field-name" name="tix_questions[<?php echo $i; ?>][field]" value="<?php echo esc_attr( $question['field'] ); ?>" />
@@ -3025,10 +3030,18 @@ class CampTix_Plugin {
 						<input type="hidden" class="tix-field-required" name="tix_questions[<?php echo $i; ?>][required]" value="<?php echo intval( $question['required'] ); ?>" />
 						<input type="hidden" class="tix-field-order" name="tix_questions[<?php echo $i; ?>][order]" value="<?php echo $i; ?>" />
 
-						<span class="tix-field-type"><?php echo esc_html( $question['type'] ); ?></span>
-						<span class="tix-field-name"><?php echo esc_html( $question['field'] ); ?></span>
-						<span class="tix-field-required-star">*</span>
-						<span class="tix-field-values"><?php echo esc_html( implode( ', ', $question['values'] ) ); ?></span>
+						<div class="tix-item-inner-left">
+							<span class="tix-field-type"><?php echo esc_html( $question['type'] ); ?></span>
+						</div>
+						<div class="tix-item-inner-right">
+							<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 27px; position: relative; top: 3px;">&equiv;</a>
+							<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Delete', 'camptix' ); ?>" style="font-size: 18px;">&times;</a>
+						</div>
+						<div class="tix-item-inner-middle">
+							<span class="tix-field-name"><?php echo esc_html( $question['field'] ); ?></span>
+							<span class="tix-field-required-star">*</span>
+							<span class="tix-field-values"><?php echo esc_html( implode( ', ', $question['values'] ) ); ?></span>
+						</div>
 					</div>
 					<div class="tix-clear"></div>
 				</div>
@@ -3036,16 +3049,15 @@ class CampTix_Plugin {
 			</div>
 
 			<div class="tix-add-question" style="border-top: solid 1px white; background: #f9f9f9;">
-				<span id="tix-add-question-action" style="margin-left: 69px;">
+				<span id="tix-add-question-action">
 					<?php printf( __( 'Add a %1$s or an %2$s.', 'camptix' ),
 									sprintf( '<a id="tix-add-question-new" style="font-weight: bold;" href="#">%s</a>', __( 'new question', 'camptix' ) ),
 									sprintf( '<a id="tix-add-question-existing" style="font-weight: bold;" href="#">%s</a>', __( 'existing one', 'camptix' ) )
 								);
 					?>
 					</span>
-				<div id="tix-add-question-new-form" style="margin-left: 69px;">
+				<div id="tix-add-question-new-form">
 					<div class="tix-item tix-item-sortable tix-prototype tix-new">
-						<div class="tagchecklist tix-field-delete"><span><a class="ntdelbutton">X</a></span></div>
 						<div class="tix-item-inner">
 							<input type="hidden" class="tix-field-type" value="" />
 							<input type="hidden" class="tix-field-name" value="" />
@@ -3053,10 +3065,18 @@ class CampTix_Plugin {
 							<input type="hidden" class="tix-field-required" value="" />
 							<input type="hidden" class="tix-field-order" value="" />
 
-							<span class="tix-field-type"><?php _e( 'Type', 'camptix' ); ?></span>
-							<span class="tix-field-name"><?php _e( 'Field', 'camptix' ); ?></span>
-							<span class="tix-field-values"><?php _e( 'Values', 'camptix' ); ?></span>
-							<span class="tix-field-required-star">*</span>
+							<div class="tix-item-inner-left">
+								<span class="tix-field-type"><?php _e( 'Type', 'camptix' ); ?></span>
+							</div>
+							<div class="tix-item-inner-right">
+								<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 27px; position: relative; top: 3px;">&equiv;</a>
+								<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Delete', 'camptix' ); ?>" style="font-size: 18px;">&times;</a>
+							</div>
+							<div class="tix-item-inner-middle">
+								<span class="tix-field-name"><?php _e( 'Field', 'camptix' ); ?></span>
+								<span class="tix-field-required-star">*</span>
+								<span class="tix-field-values"><?php _e( 'Values', 'camptix' ); ?></span>
+							</div>
 						</div>
 						<div class="tix-clear"></div>
 					</div>
@@ -3108,7 +3128,7 @@ class CampTix_Plugin {
 						<span class="description"><?php _e( 'Do not forget to update the ticket post to save changes.', 'camptix' ); ?></span>
 					</p>
 				</div>
-				<div id="tix-add-question-existing-form" style="margin-left: 69px;">
+				<div id="tix-add-question-existing-form">
 					<h4 class="title"><?php _e( 'Add an existing question:', 'camptix' ); ?></h4>
 
 					<div class="categorydiv" id="tix-add-question-existing-list">
