@@ -47,6 +47,11 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 
 = 1.2 =
 * Added and API for payment methods
+* Enhanced logging around payments
+* UI cleanup in ticket questions
+* Invalidate attendees list shortcode when an attendee is changed
+* Improved admin columns in attendees, tickets and coupons
+* Added GBP currency to PayPal
 * Added a couple of language packs
 * Minor cleanups and bugfixes
 
