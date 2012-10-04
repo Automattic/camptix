@@ -2948,7 +2948,8 @@ class CampTix_Plugin {
 		return apply_filters( 'camptix_question_field_types', array(
 			'text' => __( 'Text input', 'camptix' ),
 			'textarea' => __( 'Text area', 'camptix' ),
-			'select' => __( 'Dropdown Select', 'camptix' ),
+			'select' => __( 'Dropdown select', 'camptix' ),
+			'radio' => __( 'Radio select', 'camptix' ),
 			'checkbox' => __( 'Checkbox', 'camptix' ),
 		) );
 	}
@@ -2961,6 +2962,7 @@ class CampTix_Plugin {
 		add_action( 'camptix_question_field_select', array( $this, 'question_field_select' ), 10, 3 );
 		add_action( 'camptix_question_field_checkbox', array( $this, 'question_field_checkbox' ), 10, 3 );
 		add_action( 'camptix_question_field_textarea', array( $this, 'question_field_textarea' ), 10, 2 );
+		add_action( 'camptix_question_field_radio', array( $this, 'question_field_radio' ), 10, 3 );
 	}
 
 	/**
@@ -3006,6 +3008,17 @@ class CampTix_Plugin {
 	function question_field_textarea( $name, $value ) {
 		?>
 		<textarea name="<?php echo esc_attr( $name ); ?>"><?php echo esc_textarea( $value ); ?></textarea>
+		<?php
+	}
+
+	/**
+	 * A radio input for questions.
+	 */
+	function question_field_radio( $name, $user_value, $question ) {
+		?>
+		<?php foreach ( (array) $question['values'] as $question_value ) : ?>
+			<label><input <?php checked( $question_value, $user_value ); ?> name="<?php echo esc_attr( $name ); ?>" type="radio" value="<?php echo esc_attr( $question_value ); ?>" /> <?php echo esc_html( $question_value ); ?></label><br />
+		<?php endforeach; ?>
 		<?php
 	}
 
