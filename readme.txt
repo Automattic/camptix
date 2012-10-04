@@ -54,6 +54,7 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 * Added GBP currency to PayPal
 * Enabled meta logging addon by default
 * Added textarea and radio question types
+* Added column attribute to the [camptix_attendees] shortcode
 * Added a couple of language packs
 * Minor cleanups and bugfixes
 
