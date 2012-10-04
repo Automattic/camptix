@@ -231,6 +231,7 @@
 	padding-right: 8px;
 	border-top: solid 1px white;
 	border-bottom: solid 1px #DFDFDF;
+	vertical-align: top;
 }
 .tix-attendees-info tr.tix-row-general td,
 .tix-attendees-info tr.tix-row-transaction td,

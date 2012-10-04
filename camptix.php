@@ -3349,7 +3349,7 @@ class CampTix_Plugin {
 				$answer = $answers[$question_key];
 				if ( is_array( $answer ) )
 					$answer = implode( ', ', $answer );
-				$rows[] = array( $question['field'], esc_html( $answer ) );
+				$rows[] = array( $question['field'], nl2br( esc_html( $answer ) ) );
 			}
 		}
 		$this->table( $rows, 'tix-attendees-info' );
