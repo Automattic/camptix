@@ -344,12 +344,20 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				return $this->payment_result( $payment_token, $this->get_status_from_string( $payment_status ), $payment_data );
 
 			} else {
+				$payment_data = array(
+					'error' => 'Error during DoExpressCheckoutPayment',
+					'data' => $request,
+				);
 				$this->log( 'Error during DoExpressCheckoutPayment.', null, $request );
-				return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
+				return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED, $payment_data );
 			}
 		} else {
+			$payment_data = array(
+				'error' => 'Error during GetExpressCheckoutDetails',
+				'data' => $request,
+			);
 			$this->log( 'Error during GetExpressCheckoutDetails.', null, $request );
-			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED );
+			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED, $payment_data );
 		}
 
 		die();

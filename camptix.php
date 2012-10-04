@@ -5515,13 +5515,13 @@ class CampTix_Plugin {
 				wp_update_post( $attendee );
 			}
 
-			$this->log( sprintf( 'Payment result for %s.', $transaction_id ), $attendee->ID, $transaction_details );
+			$this->log( sprintf( 'Payment result for %s.', $transaction_id ), $attendee->ID, $data );
 
 			if ( $old_post_status != $attendee->post_status ) {
 				$status_changed = true;
 				$this->log( sprintf( 'Attendee status has been changed to %s', $attendee->post_status ), $attendee->ID );
 			} else {
-
+				$this->log( sprintf( 'Received payment result for %s but status has not changed.', $transaction_id ), $attendee->ID );
 			}
 		}
 
@@ -5531,8 +5531,6 @@ class CampTix_Plugin {
 
 		// If the status hasn't changed, there's nothing much we can do here.
 		if ( ! $status_changed ) {
-			$this->log( sprintf( 'Received payment result for %s but status has not changed.', $transaction_id ) );
-
 			if ( in_array( $to_status, array( 'pending', 'publish' ) ) ) {
 				// Show the purchased tickets.
 				$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
