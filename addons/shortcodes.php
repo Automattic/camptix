@@ -69,6 +69,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 			'orderby' => 'title',
 			'posts_per_page' => 10000,
 			'tickets' => false,
+			'columns' => 3,
 		), $atts ) );
 
 		$camptix_options = $camptix->get_options();
@@ -118,7 +119,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		?>
 
 		<div id="tix-attendees">
-			<ul class="tix-attendee-list">
+			<ul class="tix-attendee-list tix-columns-<?php echo absint( $columns ); ?>">
 				<?php
 					while ( true && $printed < $posts_per_page ) {
 						$paged++;

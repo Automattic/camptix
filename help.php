@@ -106,7 +106,7 @@ function tix_contextual_help() {
 			'id' => 'tix-attendees-list',
 			'content' => "
 				<h3>Attendees List</h3>
-				<p>You can create a list of attendees on any page by using the <code>[camptix_attendees]</code> shortcode. This will create a list of avatars, names, URLs and Twitter handles if provided by the attendees. You can style the list with CSS, each item is fairly easy to target with selectors. You can even change the number of columns by changing the width of each attendee in the list.</p>",
+				<p>You can create a list of attendees on any page by using the <code>[camptix_attendees]</code> shortcode. This will create a list of avatars, names, URLs and Twitter handles if provided by the attendees. You can style the list with CSS, each item is fairly easy to target with selectors. You can even change the number of columns by adding a <code>columns</code> attribute, for example <code>[camptix_attendees columns=&quot;2&quot;]</code>.</p>",
 		) );
 
 	} elseif ( $screen->id == 'edit-tix_coupon' || $screen->id == 'tix_coupon' ) {

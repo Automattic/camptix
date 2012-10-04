@@ -56,6 +56,12 @@ body.admin-bar #tix {
 	height: 80px;
 }
 
+#tix-attendees .tix-columns-1 li { width: 100%; }
+#tix-attendees .tix-columns-2 li { width: 50%; }
+#tix-attendees .tix-columns-3 li { width: 33.333%; }
+#tix-attendees .tix-columns-4 li { width: 25%; }
+#tix-attendees .tix-columns-5 li { width: 20%; }
+
 #tix-attendees .avatar {
 	float: left;
 	width: 50px;
