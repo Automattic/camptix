@@ -4047,9 +4047,6 @@ class CampTix_Plugin {
 		if ( isset( $this->error_flags['invalid_coupon'] ) )
 			$this->notice( __( "Looks like you're trying to use an invalid or expired coupon.", 'camptix' ) );
 
-		if ( 'attendee_info' == get_query_var( 'tix_action' ) && $this->coupon )
-			$this->info( __( "You're using a coupon, cool!", 'camptix' ) );
-
 		ob_start();
 		$total = 0;
 		$i = 1;
