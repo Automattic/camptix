@@ -53,6 +53,7 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 * Improved admin columns in attendees, tickets and coupons
 * Added GBP currency to PayPal
 * Enabled meta logging addon by default
+* Added textarea and radio question types
 * Added a couple of language packs
 * Minor cleanups and bugfixes
 
