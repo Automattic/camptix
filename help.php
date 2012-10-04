@@ -8,6 +8,7 @@ function tix_contextual_help() {
 			'title' => 'Overview',
 			'id' => 'tix-overview',
 			'content' => '
+				<h3>Tickets</h3>
 				<p>This screen provides access to the tickets (or ticket types) you have created. Each ticket is has various attributes like price and quantity. The total amount of available tickets determines the maximum capacity of the event. Please note that once the ticket has been published, editing things like price or questions can break data consistency, since attendees may have already bought the ticket with the old data. Also, once a ticket has been published, please keep it published. Do not revert to draft, pending or trash.</p>
 				<p>Use the <strong>Screen Options</strong> panel to show and hide the columns that matter most.</p>',
 		) );
@@ -17,6 +18,7 @@ function tix_contextual_help() {
 				'title' => 'Excerpt',
 				'id' => 'tix-excerpt',
 				'content' => "
+					<h3>Excerpt</h3>
 					<p>The ticket excerpt contains the description of the ticket, generally things like whether it include a t-shirt, food, and so on. This will be displayed underneath the ticket title on the ticketing page.</p>",
 			) );
 
@@ -24,6 +26,7 @@ function tix_contextual_help() {
 			'title' => 'Price',
 			'id' => 'tix-price',
 			'content' => '
+				<h3>Price</h3>
 				<p>The ticket price determines how much the user should pay, to obtain the ticket. The currency is set in the CampTix plugin Setup screen. Note that when changing currencies, the existing prices will not be converted, so make sure you get this right the first time.</p>
 				<p>A price of <strong>0.00</strong> means that any visitor can obtain such a ticket for free. If you want to give out free tickets to certain groups, you should visit the Coupons section.</p>
 				<p>As soon as at least one ticket has been purchased, the price can no longer be changed. This is made to maintain consistency throughout CampTix reports.',
@@ -33,6 +36,7 @@ function tix_contextual_help() {
 			'title' => 'Quantity',
 			'id' => 'tix-quantity',
 			'content' => '
+				<h3>Quantity</h3>
 				<p>The quantity of a ticket type is the maximum amount of sales. You can increase quantity over time, but decreasing it will break data consistency. The amount of remaining tickets for every type will be shown to your visitors.</p>',
 		) );
 
@@ -40,6 +44,7 @@ function tix_contextual_help() {
 			'title' => 'Availability',
 			'id' => 'tix-availability',
 			'content' => '
+				<h3>Availability</h3>
 				<p>You can create early-bird tickets, or final-call tickets based on the dates. With Availability, you can set when to start ticket sales, and when to end. Leaving fields blank will set availability to Auto, meaning they can be purchased at any time.</p>',
 		) );
 
@@ -48,6 +53,7 @@ function tix_contextual_help() {
 				'title' => 'Questions',
 				'id' => 'tix-questions',
 				'content' => "
+					<h3>Questions</h3>
 					<p>Different tickets may require different information from attendees. For example, one ticket may include a t-shirt while the other can include a wristband. A third ticket may include both. You would ask for a t-shirt size in the first ticket, and a wrist size for the second ticket. You will ask both questions in the third ticket.</p>
 					<p>Questions can be of different types:</p>
 					<ul>
@@ -73,6 +79,7 @@ function tix_contextual_help() {
 			'title' => 'Overview',
 			'id' => 'tix-overview',
 			'content' => "
+				<h3>Attendees</h3>
 				<p>Attendees are people who have purchased (or attempted to purchase) a ticket for the event. A <strong>published</strong> attendee is one whose payment has been confirmed. A <strong>pending</strong> attendee is one who has paid, but the payment is not yet confirmed. A <strong>draft</strong> attendee is one who has filled out the attendee info form during ticket purchase, but never completed the purchase on PayPal. Please don't change the post status manually.</p>",
 		) );
 
@@ -81,7 +88,8 @@ function tix_contextual_help() {
 				'title' => 'Searching',
 				'id' => 'tix-searching',
 				'content' => "
-					<p><strong>Searching</strong> through attendees is easy, on the attendees list, in the top right corner. You can search by name, e-mail, transaction id or even by an answer to the asked questions.</p>",
+					<h3>Searching</h3>
+					<p>Searching through attendees is easy, on the attendees list, in the top right corner. You can search by name, e-mail, transaction id or even by an answer to the asked questions.</p>",
 			) );
 
 		if ( $screen->id == 'tix_attendee' )
@@ -89,13 +97,16 @@ function tix_contextual_help() {
 				'title' => 'Attendee Informaiton',
 				'id' => 'tix-attendee-info',
 				'content' => "
+					<h3>Attendee Information</h3>
 					<p>The Attendee Information table will show you everything you need to know about the attendee, the answers to the questions asked by their ticket, their payment status, coupon code as well as the access token, which is a secret link where they can edit their information.</p>",
 			) );
 
 		$screen->add_help_tab( array(
 			'title' => 'Attendees List',
 			'id' => 'tix-attendees-list',
-			'content' => "<p>You can create a list of attendees on any page by using the <code>[camptix_attendees]</code> shortcode. This will create a list of avatars, names, URLs and Twitter handles if provided by the attendees. You can style the list with CSS, each item is fairly easy to target with selectors. You can even change the number of columns by changing the width of each attendee in the list.</p>",
+			'content' => "
+				<h3>Attendees List</h3>
+				<p>You can create a list of attendees on any page by using the <code>[camptix_attendees]</code> shortcode. This will create a list of avatars, names, URLs and Twitter handles if provided by the attendees. You can style the list with CSS, each item is fairly easy to target with selectors. You can even change the number of columns by changing the width of each attendee in the list.</p>",
 		) );
 
 	} elseif ( $screen->id == 'edit-tix_coupon' || $screen->id == 'tix_coupon' ) {
@@ -104,6 +115,7 @@ function tix_contextual_help() {
 			'title' => 'Overview',
 			'id' => 'tix-overview',
 			'content' => "
+				<h3>Coupons</h3>
 				<p>Coupons are discount codes you can give to your attendees. The available fields are quite self-explanatory:</p>
 				<ul>
 					<li><strong>Title</strong> - the coupon code. This is the code people will type in to get their discount. It's not case sensitive, so Coupon will work the same as COUPON or cOuPOn.</li>
@@ -121,6 +133,7 @@ function tix_contextual_help() {
 			'title' => 'Summarize',
 			'id' => 'tix-summarize',
 			'content' => "
+				<h3>Summarize</h3>
 				<p>Summaries is a great way to group your event attendees by any of the attributes, including all the possible ticket questions. Useful to find out which t-shirt sizes you need to order, or what type of food you need to get. You can also export summaries into CSV.</p>",
 		) );
 
@@ -128,6 +141,7 @@ function tix_contextual_help() {
 			'title' => 'Revenue',
 			'id' => 'tix-revenue',
 			'content' => "
+				<h3>Revenue</h3>
 				<p>The Revenue report shows the numbers and the pricing for each ticket sold, including discounts, etc. Compare the total revenue number to the one in your PayPal reports to make sure everything is in order.</p>",
 		) );
 
@@ -135,6 +149,7 @@ function tix_contextual_help() {
 			'title' => 'Export',
 			'id' => 'tix-export',
 			'content' => "
+				<h3>Export</h3>
 				<p>The Export tools helps you export all your attendee data into various formats.</p>",
 		) );
 
@@ -142,16 +157,30 @@ function tix_contextual_help() {
 			'title' => 'Notify',
 			'id' => 'tix-export',
 			'content' => "
+				<h3>Notify</h3>
 				<p>The Notify section lets you send e-mails targeted at specific ticket groups. Note that the e-mails will not be sent out straight away, but rather grouped into tasks, which are carried out using a cron schedule. You can monitor the status of every e-mail job in the History section.</p>",
 		) );
 
-	} elseif ( $screen->id == 'ticket_page_tix_options' ) {
+	} elseif ( $screen->id == 'tix_ticket_page_camptix_options' ) {
 
 		$screen->add_help_tab( array(
-			'title' => 'PayPal Configuration',
-			'id' => 'tix-export',
+			'title' => 'Configuration',
+			'id' => 'tix-help-configuration',
 			'content' => "
-				<p>Configure the PayPal credentials, currency and sandbox mode on this screen. Read the <a href='https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_ECAPICredentials'>Creating an API Signature</a> for more information. If you want to test your payments before going public, please refer to the <a href='https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/howto_testing_sandbox'>PayPal Sandbox</a> guide.</p>",
+				<h3>Configuration</h3>
+				<p>The basic configuration is done in the Generat section. The event name will appear in your outgoing e-mails, payment reports, etc. The currency dropdown sets the currency for all tickets. Please note that changing the currency does not convert the existing ticket prices, i.e. 10 USD will become 10 EUR. Also note that not all payment methods support all currencies, so make sure you pick the currency supported by the payment methods you're planning to use.</p>",
+		) );
+
+		$screen->add_help_tab( array(
+			'title' => 'Payment',
+			'id' => 'tix-help-payment',
+			'content' => "
+				<h3>Payment Methods</h3>
+				<p>You can configure the payment methods you'd like to use in the Payment section. To enable or disable a specific payment method, set its Enabled option to Yes or No respectively. Most payment methods will come with additional configuration fields. Supported currencies will be listed next to each payment method. If you'd like to change the currency, you can do so from the General tab.</p>
+
+				<h4>PayPal Express Checkout</h4>
+				<p>To use Express Checkout you'll need to obtain your API credentials from PayPal. Please note, that these are not your PayPal e-mail and password. Read the <a href='https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_ECAPICredentials'>Creating an API Signature</a> for more information. If you want to test your payments before going public, please refer to the <a href='https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/howto_testing_sandbox'>PayPal Sandbox</a> guide.</p>
+			",
 		) );
 
 	}
