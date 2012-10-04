@@ -92,6 +92,12 @@ function tix_contextual_help() {
 					<p>The Attendee Information table will show you everything you need to know about the attendee, the answers to the questions asked by their ticket, their payment status, coupon code as well as the access token, which is a secret link where they can edit their information.</p>",
 			) );
 
+		$screen->add_help_tab( array(
+			'title' => 'Attendees List',
+			'id' => 'tix-attendees-list',
+			'content' => "<p>You can create a list of attendees on any page by using the <code>[camptix_attendees]</code> shortcode. This will create a list of avatars, names, URLs and Twitter handles if provided by the attendees. You can style the list with CSS, each item is fairly easy to target with selectors. You can even change the number of columns by changing the width of each attendee in the list.</p>",
+		) );
+
 	} elseif ( $screen->id == 'edit-tix_coupon' || $screen->id == 'tix_coupon' ) {
 
 		$screen->add_help_tab( array(
