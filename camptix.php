@@ -1020,6 +1020,11 @@ class CampTix_Plugin {
 			update_option( 'camptix_options', $options );
 		}
 
+		if ( current_user_can( $this->caps['manage_options'] ) && isset( $_GET['tix_delete_options'] ) ) {
+			delete_option( 'camptix_options' );
+			$options = $default_options;
+		}
+
 		return $options;
 	}
 
