@@ -1088,6 +1088,13 @@ class CampTix_Plugin {
 
 			update_option( 'camptix_options', $options );
 
+			/**
+			 * Since we're going to wp_update_post attendees, we need the save post handler,
+			 * which is loaded during init after the upgrade. Don't forget to remove the action
+			 * after updating is complete, to avoid multiple actions.
+			 */
+			add_action( 'save_post', array( $this, 'save_attendee_post' ) );
+
 			$paged = 1; $count = 0;
 			while ( $attendees = get_posts( array(
 				'post_type' => 'tix_attendee',
@@ -1129,6 +1136,9 @@ class CampTix_Plugin {
 				}
 
 			}
+
+			// Remove save_post action since we finished with wp_update_post.
+			remove_action( 'save_post', array( $this, 'save_attendee_post' ) );
 
 			$end_20120831 = microtime( true );
 			$this->log( sprintf( 'Updated %d attendees data in %f seconds.', $count, $end_20120831 - $start_20120831 ), null, null, 'upgrade' );
