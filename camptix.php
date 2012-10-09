@@ -3,7 +3,7 @@
  * Plugin Name: CampTix Event Ticketing
  * Plugin URI: http://wordcamp.org
  * Description: Simple and flexible event ticketing for WordPress.
- * Version: 1.2
+ * Version: 1.2.1
  * Author: Automattic
  * Author URI: http://wordcamp.org
  * License: GPLv2
@@ -5119,7 +5119,7 @@ class CampTix_Plugin {
 
 		if ( isset( $_POST['tix_payment_method'] ) && array_key_exists( $_POST['tix_payment_method'], $this->get_enabled_payment_methods() ) )
 			$payment_method = $_POST['tix_payment_method'];
-		elseif ( $this->order['price'] > 0 ) {
+		elseif ( ! empty( $this->order['price'] ) && $this->order['price'] > 0 ) {
 			$this->error_flags['invalid_payment_method'] = true;
 		}
 
@@ -5274,7 +5274,7 @@ class CampTix_Plugin {
 				return $this->form_attendee_info();
 
 		} else { // free beer for everyone!
-			$this->payment_result( $payment_token, $this::PAYMENT_STATUS_COMPLETED );
+			$this->payment_result( $payment_token, self::PAYMENT_STATUS_COMPLETED );
 		}
 	}
 
@@ -5505,27 +5505,27 @@ class CampTix_Plugin {
 			update_post_meta( $attendee->ID, 'tix_transaction_id', $transaction_id );
 			update_post_meta( $attendee->ID, 'tix_transaction_details', $transaction_details );
 
-			if ( $this::PAYMENT_STATUS_CANCELLED == $result ) {
+			if ( self::PAYMENT_STATUS_CANCELLED == $result ) {
 				$attendee->post_status = 'cancel';
 				wp_update_post( $attendee );
 			}
 
-			if ( $this::PAYMENT_STATUS_FAILED == $result ) {
+			if ( self::PAYMENT_STATUS_FAILED == $result ) {
 				$attendee->post_status = 'failed';
 				wp_update_post( $attendee );
 			}
 
-			if ( $this::PAYMENT_STATUS_COMPLETED == $result ) {
+			if ( self::PAYMENT_STATUS_COMPLETED == $result ) {
 				$attendee->post_status = 'publish';
 				wp_update_post( $attendee );
 			}
 
-			if ( $this::PAYMENT_STATUS_PENDING == $result ) {
+			if ( self::PAYMENT_STATUS_PENDING == $result ) {
 				$attendee->post_status = 'pending';
 				wp_update_post( $attendee );
 			}
 
-			if ( $this::PAYMENT_STATUS_REFUNDED == $result ) {
+			if ( self::PAYMENT_STATUS_REFUNDED == $result ) {
 				$attendee->post_status = 'refund';
 				wp_update_post( $attendee );
 			}
@@ -5562,13 +5562,13 @@ class CampTix_Plugin {
 		// Let's make a clean exit out of all of this.
 		switch ( $result ) :
 
-			case $this::PAYMENT_STATUS_CANCELLED :
+			case self::PAYMENT_STATUS_CANCELLED :
 				$this->error_flag( 'payment_cancelled' );
 				$this->redirect_with_error_flags();
 				die();
 				break;
 
-			case $this::PAYMENT_STATUS_COMPLETED :
+			case self::PAYMENT_STATUS_COMPLETED :
 
 				// Show the purchased tickets.
 				$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
@@ -5577,7 +5577,7 @@ class CampTix_Plugin {
 				die();
 				break;
 
-			case $this::PAYMENT_STATUS_FAILED :
+			case self::PAYMENT_STATUS_FAILED :
 				$error_code = 0;
 				if ( ! empty( $data['error_code'] ) )
 					$error_code = $data['error_code'];
@@ -5595,7 +5595,7 @@ class CampTix_Plugin {
 				}
 				break;
 
-			case $this::PAYMENT_STATUS_PENDING :
+			case self::PAYMENT_STATUS_PENDING :
 
 				// Show the purchased tickets.
 				$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
@@ -5604,7 +5604,7 @@ class CampTix_Plugin {
 				die();
 				break;
 
-			case $this::PAYMENT_STATUS_REFUNDED :
+			case self::PAYMENT_STATUS_REFUNDED :
 				// @todo what do we do when a purchase is refunded?
 				die();
 				break;

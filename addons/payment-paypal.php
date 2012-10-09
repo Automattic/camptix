@@ -216,16 +216,14 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * Helps convert payment statuses from PayPal responses, to CampTix payment statuses.
 	 */
 	function get_status_from_string( $payment_status ) {
-		global $camptix;
-
 		$statuses = array(
-			'Completed' => $camptix::PAYMENT_STATUS_COMPLETED,
-			'Pending' => $camptix::PAYMENT_STATUS_PENDING,
-			'Cancelled' => $camptix::PAYMENT_STATUS_CANCELLED,
-			'Failed' => $camptix::PAYMENT_STATUS_FAILED,
-			'Denied' => $camptix::PAYMENT_STATUS_FAILED,
-			'Refunded' => $camptix::PAYMENT_STATUS_REFUNDED,
-			'Reversed' => $camptix::PAYMENT_STATUS_REFUNDED,
+			'Completed' => CampTix_Plugin::PAYMENT_STATUS_COMPLETED,
+			'Pending' => CampTix_Plugin::PAYMENT_STATUS_PENDING,
+			'Cancelled' => CampTix_Plugin::PAYMENT_STATUS_CANCELLED,
+			'Failed' => CampTix_Plugin::PAYMENT_STATUS_FAILED,
+			'Denied' => CampTix_Plugin::PAYMENT_STATUS_FAILED,
+			'Refunded' => CampTix_Plugin::PAYMENT_STATUS_REFUNDED,
+			'Reversed' => CampTix_Plugin::PAYMENT_STATUS_REFUNDED,
 		);
 
 		// Return pending for unknows statuses.
@@ -254,7 +252,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		 * @todo maybe check tix_paypal_token for security.
 		 */
 
-		return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_CANCELLED );
+		return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_CANCELLED );
 	}
 
 	/**
@@ -349,7 +347,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 					'data' => $request,
 				);
 				$this->log( 'Error during DoExpressCheckoutPayment.', null, $request );
-				return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED, $payment_data );
+				return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, $payment_data );
 			}
 		} else {
 			$payment_data = array(
@@ -357,7 +355,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				'data' => $request,
 			);
 			$this->log( 'Error during GetExpressCheckoutDetails.', null, $request );
-			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED, $payment_data );
+			return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, $payment_data );
 		}
 
 		die();
@@ -416,8 +414,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		} else {
 			$this->log( 'Error during SetExpressCheckout.', null, $response );
 			$error_code = isset( $response['L_ERRORCODE0'] ) ? $response['L_ERRORCODE0'] : 0;
-			return $this->payment_result( $payment_token, $camptix::PAYMENT_STATUS_FAILED, array(
+			return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, array(
 				'error_code' => $error_code,
+				'raw' => $request,
 			) );
 		}
 	}
