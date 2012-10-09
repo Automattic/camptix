@@ -1637,7 +1637,12 @@ class CampTix_Plugin {
 						<td>
 							<select name="tix_summarize_by">
 								<?php foreach ( $this->get_available_summary_fields() as $value => $caption ) : ?>
-									<?php $caption = mb_strlen( $caption ) > 30 ? mb_substr( $caption, 0, 30 ) . '...' : $caption; ?>
+									<?php
+										if ( function_exists( 'mb_strlen' ) && function_exists( 'mb_substr' ) )
+											$caption = mb_strlen( $caption ) > 30 ? mb_substr( $caption, 0, 30 ) . '...' : $caption;
+										else
+											$caption = strlen( $caption ) > 30 ? substr( $caption, 0, 30 ) . '...' : $caption;
+									?>
 									<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $value, $summarize_by ); ?>><?php echo esc_html( $caption ); ?></option>
 								<?php endforeach; ?>
 							</select>
