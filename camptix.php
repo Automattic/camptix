@@ -5472,7 +5472,7 @@ class CampTix_Plugin {
 		$attendees = get_posts( array(
 			'posts_per_page' => -1,
 			'post_type' => 'tix_attendee',
-			'post_status' => 'any',
+			'post_status' => array( 'draft', 'pending', 'publish', 'cancel', 'refund', 'failed' ),
 			'meta_query' => array(
 				array(
 					'key' => 'tix_payment_token',
@@ -5483,8 +5483,10 @@ class CampTix_Plugin {
 			),
 		) );
 
-		if ( ! $attendees )
-			die( 'the attendees have gone somewhere.' );
+		if ( ! $attendees ) {
+			$this->log( 'Could not find attendees by payment token', null, $_POST );
+			die();
+		}
 
 		$transaction_id = null;
 		$transaction_details = null;
