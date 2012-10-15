@@ -259,6 +259,10 @@ class CampTix_Plugin {
 							$email_content = do_shortcode( $email->post_content );
 							$email_title = do_shortcode( $email->post_title );
 
+							// Decode entities since the e-mails sent is a plain/text, not html.
+							$email_title = html_entity_decode( $email_title );
+							$email_content = html_entity_decode( $email_content );
+
 							// Attempt to send an e-mail.
 							if ( $this->wp_mail( $attendee_email, $email_title, $email_content ) ) {
 								$this->log( sprintf( 'E-mail successfully sent to %s', $attendee_email ), $email->ID, $data, 'notify' );
