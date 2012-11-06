@@ -5276,6 +5276,18 @@ class CampTix_Plugin {
 		if ( $this->order['total'] > 0 ) {
 
 			$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
+
+			// Bail if a payment method does not exist.
+			if ( ! $payment_method_obj ) {
+				$payment_data = array(
+					'error' => 'Invalid payment method.',
+					'data' => $_POST,
+				);
+
+				$this->payment_result( $payment_token, self::PAYMENT_STATUS_FAILED, $payment_data );
+				return;
+			}
+
 			$payment_method_obj->payment_checkout( $payment_token );
 
 			// Check whether there were any immediate payment errors.
