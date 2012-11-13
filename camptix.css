@@ -150,3 +150,20 @@ body.admin-bar #tix {
 #tix .tix-hide-if-js {
 	display: block;
 }
+
+/**
+ * === RTL Styles ===
+ * Should always be at the EOF, since they need to override
+ * some of the default styles in RTL environments.
+ * RTL installs should have a class appended to <body>
+ * named 'rtl'. We're going to use it to line things up.
+ */
+.rtl .tix-ticket-form th,
+.rtl .tix-private-form th,
+.rtl .tix-attendee-form th,
+.rtl .tix-receipt-form th { text-align: right; }
+
+.rtl #tix-attendees li,
+.rtl #tix-attendees .avatar { float: right; }
+
+.rtl #tix-attendees .tix-field { margin-left: 0; margin-right: 70px; }
