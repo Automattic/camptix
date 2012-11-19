@@ -1417,6 +1417,10 @@ class CampTix_Plugin {
 				'label' => __( 'Pound Sterling', 'camptix' ),
 				'format' => '£ %s',
 			),
+			'ILS' => array(
+				'label' => __( 'Israeli New Sheqel', 'camptix' ),
+				'format' => '&#8362; %s',
+			),
 		) );
 	}
 
