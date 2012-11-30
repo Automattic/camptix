@@ -30,6 +30,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 */
 	function camptix_init() {
 		$this->options = array_merge( array(
+			'api_predef' => '',
 			'api_username' => '',
 			'api_password' => '',
 			'api_signature' => '',
@@ -47,12 +48,99 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * validate them all in validate_options.
 	 */
 	function payment_settings_fields() {
-		$this->add_settings_field_helper( 'api_username', __( 'API Username', 'camptix' ), array( $this, 'field_text' ) );
-		$this->add_settings_field_helper( 'api_password', __( 'API Password', 'camptix' ), array( $this, 'field_text' ) );
-		$this->add_settings_field_helper( 'api_signature', __( 'API Signature', 'camptix' ), array( $this, 'field_text' ) );
-		$this->add_settings_field_helper( 'sandbox', __( 'Sandbox Mode', 'camptix' ), array( $this, 'field_yesno' ),
-			sprintf( __( "The PayPal Sandbox is a way to test payments without using real accounts and transactions. If you'd like to use Sandbox Mode, you'll need to create a %s account and obtain the API credentials for your sandbox user.", 'camptix' ), sprintf( '<a href="https://developer.paypal.com/">%s</a>', __( 'PayPal Developer', 'camptix' ) ) )
-		);
+
+		// Allow pre-defined accounts if any are defined by plugins.
+		if ( count( $this->get_predefined_accounts() ) > 0 )
+			$this->add_settings_field_helper( 'api_predef', __( 'Predefined Account', 'camptix' ), array( $this, 'field_api_predef' ) );
+
+		// Settings fields are not needed when a predefined account is chosen.
+		// These settings fields should *never* expose predefined credentials.
+		if ( ! $this->get_predefined_account() ) {
+			$this->add_settings_field_helper( 'api_username', __( 'API Username', 'camptix' ), array( $this, 'field_text' ) );
+			$this->add_settings_field_helper( 'api_password', __( 'API Password', 'camptix' ), array( $this, 'field_text' ) );
+			$this->add_settings_field_helper( 'api_signature', __( 'API Signature', 'camptix' ), array( $this, 'field_text' ) );
+			$this->add_settings_field_helper( 'sandbox', __( 'Sandbox Mode', 'camptix' ), array( $this, 'field_yesno' ),
+				sprintf( __( "The PayPal Sandbox is a way to test payments without using real accounts and transactions. If you'd like to use Sandbox Mode, you'll need to create a %s account and obtain the API credentials for your sandbox user.", 'camptix' ), sprintf( '<a href="https://developer.paypal.com/">%s</a>', __( 'PayPal Developer', 'camptix' ) ) )
+			);
+		}
+	}
+
+	/**
+	 * Predefined accounts field callback
+	 *
+	 * Renders a drop-down select with a list of predefined accounts
+	 * to select from, as well as some js for better ux.
+	 *
+	 * @uses $this->get_predefined_accounts()
+	 */
+	function field_api_predef( $args ) {
+		$accounts = $this->get_predefined_accounts();
+		if ( empty( $accounts ) )
+			return;
+
+		?>
+		<select id="camptix-predef-select" name="<?php echo esc_attr( $args['name'] ); ?>">
+			<option value=""><?php _e( 'None', 'camptix' ); ?></option>
+			<?php foreach ( $accounts as $key => $account ) : ?>
+			<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $args['value'], $key ); ?>><?php echo esc_html( $account['label'] ); ?></option>
+			<?php endforeach; ?>
+		</select>
+		<!-- Let's disable the rest of the fields unless None is selected -->
+		<script>
+		jQuery(document).ready(function($){
+			var select = $('#camptix-predef-select')[0];
+			$(select).on('change', function(){
+				$('[name^="camptix_payment_options_paypal"]').each(function(){
+					// Don't disable myself.
+					if (this == select)
+						return;
+
+					$(this).prop('disabled', select.value.length > 0);
+					$(this).toggleClass('disabled', select.value.length > 0);
+				});
+			});
+		});
+		</script>
+		<?php
+	}
+
+	/**
+	 * Get an array of predefined PayPal accounts
+	 *
+	 * Runs an empty array through a filter, where one might specifiy a list of
+	 * predefined PayPal credentials, through a plugin or something.
+	 *
+	 * @static $predefs
+	 * @return array An array of predefined accounts (or an empty one)
+	 */
+	function get_predefined_accounts() {
+		static $predefs = false;
+		if ( false === $predefs )
+			$predefs = apply_filters( 'camptix_paypal_predefined_accounts', array() );
+
+		return $predefs;
+	}
+
+	/**
+	 * Get a predefined account
+	 *
+	 * If the $key argument is false or not set, this function will look up the active
+	 * predefined account, otherwise it'll look up the one under the given key. After a
+	 * predefined account is set, PayPal credentials will be overwritten during API
+	 * requests, but never saved/exposed. Useful with array_merge().
+	 *
+	 * @return array An array with credentials, or an empty array if key not found.
+	 */
+	function get_predefined_account( $key = false ) {
+		$accounts = $this->get_predefined_accounts();
+
+		if ( false === $key )
+			$key = $this->options['api_predef'];
+
+		if ( ! array_key_exists( $key, $accounts ) )
+			return array();
+
+		return $accounts[ $key ];
 	}
 
 	/**
@@ -73,6 +161,24 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		if ( isset( $input['sandbox'] ) )
 			$output['sandbox'] = (bool) $input['sandbox'];
+
+		if ( isset( $input['api_predef'] ) ) {
+
+			// If a valid predefined account is set, erase the credentials array.
+			// We do not store predefined credentials in options, only code.
+			if ( $this->get_predefined_account( $input['api_predef'] ) ) {
+				$output = array_merge( $output, array(
+					'api_username' => '',
+					'api_password' => '',
+					'api_signature' => '',
+					'sandbox' => false,
+				) );
+			} else {
+				$input['api_predef'] = '';
+			}
+
+			$output['api_predef'] = $input['api_predef'];
+		}
 
 		return $output;
 	}
@@ -400,6 +506,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'SOLUTIONTYPE' => 'Sole',
 		);
 
+		// Replace creds from a predefined account if any.
+		$options = array_merge( $this->options, $this->get_predefined_account( $this->options['api_predef'] ) );
+
 		$order = $this->get_order( $payment_token );
 		$this->fill_payload_with_order( $payload, $order );
 
@@ -407,8 +516,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		$response = wp_parse_args( wp_remote_retrieve_body( $request ) );
 		if ( isset( $response['ACK'], $response['TOKEN'] ) && 'Success' == $response['ACK'] ) {
 			$token = $response['TOKEN'];
-
-			$url = $this->options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout';
+			$url = $options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout';
 			$url = add_query_arg( 'token', $token, $url );
 			wp_redirect( esc_url_raw( $url ) );
 		} else {
@@ -451,11 +559,15 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * Use this method to fire a POST request to the PayPal API.
 	 */
 	function request( $payload = array() ) {
-		$url = $this->options['sandbox'] ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
+		// Replace creds from a predefined account if any.
+		$options = array_merge( $this->options, $this->get_predefined_account( $this->options['api_predef'] ) );
+
+		$url = $options['sandbox'] ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
+
 		$payload = array_merge( array(
-			'USER' => $this->options['api_username'],
-			'PWD' => $this->options['api_password'],
-			'SIGNATURE' => $this->options['api_signature'],
+			'USER' => $options['api_username'],
+			'PWD' => $options['api_password'],
+			'SIGNATURE' => $options['api_signature'],
 			'VERSION' => '88.0', // https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_PreviousAPIVersionsNVP
 		), (array) $payload );
 
@@ -466,7 +578,10 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * Use this method to validate an incoming IPN request.
 	 */
 	function verify_ipn( $payload = array() ) {
-		$url = $this->options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr';
+		// Replace creds from a predefined account if any.
+		$options = array_merge( $this->options, $this->get_predefined_account( $this->options['api_predef'] ) );
+
+		$url = $options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr';
 		$payload = 'cmd=_notify-validate&' . http_build_query( $payload );
 		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => 20 ) );
 	}
