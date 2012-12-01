@@ -509,10 +509,12 @@ class CampTix_Plugin {
 				$start = get_post_meta( $post_id, 'tix_start', true );
 				$end = get_post_meta( $post_id, 'tix_end', true );
 
-				if ( ! $start && ! $end )
+				if ( ! $start && ! $end ) {
 					echo __( 'Auto', 'camptix' );
-				else
-					printf( __( '%s &mdash; %s', 'camptix' ), $start, $end );
+				} else {
+					// translators: 1: "from" date, 2: "to" date
+					printf( __( '%1$s &mdash; %2$s', 'camptix' ), $start, $end );
+				}
 
 				break;
 		}
@@ -660,10 +662,12 @@ class CampTix_Plugin {
 				$start = get_post_meta( $post_id, 'tix_coupon_start', true );
 				$end = get_post_meta( $post_id, 'tix_coupon_end', true );
 
-				if ( ! $start && ! $end )
+				if ( ! $start && ! $end ) {
 					echo __( 'Auto', 'camptix' );
-				else
-					printf( __( '%s &mdash; %s', 'camptix' ), $start, $end );
+				} else {
+					// translators: 1: "from" date, 2: "to" date
+					printf( __( '%1$s &mdash; %2$s', 'camptix' ), $start, $end );
+				}
 
 				break;
 		}
