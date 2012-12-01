@@ -2811,7 +2811,7 @@ class CampTix_Plugin {
 			<?php endif; ?>
 		</div>
 		<div class="clear"></div>
-		<?
+		<?php
 	}
 
 	/**
