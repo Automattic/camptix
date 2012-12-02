@@ -2944,7 +2944,7 @@ class CampTix_Plugin {
 				<tbody>
 			<?php foreach ( $reservations as $reservation ) : ?>
 				<tr>
-					<td><span><?php echo esc_html( $reservation['id'] ); ?></span></td>
+					<td><span><?php echo esc_html( isset( $reservation['name'] ) ? $reservation['name'] : urldecode( $reservation['id'] ) ); ?></span></td>
 					<td class="column-quantity"><span><?php echo intval( $reservation['quantity'] ); ?></span></td>
 					<td class="column-used"><span><?php echo $this->get_purchased_tickets_count( get_the_ID(), $reservation['token'] ); ?></span></td>
 					<td class="column-token"><span><a href="<?php echo esc_url( $this->get_reservation_link( $reservation['id'], $reservation['token'] ) ); ?>"><?php echo $reservation['token']; ?></a></span></td>
@@ -2963,7 +2963,7 @@ class CampTix_Plugin {
 		<p>
 			<input type="hidden" name="tix_doing_reservations" value="1" />
 			<label><?php _e( 'Reservation Name', 'camptix' ); ?></label>
-			<input type="text" name="tix_reservation_id" autocomplete="off" />
+			<input type="text" name="tix_reservation_name" autocomplete="off" />
 			<label><?php _e( 'Quantity', 'camptix' ); ?></label>
 			<input type="text" name="tix_reservation_quantity" autocomplete="off" />
 			<input type="submit" class="button-primary" value="<?php esc_attr_e( 'Create Reservation', 'camptix' ); ?>" />
@@ -3475,14 +3475,16 @@ class CampTix_Plugin {
 		if ( isset( $_POST['tix_doing_reservations'] ) && $this->options['reservations_enabled'] ) {
 
 			// Make a new reservation
-			if ( isset( $_POST['tix_reservation_id'], $_POST['tix_reservation_quantity'] )
-				&& ! empty( $_POST['tix_reservation_id'] ) && intval( $_POST['tix_reservation_quantity'] ) > 0 ) {
+			if ( isset( $_POST['tix_reservation_name'], $_POST['tix_reservation_quantity'] )
+				&& ! empty( $_POST['tix_reservation_name'] ) && intval( $_POST['tix_reservation_quantity'] ) > 0 ) {
 
-				$reservation_id = sanitize_title_with_dashes( $_POST['tix_reservation_id'] );
+				$reservation_id = sanitize_title_with_dashes( $_POST['tix_reservation_name'] );
+				$reservation_name = $_POST['tix_reservation_name'];
 				$reservation_quantity = intval( $_POST['tix_reservation_quantity'] );
 				$reservation_token = md5( 'caMptix-r353rv4t10n' . rand( 1, 9999 ) . time() . $reservation_id . $post_id );
 				$reservation = array(
 					'id' => $reservation_id,
+					'name' => $reservation_name,
 					'quantity' => $reservation_quantity,
 					'token' => $reservation_token,
 					'ticket_id' => $post_id,
