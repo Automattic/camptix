@@ -3971,7 +3971,7 @@ class CampTix_Plugin {
 							$discounted = '';
 
 							$max = min( $ticket->tix_remaining, 10 );
-							$selected = 1 == count( $this->tickets )? 1 : 0;
+							$selected = ( 1 == count( $this->tickets ) ) ? 1 : 0;
 							if ( isset( $this->tickets_selected[$ticket->ID] ) )
 								$selected = intval( $this->tickets_selected[$ticket->ID] );
 
