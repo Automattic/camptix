@@ -4220,7 +4220,10 @@ class CampTix_Plugin {
 									</td>
 								</tr>
 
-								<?php do_action( 'camptix_question_fields_init' ); ?>
+								<?php
+									do_action( 'camptix_question_fields_init' );
+									$i = 0; // Used for questions class names.
+								?>
 								<?php foreach ( $questions as $question ) : ?>
 
 									<?php
@@ -4228,8 +4231,9 @@ class CampTix_Plugin {
 										$name = sprintf( 'tix_attendee_questions[%d][%s]', $i, $question_key );
 										$value = isset( $this->form_data['tix_attendee_questions'][$i][$question_key] ) ? $this->form_data['tix_attendee_questions'][$i][$question_key] : '';
 										$question_type = $question['type'];
+										$class_name = 'tix-row-question-' . ++$i;
 									?>
-									<tr class="tix-row-<?php echo $question_key; ?>">
+									<tr class="<?php echo esc_attr( $class_name ); ?>">
 										<td class="<?php if ( $question['required'] ) echo 'tix-required'; ?> tix-left"><?php echo esc_html( $question['field'] ); ?><?php if ( $question['required'] ) echo ' <span class="tix-required-star">*</span>'; ?></td>
 										<td class="tix-right">
 											<?php do_action( "camptix_question_field_$question_type", $name, $value, $question ); ?>
