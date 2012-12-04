@@ -173,7 +173,16 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		if ( ! $attendees )
 			return array();
 
-		return (array) get_post_meta( $attendees[0]->ID, 'tix_order', true );
+		return $this->get_order_by_attendee_id( $attendees[0]->ID );
+	}
+
+	function get_order_by_attendee_id( $attendee_id ) {
+		$order = (array) get_post_meta( $attendee_id, 'tix_order', true );
+		if ( $order ) {
+			$order['attendee_id'] = $attendee_id;
+		}
+		return $order;
+
 	}
 
 	/**
