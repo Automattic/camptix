@@ -3673,6 +3673,9 @@ class CampTix_Plugin {
 		$coupon_used_count = 0;
 		$via_reservation = false;
 
+		if ( count( $this->get_enabled_payment_methods() ) < 1 )
+			$this->error_flags['no_payment_methods'] = true;
+
 		// Find the coupon.
 		if ( isset( $_REQUEST['tix_coupon'] ) && ! empty( $_REQUEST['tix_coupon'] ) ) {
 			$coupon = $this->get_coupon_by_code( $_REQUEST['tix_coupon'] );
@@ -3840,6 +3843,10 @@ class CampTix_Plugin {
 
 		$this->did_template_redirect = true;
 
+		// Don't go past the start form if no payment methods are enabled.
+		if ( isset( $this->error_flags['no_payment_methods'] ) )
+			return $this->shortcode_contents = $this->form_start();
+
 		if ( 'attendee_info' == get_query_var( 'tix_action' ) && isset( $_POST['tix_coupon_submit'], $_POST['tix_coupon'] ) && ! empty( $_POST['tix_coupon'] ) )
 			return $this->shortcode_contents = $this->form_start();
 
@@ -3908,6 +3915,11 @@ class CampTix_Plugin {
 
 		if ( 'checkout' == get_query_var( 'tix_action' ) && isset( $this->error_flags['no_tickets_selected'] ) )
 			$this->error( __( 'It looks like somebody took that last ticket before you, sorry! You try a different ticket.', 'camptix' ) );
+
+		if ( isset( $this->error_flags['no_payment_methods'] ) ) {
+			$this->notice( __( 'Payment methods have not been configured yet. Please try again later.', 'camptix' ) );
+			$available_tickets = 0; // Don't bother to show the ticketing form.
+		}
 
 		$redirected_error_flags = isset( $_REQUEST['tix_errors'] ) ? array_flip( (array) $_REQUEST['tix_errors'] ) : array();
 
