@@ -3655,8 +3655,15 @@ class CampTix_Plugin {
 	 */
 	function template_redirect() {
 		global $post;
-		if ( ! is_page() || ! stristr( $post->post_content, '[camptix]' ) )
+		if ( ! is_page() || ! stristr( $post->post_content, '[camptix' ) )
 			return;
+
+		// Allow [camptix attr="value"] but not [camptix_attendees] etc.
+		if ( ! preg_match( "#\\[camptix(\s[^\\]]+)?\\]#", $post->post_content, $matches ) )
+			return;
+
+		// Keep this in the case where we'd like to remove things around the shortcode.
+		$this->shortcode_str = $matches[0];
 
 		$this->error_flags = array();
 
@@ -3891,7 +3898,6 @@ class CampTix_Plugin {
 	 * Step 1: shows the available tickets table.
 	 */
 	function form_start() {
-
 		$available_tickets = 0;
 		foreach ( $this->tickets as $ticket )
 			if ( $this->is_ticket_valid_for_purchase( $ticket->ID ) )
@@ -4079,6 +4085,11 @@ class CampTix_Plugin {
 	 * Step 2: asks for attendee information on chosen tickets.
 	 */
 	function form_attendee_info() {
+		global $post;
+
+		// Clean things up before and after the shortcode.
+		$post->post_content = $this->shortcode_str;
+
 		if ( isset( $this->error_flags['no_tickets_selected'] ) && 'checkout' == get_query_var( 'tix_action' ) )
 			return $this->form_start();
 
@@ -4303,6 +4314,10 @@ class CampTix_Plugin {
 	 */
 	function form_access_tickets() {
 		global $post;
+
+		// Clean things up before and after the shortcode.
+		$post->post_content = $this->shortcode_str;
+
 		ob_start();
 
 		if ( ! isset( $_REQUEST['tix_access_token'] ) || empty( $_REQUEST['tix_access_token'] ) ) {
@@ -4431,6 +4446,10 @@ class CampTix_Plugin {
 	 */
 	function form_edit_attendee() {
 		global $post;
+
+		// Clean things up before and after the shortcode.
+		$post->post_content = $this->shortcode_str;
+
 		ob_start();
 		if ( ! isset( $_REQUEST['tix_edit_token'] ) || empty( $_REQUEST['tix_edit_token'] ) ) {
 			$this->error_flags['invalid_edit_token'] = true;
@@ -4591,7 +4610,13 @@ class CampTix_Plugin {
 	}
 
 	function form_refund_request() {
+		global $post;
+
 		die( 'needs implementation' );
+
+		// Clean things up before and after the shortcode.
+		$post->post_content = $this->shortcode_str;
+
 		if ( ! $this->options['refunds_enabled'] || ! isset( $_REQUEST['tix_access_token'] ) || empty( $_REQUEST['tix_access_token'] ) ) {
 			$this->error_flags['invalid_access_token'] = true;
 			$this->redirect_with_error_flags();
@@ -4754,6 +4779,11 @@ class CampTix_Plugin {
 	}
 
 	function form_refund_success() {
+		global $post;
+
+		// Clean things up before and after the shortcode.
+		$post->post_content = $this->shortcode_str;
+
 		ob_start();
 		?>
 		<div id="tix">
@@ -4816,14 +4846,24 @@ class CampTix_Plugin {
 		$posts = get_posts( array(
 			'post_type' => 'page',
 			'post_status' => 'publish',
-			's' => '[camptix]',
-			'posts_per_page' => 1,
+			's' => '[camptix',
+			'posts_per_page' => 5,
 			'update_post_term_cache' => false,
 			'update_post_meta_cache' => false,
 		) );
 
-		if ( $posts )
-			return $posts[0]->ID;
+		if ( ! $posts )
+			return false;
+
+		foreach ( $posts as $post ) {
+
+			$matches = array();
+			// Allow [camptix attr="value"] but not [camptix_attendees] etc.
+			if ( ! preg_match( "#\\[camptix(\s[^\\]]+)?\\]#", $post->post_content, $matches ) )
+				continue;
+
+			return $post->ID;
+		}
 
 		return false;
 	}
@@ -5146,6 +5186,10 @@ class CampTix_Plugin {
 	 * Step 3: Uses a payment method to perform a checkout.
 	 */
 	function form_checkout() {
+		global $post;
+
+		// Clean things up before and after the shortcode.
+		$post->post_content = $this->shortcode_str;
 
 		$attendees = array();
 		$errors = array();
