@@ -1920,7 +1920,7 @@ class CampTix_Plugin {
 		$object_ids = array_map( 'intval', $ids_array );
 		$id_list = join( ',', $object_ids );
 		$table = _get_meta_table( 'post' );
-		$meta_list = $wpdb->get_results( $wpdb->prepare( "SELECT post_id, meta_key, meta_value FROM $table WHERE post_id IN ( $id_list )" ) );
+		$meta_list = $wpdb->get_results( "SELECT post_id, meta_key, meta_value FROM $table WHERE post_id IN ( $id_list )" );
 		$metadata = array();
 		foreach ( $meta_list as $row )
 			$metadata[$row->post_id][$row->meta_key][] = $row->meta_value;
