@@ -756,6 +756,16 @@ class CampTix_Plugin {
 		return $output;
 	}
 
+	function get_all_questions_new() {
+		$questions = get_posts( array(
+			'post_type' => 'tix_question',
+			'post_status' => 'publish',
+			'posts_per_page' => -1,
+		) );
+
+		return $questions;
+	}
+
 	/**
 	 * Takes a ticket id and returns a sorted array of questions.
 	 */
@@ -763,6 +773,39 @@ class CampTix_Plugin {
 		$questions = (array) get_post_meta( $ticket_ID, 'tix_question' );
 		usort( $questions, array( $this, 'usort_by_order' ) );
 		return $questions;
+	}
+
+	function get_sorted_questions_new( $ticket_id ) {
+		$question_ids = (array) get_post_meta( $ticket_id, 'tix_question_id' );
+		$order = (array) get_post_meta( $ticket_id, 'tix_questions_order', true );
+
+		// Make sure we have at least some questions
+		if ( empty( $question_ids ) )
+			return array();
+
+		$questions = get_posts( array(
+			'post_type' => 'tix_question',
+			'post_status' => 'publish',
+			'posts_per_page' => -1,
+			'post__in' => $question_ids,
+		) );
+
+		$questions_with_keys = array();
+
+		foreach ( $questions as $question )
+			$questions_with_keys[ $question->ID ] = $question;
+
+		$questions = $questions_with_keys;
+		unset( $questions_with_keys );
+
+		$questions_sorted = array();
+		foreach ( $order as $question_id )
+			if ( isset( $questions[ $question_id ] ) )
+				$questions_sorted[] = $questions[ $question_id ];
+
+		unset( $questions );
+
+		return $questions_sorted;
 	}
 
 	/**
@@ -807,6 +850,29 @@ class CampTix_Plugin {
 				'delete_post' => $this->caps['manage_tickets'],
 				'read_post' => $this->caps['manage_tickets'],
 			),
+		) );
+
+		register_post_type( 'tix_question', array(
+			'labels' => array(
+				'name' => __( 'Questions', 'camptix' ),
+				'singular_name' => __( 'Question', 'camptix' ),
+				'add_new' => __( 'New Question', 'camptix' ),
+				'add_new_item' => __( 'Add New Question', 'camptix' ),
+				'edit_item' => __( 'Edit Question', 'camptix' ),
+				'new_item' => __( 'New Question', 'camptix' ),
+				'all_items' => __( 'Questions', 'camptix' ),
+				'view_item' => __( 'View Question', 'camptix' ),
+				'search_items' => __( 'Search Questions', 'camptix' ),
+				'not_found' => __( 'No questions found', 'camptix' ),
+				'not_found_in_trash' => __( 'No questions found in trash', 'camptix' ),
+				'menu_name' => __( 'Questions', 'camptix' ),
+			),
+			'public' => false,
+			'query_var' => false,
+			'publicly_queryable' => false,
+			'show_ui' => true,
+			'show_in_menu' => 'edit.php?post_type=tix_ticket',
+			'supports' => array( 'title', 'custom-fields' ),
 		) );
 
 		$supports = array( 'title' );
@@ -3010,9 +3076,10 @@ class CampTix_Plugin {
 	 * A drop-down select for a question.
 	 */
 	function question_field_select( $name, $user_value, $question ) {
+		$values = get_post_meta( $question->ID, 'tix_values', true );
 		?>
 		<select name="<?php echo esc_attr( $name ); ?>" />
-			<?php foreach ( (array) $question['values'] as $question_value ) : ?>
+			<?php foreach ( (array) $values as $question_value ) : ?>
 				<option <?php selected( $question_value, $user_value ); ?> value="<?php echo esc_attr( $question_value ); ?>"><?php echo esc_html( $question_value ); ?></option>
 			<?php endforeach; ?>
 		</select>
@@ -3023,9 +3090,10 @@ class CampTix_Plugin {
 	 * A single or multiple checkbox for a question.
 	 */
 	function question_field_checkbox( $name, $user_value, $question ) {
+		$values = get_post_meta( $question->ID, 'tix_values', true );
 		?>
-		<?php if ( (array) $question['values'] ) : ?>
-			<?php foreach ( $question['values'] as $question_value ) : ?>
+		<?php if ( $values ) : ?>
+			<?php foreach ( (array) $values as $question_value ) : ?>
 				<label><input <?php checked( in_array( $question_value, (array) $user_value ) ); ?> name="<?php echo esc_attr( $name ); ?>[<?php echo sanitize_title_with_dashes( $question_value ); ?>]" type="checkbox" value="<?php echo esc_attr( $question_value ); ?>" /> <?php echo esc_html( $question_value ); ?></label><br />
 			<?php endforeach; ?>
 		<?php else : ?>
@@ -3047,8 +3115,9 @@ class CampTix_Plugin {
 	 * A radio input for questions.
 	 */
 	function question_field_radio( $name, $user_value, $question ) {
+		$values = get_post_meta( $question->ID, 'tix_values', true );
 		?>
-		<?php foreach ( (array) $question['values'] as $question_value ) : ?>
+		<?php foreach ( (array) $values as $question_value ) : ?>
 			<label><input <?php checked( $question_value, $user_value ); ?> name="<?php echo esc_attr( $name ); ?>" type="radio" value="<?php echo esc_attr( $question_value ); ?>" /> <?php echo esc_html( $question_value ); ?></label><br />
 		<?php endforeach; ?>
 		<?php
@@ -3077,34 +3146,35 @@ class CampTix_Plugin {
 					</div>
 				</div>
 				<?php
-					$questions = $this->get_sorted_questions( get_the_ID() );
+					$questions = $this->get_sorted_questions_new( get_the_ID() );
 					$i = 0;
 				?>
 				<?php foreach ( $questions as $question ) : ?>
 				<?php
 					$i++;
-					$is_required = isset( $question['required'] ) && $question['required'] ? true : false;
+					$is_required = ( intval( get_post_meta( $question->ID, 'tix_required', true ) ) ) ? true : false;
 					$item_class = $is_required ? 'tix-item-required' : '';
 				?>
 				<div class="tix-item tix-item-sortable <?php echo esc_attr( $item_class ); ?>">
 					<div class="tix-item-inner">
-						<input type="hidden" class="tix-field-type" name="tix_questions[<?php echo $i; ?>][type]" value="<?php echo esc_attr( $question['type'] ); ?>" />
-						<input type="hidden" class="tix-field-name" name="tix_questions[<?php echo $i; ?>][field]" value="<?php echo esc_attr( $question['field'] ); ?>" />
-						<input type="hidden" class="tix-field-values" name="tix_questions[<?php echo $i; ?>][values]" value="<?php echo esc_attr( implode( ', ', $question['values'] ) ); ?>" />
-						<input type="hidden" class="tix-field-required" name="tix_questions[<?php echo $i; ?>][required]" value="<?php echo intval( $question['required'] ); ?>" />
+						<input type="hidden" class="tix-field-id" name="tix_questions[<?php echo $i; ?>][id]" value="<?php echo absint( $question->ID ); ?>" />
+						<input type="hidden" class="tix-field-type" name="tix_questions[<?php echo $i; ?>][type]" value="<?php echo esc_attr( get_post_meta( $question->ID, 'tix_type', true ) ); ?>" />
+						<input type="hidden" class="tix-field-name" name="tix_questions[<?php echo $i; ?>][field]" value="<?php echo esc_attr( $question->post_title ); ?>" />
+						<input type="hidden" class="tix-field-required" name="tix_questions[<?php echo $i; ?>][required]" value="<?php echo intval( get_post_meta( $question->ID, 'tix_required', true ) ); ?>" />
+						<input type="hidden" class="tix-field-values" name="tix_questions[<?php echo $i; ?>][values]" value="<?php echo esc_attr( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?>" />
 						<input type="hidden" class="tix-field-order" name="tix_questions[<?php echo $i; ?>][order]" value="<?php echo $i; ?>" />
 
 						<div class="tix-item-inner-left">
-							<span class="tix-field-type"><?php echo esc_html( $question['type'] ); ?></span>
+							<span class="tix-field-type"><?php echo esc_html( get_post_meta( $question->ID, 'tix_type', true ) ); ?></span>
 						</div>
 						<div class="tix-item-inner-right">
 							<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 27px; position: relative; top: 3px;">&equiv;</a>
 							<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Delete', 'camptix' ); ?>" style="font-size: 18px;">&times;</a>
 						</div>
 						<div class="tix-item-inner-middle">
-							<span class="tix-field-name"><?php echo esc_html( $question['field'] ); ?></span>
+							<span class="tix-field-name"><?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?></span>
 							<span class="tix-field-required-star">*</span>
-							<span class="tix-field-values"><?php echo esc_html( implode( ', ', $question['values'] ) ); ?></span>
+							<span class="tix-field-values"><?php echo esc_html( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?></span>
 						</div>
 					</div>
 					<div class="tix-clear"></div>
@@ -3123,6 +3193,7 @@ class CampTix_Plugin {
 				<div id="tix-add-question-new-form">
 					<div class="tix-item tix-item-sortable tix-prototype tix-new">
 						<div class="tix-item-inner">
+							<input type="hidden" class="tix-field-id" value="" />
 							<input type="hidden" class="tix-field-type" value="" />
 							<input type="hidden" class="tix-field-name" value="" />
 							<input type="hidden" class="tix-field-values" value="" />
@@ -3201,17 +3272,18 @@ class CampTix_Plugin {
 							</ul>
 
 							<div class="tabs-panel">
-								<ul id="categorychecklist" class="list:category categorychecklist form-no-clear">
-									<?php foreach ( $this->get_all_questions() as $question ) : ?>
+								<ul id="categorychecklist" class="categorychecklist form-no-clear">
+									<?php foreach ( $this->get_all_questions_new() as $question ) : ?>
 									<li class="tix-existing-question">
 										<label class="selectit">
-											<input type="checkbox" class="tix-existing-checkbox">
-											<?php echo esc_html( $question['field'] ); ?>
+											<input type="checkbox" class="tix-existing-checkbox" />
+											<?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?>
 
-											<input type="hidden" class="tix-field-type" value="<?php echo esc_attr( $question['type'] ); ?>" />
-											<input type="hidden" class="tix-field-name" value="<?php echo esc_attr( $question['field'] ); ?>" />
-											<input type="hidden" class="tix-field-required" value="<?php echo intval( $question['required'] ); ?>" />
-											<input type="hidden" class="tix-field-values" value="<?php echo esc_attr( implode( ', ', $question['values'] ) ); ?>" />
+											<input type="hidden" class="tix-field-id" value="<?php echo absint( $question->ID ); ?>" />
+											<input type="hidden" class="tix-field-type" value="<?php echo esc_attr( get_post_meta( $question->ID, 'tix_type', true ) ); ?>" />
+											<input type="hidden" class="tix-field-name" value="<?php echo esc_attr( $question->post_title ); ?>" />
+											<input type="hidden" class="tix-field-required" value="<?php echo intval( get_post_meta( $question->ID, 'tix_required', true ) ); ?>" />
+											<input type="hidden" class="tix-field-values" value="<?php echo esc_attr( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?>" />
 										</label>
 									</li>
 									<?php endforeach; ?>
@@ -3437,14 +3509,13 @@ class CampTix_Plugin {
 
 		// Questions
 		if ( isset( $_POST['tix_questions'] ) ) {
-
-			delete_post_meta( $post_id, 'tix_question' );
+			delete_post_meta( $post_id, 'tix_question_id' );
 			$questions = (array) $_POST['tix_questions'];
-			$questions_clean = array();
+			$order = array();
 
 			usort( $questions, array( $this, 'usort_by_order' ) );
 
-			foreach ( $questions as $order => $question ) {
+			foreach ( $questions as $question ) {
 				if ( empty( $question['field'] ) || strlen( trim( $question['field'] ) ) < 1 )
 					continue;
 
@@ -3457,7 +3528,7 @@ class CampTix_Plugin {
 					$question_values = array();
 
 				$clean_question = array(
-					'order' => intval( $order ),
+					'id' => ( isset( $question['id'] ) ) ? absint( $question['id'] ) : false,
 					'field' => strip_tags( $question['field'] ),
 					'type' => $question['type'],
 					'values' => $question_values,
@@ -3465,10 +3536,42 @@ class CampTix_Plugin {
 				);
 
 				$clean_question['required'] = (bool) $question['required'];
+				$question = $clean_question;
+				unset( $clean_question );
 
-				// Save serialized value.
-				add_post_meta( $post_id, 'tix_question', $clean_question );
+				if ( ! $question['id'] ) {
+
+					// Create a new question
+					$question_id = wp_insert_post( array(
+						'post_type' => 'tix_question',
+						'post_status' => 'publish',
+						'post_title' => $question['field'],
+					) );
+
+				} else {
+
+					// Update question here
+					$question_id = $question['id'];
+					wp_update_post( array(
+						'ID' => $question_id,
+						'post_title' => $question['field'],
+					) );
+				}
+
+				// Question meta
+				update_post_meta( $question_id, 'tix_values', $question['values'] );
+				update_post_meta( $question_id, 'tix_required', $question['required'] );
+				update_post_meta( $question_id, 'tix_type', $question['type'] );
+
+				// Add question to this ticket
+				add_post_meta( $post_id, 'tix_question_id', $question_id );
+
+				// Add question to the order queue.
+				$order[] = $question_id;
 			}
+
+			// Update with the order array.
+			update_post_meta( $post_id, 'tix_questions_order', $order );
 		}
 
 		// Reservations
@@ -4205,7 +4308,7 @@ class CampTix_Plugin {
 
 						<?php
 							$ticket = $this->tickets[$ticket_id];
-							$questions = $this->get_sorted_questions( $ticket->ID );
+							$questions = $this->get_sorted_questions_new( $ticket->ID );
 						?>
 						<input type="hidden" name="tix_attendee_info[<?php echo $i; ?>][ticket_id]" value="<?php echo intval( $ticket->ID ); ?>" />
 						<table class="tix_tickets_table tix-attendee-form">
@@ -4250,16 +4353,16 @@ class CampTix_Plugin {
 								<?php foreach ( $questions as $question ) : ?>
 
 									<?php
-										$question_key = sanitize_title_with_dashes( $question['field'] );
-										$name = sprintf( 'tix_attendee_questions[%d][%s]', $i, $question_key );
-										$value = isset( $this->form_data['tix_attendee_questions'][$i][$question_key] ) ? $this->form_data['tix_attendee_questions'][$i][$question_key] : '';
-										$question_type = $question['type'];
-										$class_name = 'tix-row-question-' . ++$question_num;
+										$name = sprintf( 'tix_attendee_questions[%d][%s]', $i, $question->ID );
+										$value = isset( $this->form_data['tix_attendee_questions'][$i][$question->ID] ) ? $this->form_data['tix_attendee_questions'][$i][$question->ID] : '';
+										$type = get_post_meta( $question->ID, 'tix_type', true );
+										$required = get_post_meta( $question->ID, 'tix_required', true );
+										$class_name = 'tix-row-question-' . $question->ID;
 									?>
 									<tr class="<?php echo esc_attr( $class_name ); ?>">
-										<td class="<?php if ( $question['required'] ) echo 'tix-required'; ?> tix-left"><?php echo esc_html( $question['field'] ); ?><?php if ( $question['required'] ) echo ' <span class="tix-required-star">*</span>'; ?></td>
+										<td class="<?php if ( $required ) echo 'tix-required'; ?> tix-left"><?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?><?php if ( $required ) echo ' <span class="tix-required-star">*</span>'; ?></td>
 										<td class="tix-right">
-											<?php do_action( "camptix_question_field_$question_type", $name, $value, $question ); ?>
+											<?php do_action( "camptix_question_field_{$type}", $name, $value, $question ); ?>
 										</td>
 									</tr>
 								<?php endforeach; ?>

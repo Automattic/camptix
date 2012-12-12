@@ -131,6 +131,7 @@
 					var item = $( '#tix-add-question-new-form .tix-item.tix-prototype' ).clone();
 					var parent = $( checkbox ).parent();
 
+					var id = $( parent ).find( '.tix-field-id' ).val();
 					var type = $( parent ).find( '.tix-field-type' ).val();
 					var name = $( parent ).find( '.tix-field-name' ).val();
 					var values = $( parent ).find( '.tix-field-values' ).val();
@@ -141,6 +142,7 @@
 					$(item).find( 'span.tix-field-name' ).text( name );
 					$(item).find( 'span.tix-field-values' ).text( values );
 
+					$(item).find( 'input.tix-field-id' ).val( id ).attr( 'name', 'tix_questions[' + order + '][id]' );
 					$(item).find( 'input.tix-field-type' ).val( type ).attr( 'name', 'tix_questions[' + order + '][type]' );
 					$(item).find( 'input.tix-field-name' ).val( name ).attr( 'name', 'tix_questions[' + order + '][field]' );
 					$(item).find( 'input.tix-field-values' ).val( values ).attr( 'name', 'tix_questions[' + order + '][values]' );
