@@ -1986,7 +1986,7 @@ class CampTix_Plugin {
 		$object_ids = array_map( 'intval', $ids_array );
 		$id_list = join( ',', $object_ids );
 		$table = _get_meta_table( 'post' );
-		$meta_list = $wpdb->get_results( $wpdb->prepare( "SELECT post_id, meta_key, meta_value FROM $table WHERE post_id IN ( $id_list )" ) );
+		$meta_list = $wpdb->get_results( "SELECT post_id, meta_key, meta_value FROM $table WHERE post_id IN ( $id_list )" );
 		$metadata = array();
 		foreach ( $meta_list as $row )
 			$metadata[$row->post_id][$row->meta_key][] = $row->meta_value;
@@ -4597,7 +4597,7 @@ class CampTix_Plugin {
 			$this->notice( __( 'Please note that the payment for this ticket is still pending.', 'camptix' ) );
 
 		$ticket = get_post( $ticket_id );
-		$questions = $this->get_sorted_questions( $ticket->ID );
+		$questions = $this->get_sorted_questions_new( $ticket->ID );
 		$answers = (array) get_post_meta( $attendee->ID, 'tix_questions', true );
 		$ticket_info = array(
 			'first_name' => get_post_meta( $attendee->ID, 'tix_first_name', true ),
@@ -4621,14 +4621,13 @@ class CampTix_Plugin {
 
 			$new_answers = array();
 			foreach ( $questions as $question ) {
-				$question_key = sanitize_title_with_dashes( $question['field'] );
-				if ( isset( $_POST['tix_ticket_questions'][$question_key] ) ) {
-					$new_answers[$question_key] = stripslashes_deep( $posted['tix_ticket_questions'][$question_key] );
+				if ( isset( $_POST['tix_ticket_questions'][ $question->ID ] ) ) {
+					$new_answers[$question->ID] = stripslashes_deep( $posted['tix_ticket_questions'][ $question->ID ] );
 				}
 
 				// @todo maybe check $user_values against $type and $question_values
 
-				if ( $question['required'] && ( ! isset( $new_answers[$question_key] ) || empty( $new_answers[$question_key] ) ) ) {
+				if ( (bool) get_post_meta( $question->ID, 'tix_required', true ) && empty( $new_answers[ $question->ID ] ) ) {
 					$errors[] = __( 'Please fill in all required fields.', 'camptix' );
 				}
 			}
@@ -4684,20 +4683,21 @@ class CampTix_Plugin {
 
 						<?php do_action( 'camptix_question_fields_init' ); ?>
 						<?php foreach ( $questions as $question ) : ?>
-
 							<?php
-								$question_key = sanitize_title_with_dashes( $question['field'] );
-								$question_type = $question['type'];
-								$name = sprintf( 'tix_ticket_questions[%s]', sanitize_title_with_dashes( $question['field'] ) );
-								$value = ( isset( $answers[$question_key] ) ) ? $answers[$question_key] : '';
+								$name = sprintf( 'tix_ticket_questions[%d]', $question->ID );
+								$value = isset( $answers[ $question->ID ] ) ? $answers[ $question->ID ] : '';
+								$type = get_post_meta( $question->ID, 'tix_type', true );
+								$required = get_post_meta( $question->ID, 'tix_required', true );
+								$class_name = 'tix-row-question-' . $question->ID;
 							?>
-							<tr>
-								<td class="tix-left <?php if ( $question['required'] ) echo 'tix-required'; ?>"><?php echo esc_html( $question['field'] ); ?><?php if ( $question['required'] ) echo ' <span class="tix-required-star">*</span>'; ?></td>
+							<tr class="<?php echo esc_attr( $class_name ); ?>">
+								<td class="<?php if ( $required ) echo 'tix-required'; ?> tix-left"><?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?><?php if ( $required ) echo ' <span class="tix-required-star">*</span>'; ?></td>
 								<td class="tix-right">
-									<?php do_action( "camptix_question_field_$question_type", $name, $value, $question ); ?>
+									<?php do_action( "camptix_question_field_{$type}", $name, $value, $question ); ?>
 								</td>
 							</tr>
 						<?php endforeach; ?>
+
 					</tbody>
 				</table>
 				<p>
@@ -5329,19 +5329,19 @@ class CampTix_Plugin {
 
 			$answers = array();
 			if ( isset( $_POST['tix_attendee_questions'][$i] ) ) {
-				$questions = $this->get_sorted_questions( $ticket->ID );
+				$questions = $this->get_sorted_questions_new( $ticket->ID );
 
 				foreach ( $questions as $question ) {
-					$question_key = sanitize_title_with_dashes( $question['field'] );
-					if ( isset( $_POST['tix_attendee_questions'][$i][$question_key] ) )
-						$answers[$question_key] = $_POST['tix_attendee_questions'][$i][$question_key];
+					if ( isset( $_POST['tix_attendee_questions'][$i][$question->ID] ) )
+						$answers[$question->ID] = $_POST['tix_attendee_questions'][$i][$question->ID];
 
-					if ( $question['required'] && ( ! isset( $answers[$question_key] ) || empty( $answers[$question_key] ) ) ) {
+					if ( (bool) get_post_meta( $question->ID, 'tix_required', true ) && empty( $answers[$question->ID] ) ) {
 						$this->error_flags['required_fields'] = true;
 						break;
 					}
 				}
 			}
+
 
 			// @todo make more checks here
 
