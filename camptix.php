@@ -354,9 +354,6 @@ class CampTix_Plugin {
 		if ( 'summarize' != $this->get_tools_section() )
 			return;
 
-		$that = $this;
-		$questions = $that->get_all_questions();
-
 		// Adds all questions to Summarize and register the callback that counts all the things.
 		add_filter( 'camptix_summary_fields', array( $this, 'camptix_summary_fields_extras' ) );
 		add_action( 'camptix_summarize_by_field', array( $this, 'camptix_summarize_by_field_extras' ), 10, 3 );
@@ -367,9 +364,9 @@ class CampTix_Plugin {
 	 * questions to the Summarize list.
 	 */
 	function camptix_summary_fields_extras( $fields ) {
-		$questions = $this->get_all_questions();
-		foreach ( $questions as $key => $question )
-			$fields['tix_q_' . $key] = $question['field'];
+		$questions = $this->get_all_questions_new();
+		foreach ( $questions as $question )
+			$fields[ 'tix_q_' . $question->ID ] = apply_filters( 'the_title', $question->post_title );
 
 		return $fields;
 	}
@@ -385,8 +382,8 @@ class CampTix_Plugin {
 		$key = substr( $summarize_by, 6 );
 		$answers = (array) get_post_meta( $attendee->ID, 'tix_questions', true );
 
-		if ( isset( $answers[$key] ) && ! empty( $answers[$key] ) )
-			$this->increment_summary( $summary, $answers[$key] );
+		if ( isset( $answers[ $key ] ) && ! empty( $answers[ $key ] ) )
+			$this->increment_summary( $summary, $answers[ $key ] );
 		else
 			$this->increment_summary( $summary, __( 'None', 'camptix' ) );
 	}
@@ -3457,16 +3454,15 @@ class CampTix_Plugin {
 
 		// Questions
 		$rows[] = array( __( 'Questions', 'camptix' ), '' );
-		$questions = $this->get_sorted_questions( $ticket_id );
+		$questions = $this->get_sorted_questions_new( $ticket_id );
 		$answers = get_post_meta( $post->ID, 'tix_questions', true );
 
 		foreach ( $questions as $question ) {
-			$question_key = sanitize_title_with_dashes( $question['field'] );
-			if ( isset( $answers[$question_key] ) ) {
-				$answer = $answers[$question_key];
+			if ( isset( $answers[ $question->ID ] ) ) {
+				$answer = $answers[ $question->ID ];
 				if ( is_array( $answer ) )
 					$answer = implode( ', ', $answer );
-				$rows[] = array( $question['field'], nl2br( esc_html( $answer ) ) );
+				$rows[] = array( esc_html( apply_filters( 'the_title', $question->post_title ) ), nl2br( esc_html( $answer ) ) );
 			}
 		}
 		$this->table( $rows, 'tix-attendees-info' );
