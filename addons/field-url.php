@@ -30,15 +30,14 @@ class CampTix_Addon_URL_Field extends CampTix_Addon {
 
 	function attendees_shortcode_item( $attendee_id ) {
 		foreach ( $this->questions as $question ) {
-			if ( $question['type'] != 'url' )
+			if ( get_post_meta( $question->ID, 'tix_type', true ) != 'url' )
 				continue;
 
-			$question_key = sanitize_title_with_dashes( $question['field'] );
 			$answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
-			if ( ! isset( $answers[$question_key] ) )
+			if ( ! isset( $answers[ $question->ID ] ) )
 				continue;
 
-			$url = esc_url_raw( trim( $answers[$question_key] ) );
+			$url = esc_url_raw( trim( $answers[ $question->ID ] ) );
 			if ( $url ) {
 				$parsed = parse_url( $url );
 				$label = $parsed['host'];

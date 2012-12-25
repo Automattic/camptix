@@ -364,7 +364,7 @@ class CampTix_Plugin {
 	 * questions to the Summarize list.
 	 */
 	function camptix_summary_fields_extras( $fields ) {
-		$questions = $this->get_all_questions_new();
+		$questions = $this->get_all_questions();
 		foreach ( $questions as $question )
 			$fields[ 'tix_q_' . $question->ID ] = apply_filters( 'the_title', $question->post_title );
 
@@ -525,18 +525,6 @@ class CampTix_Plugin {
 		$columns['tix_ticket'] = __( 'Ticket', 'camptix' );
 		$columns['tix_coupon'] = __( 'Coupon', 'camptix' );
 
-		/*$questions = $this->get_all_questions();
-		foreach ( $questions as $key => $question ) {
-
-			// Trim the label if it's too long.
-			$label = $question['field'];
-			if ( mb_strlen( $label ) > 10 )
-				$label = trim( mb_substr( $label, 0, 10 ) ) . '...';
-
-			$label = sprintf( '<abbr class="tix-column-label" title="%s">%s</abbr>', esc_attr( $question['field'] ), esc_html( $label ) );
-			$columns['tix_q_' . md5( $key )] = $label;
-		}*/
-
 		if ( $this->options['reservations_enabled'] )
 			$columns['tix_reservation'] = __( 'Reservation', 'camptix' );
 
@@ -589,21 +577,6 @@ class CampTix_Plugin {
 				echo $this->append_currency( $ticket_price );
 				break;
 		}
-
-		/*if ( substr( $column, 0, 6 ) == 'tix_q_' ) {
-			$answers = (array) get_post_meta( $post_id, 'tix_questions', true );
-
-			$md5_answers = array();
-			foreach ( $answers as $key => $value )
-				$md5_answers[md5($key)] = $value;
-
-			$key = substr( $column, 6 );
-			if ( isset( $md5_answers[$key] ) ) {
-				if ( is_array( $md5_answers[$key] ) )
-					$md5_answers[$key] = implode( ', ', (array) $md5_answers[$key] );
-				echo esc_html( $md5_answers[$key] );
-			}
-		}*/
 	}
 
 	/**
@@ -737,23 +710,6 @@ class CampTix_Plugin {
 	 * the question array.
 	 */
 	function get_all_questions() {
-		$output = array();
-		$tickets = get_posts( array(
-			'posts_per_page' => -1,
-			'post_type' => 'tix_ticket',
-			'post_status' => 'publish',
-		) );
-
-		foreach ( $tickets as $ticket ) {
-			$questions = $this->get_sorted_questions( $ticket->ID );
-			foreach ( $questions as $question )
-				$output[sanitize_title_with_dashes($question['field'])] = $question;
-		}
-
-		return $output;
-	}
-
-	function get_all_questions_new() {
 		$questions = get_posts( array(
 			'post_type' => 'tix_question',
 			'post_status' => 'publish',
@@ -766,13 +722,7 @@ class CampTix_Plugin {
 	/**
 	 * Takes a ticket id and returns a sorted array of questions.
 	 */
-	function get_sorted_questions( $ticket_ID ) {
-		$questions = (array) get_post_meta( $ticket_ID, 'tix_question' );
-		usort( $questions, array( $this, 'usort_by_order' ) );
-		return $questions;
-	}
-
-	function get_sorted_questions_new( $ticket_id ) {
+	function get_sorted_questions( $ticket_id ) {
 		$question_ids = (array) get_post_meta( $ticket_id, 'tix_question_id' );
 		$order = (array) get_post_meta( $ticket_id, 'tix_questions_order', true );
 
@@ -2211,7 +2161,7 @@ class CampTix_Plugin {
 			);
 
 			$filename = sprintf( 'camptix-export-%s.%s', date( 'Y-m-d' ), $format );
-			$questions = $this->get_all_questions_new();
+			$questions = $this->get_all_questions();
 
 			header( 'Content-Type: ' . $content_types[$format] );
 			header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
@@ -3143,7 +3093,7 @@ class CampTix_Plugin {
 					</div>
 				</div>
 				<?php
-					$questions = $this->get_sorted_questions_new( get_the_ID() );
+					$questions = $this->get_sorted_questions( get_the_ID() );
 					$i = 0;
 				?>
 				<?php foreach ( $questions as $question ) : ?>
@@ -3270,7 +3220,7 @@ class CampTix_Plugin {
 
 							<div class="tabs-panel">
 								<ul id="categorychecklist" class="categorychecklist form-no-clear">
-									<?php foreach ( $this->get_all_questions_new() as $question ) : ?>
+									<?php foreach ( $this->get_all_questions() as $question ) : ?>
 									<li class="tix-existing-question">
 										<label class="selectit">
 											<input type="checkbox" class="tix-existing-checkbox" />
@@ -3454,7 +3404,7 @@ class CampTix_Plugin {
 
 		// Questions
 		$rows[] = array( __( 'Questions', 'camptix' ), '' );
-		$questions = $this->get_sorted_questions_new( $ticket_id );
+		$questions = $this->get_sorted_questions( $ticket_id );
 		$answers = get_post_meta( $post->ID, 'tix_questions', true );
 
 		foreach ( $questions as $question ) {
@@ -4304,7 +4254,7 @@ class CampTix_Plugin {
 
 						<?php
 							$ticket = $this->tickets[$ticket_id];
-							$questions = $this->get_sorted_questions_new( $ticket->ID );
+							$questions = $this->get_sorted_questions( $ticket->ID );
 						?>
 						<input type="hidden" name="tix_attendee_info[<?php echo $i; ?>][ticket_id]" value="<?php echo intval( $ticket->ID ); ?>" />
 						<table class="tix_tickets_table tix-attendee-form">
@@ -4593,7 +4543,7 @@ class CampTix_Plugin {
 			$this->notice( __( 'Please note that the payment for this ticket is still pending.', 'camptix' ) );
 
 		$ticket = get_post( $ticket_id );
-		$questions = $this->get_sorted_questions_new( $ticket->ID );
+		$questions = $this->get_sorted_questions( $ticket->ID );
 		$answers = (array) get_post_meta( $attendee->ID, 'tix_questions', true );
 		$ticket_info = array(
 			'first_name' => get_post_meta( $attendee->ID, 'tix_first_name', true ),
@@ -5325,7 +5275,7 @@ class CampTix_Plugin {
 
 			$answers = array();
 			if ( isset( $_POST['tix_attendee_questions'][$i] ) ) {
-				$questions = $this->get_sorted_questions_new( $ticket->ID );
+				$questions = $this->get_sorted_questions( $ticket->ID );
 
 				foreach ( $questions as $question ) {
 					if ( isset( $_POST['tix_attendee_questions'][$i][$question->ID] ) )
