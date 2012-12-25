@@ -2211,7 +2211,7 @@ class CampTix_Plugin {
 			);
 
 			$filename = sprintf( 'camptix-export-%s.%s', date( 'Y-m-d' ), $format );
-			$questions = $this->get_all_questions();
+			$questions = $this->get_all_questions_new();
 
 			header( 'Content-Type: ' . $content_types[$format] );
 			header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
@@ -2230,8 +2230,8 @@ class CampTix_Plugin {
 				'txn_id' => __( 'Transaction ID', 'camptix' ),
 				'coupon' => __( 'Coupon', 'camptix' ),
 			);
-			foreach ( $questions as $key => $question )
-				$columns['tix_q_' . $key] = $question['field'];
+			foreach ( $questions as $question )
+				$columns[ 'tix_q_' . $question->ID ] = apply_filters( 'the_title', $question->post_title );
 
 			if ( 'csv' == $format ) {
 				$stream = fopen( "php://output", 'w' );
@@ -2279,13 +2279,13 @@ class CampTix_Plugin {
 
 					$answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
 
-					foreach ( $questions as $key => $question ) {
+					foreach ( $questions as $question ) {
 
 						// For multiple checkboxes
-						if ( isset( $answers[$key] ) && is_array( $answers[$key] ) )
-							$answers[$key] = implode( ', ', (array) $answers[$key] );
+						if ( isset( $answers[ $question->ID ] ) && is_array( $answers[ $question->ID ] ) )
+							$answers[ $question->ID ] = implode( ', ', (array) $answers[ $question->ID ] );
 
-						$line['tix_q_' . $key] = ( isset( $answers[$key] ) ) ? $answers[$key] : '';
+						$line[ 'tix_q_' . $question->ID ] = ( isset( $answers[ $question->ID ] ) ) ? $answers[ $question->ID ] : '';
 					}
 
 					// Make sure every column is printed.
