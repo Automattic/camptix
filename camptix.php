@@ -18,7 +18,7 @@ class CampTix_Plugin {
 
 	public $debug;
 	public $beta_features_enabled;
-	public $version = 20120831;
+	public $version = 20121227;
 	public $css_version = 20121004;
 	public $js_version = 20121004;
 	public $caps;
@@ -1013,7 +1013,7 @@ class CampTix_Plugin {
 		// Allow plugins to hi-jack or read the options.
 		$options = apply_filters( 'camptix_options', $options );
 
-		/*$options['version'] = 0;
+		/*$options['version'] = 20121226;
 		update_option( 'camptix_options', $options );
 		die();/**/
 
@@ -1053,9 +1053,12 @@ class CampTix_Plugin {
 	 * Runs when get_option decides that the current version is out of date.
 	 */
 	function upgrade( $from ) {
-
 		set_time_limit( 60*60 ); // Give it an hour to update.
 		$this->log( 'Running upgrade script.', 0, null, 'upgrade' );
+
+		// Because these run after get_options.
+		$this->register_post_types();
+		$this->register_post_statuses();
 
 		/**
 		 * Payment Methods Upgrade Routine
@@ -1063,10 +1066,6 @@ class CampTix_Plugin {
 		if ( $from < 20120831 ) {
 			$start_20120831 = microtime( true );
 			$this->log( sprintf( 'Upgrading from %s to %s.', $from, 20120620 ), 0, null, 'upgrade' );
-
-			// Because these run after get_options.
-			$this->register_post_types();
-			$this->register_post_statuses();
 
 			/**
 			 * Update options.
@@ -1169,6 +1168,125 @@ class CampTix_Plugin {
 			$end_20120831 = microtime( true );
 			$this->log( sprintf( 'Updated %d attendees data in %f seconds.', $count, $end_20120831 - $start_20120831 ), null, null, 'upgrade' );
 			$from = 20120831;
+		}
+
+		/**
+		 * Questions post types
+		 */
+		if ( $from < 20121227 ) {
+			$start_20121227 = microtime( true );
+			$this->log( sprintf( 'Upgrading from %s to %s.', $from, 20121227 ), 0, null, 'upgrade' );
+
+			// Grab all tickets
+			$tickets = get_posts( array(
+				'post_type' => 'tix_ticket',
+				'post_status' => 'any',
+				'posts_per_page' => -1, // assume we don't have a bazillion tickets
+			) );
+
+			// Use this to store a map of old question-key => new question id
+			$questions_map = array();
+
+			// Grab existing questions (there shouldn't be any)
+			$questions = get_posts( array(
+				'post_type' => 'tix_question',
+				'post_status' => 'publish',
+				'posts_per_page' => -1,
+			) );
+
+			// See if any of these questions were already converted, add them to the map.
+			foreach ( $questions as $question ) {
+				$key = get_post_meta( $question->ID, 'tix_key', true );
+				if ( $key )
+					$questions_map[ $key ] = $question->ID;
+			}
+
+			// Loop through tickets and update questions to cpt.
+			foreach ( $tickets as $ticket ) {
+				$ticket_questions = (array) get_post_meta( $ticket->ID, 'tix_question' );
+				usort( $ticket_questions, array( $this, 'usort_by_order' ) );
+				$order = array();
+
+				// In case the upgrade script ran more than once.
+				delete_post_meta( $ticket->ID, 'tix_question_id' );
+
+				foreach ( $ticket_questions as $question ) {
+					$key = sanitize_title_with_dashes( $question['field'] );
+
+					// Create the question CPT if it does not exist.
+					if ( empty( $questions_map[ $key ] ) ) {
+						$question_id = wp_insert_post( array(
+							'post_type' => 'tix_question',
+							'post_status' => 'publish',
+							'post_title' => $question['field'],
+						) );
+
+						// Save attributes, including the key for future use.
+						update_post_meta( $question_id, 'tix_values', $question['values'] );
+						update_post_meta( $question_id, 'tix_required', $question['required'] );
+						update_post_meta( $question_id, 'tix_type', $question['type'] );
+						update_post_meta( $question_id, 'tix_key', $key );
+
+						// Add new question to the map.
+						$questions_map[ $key ] = $question_id;
+					}
+
+					$question_id = $questions_map[ $key ];
+
+					// Add the new question ID to the ticket meta and order.
+					add_post_meta( $ticket->ID, 'tix_question_id', $question_id );
+					$order[] = $question_id;
+				}
+
+				// Add the questions order.
+				update_post_meta( $ticket->ID, 'tix_questions_order', $order );
+			}
+
+			// Attendees will be updated, add the save_post hook and remove afterwards.
+			add_action( 'save_post', array( $this, 'save_attendee_post' ) );
+
+			// Loop through all attendees and convert answers to cpt.
+			$paged = 1; $count = 0;
+			while ( $attendees = get_posts( array(
+				'post_type' => 'tix_attendee',
+				'posts_per_page' => 200,
+				'post_status' => 'any',
+				'paged' => $paged++,
+				'orderby' => 'ID',
+			) ) ) {
+				foreach ( $attendees as $attendee ) {
+					$new_answers = array();
+					$answers = get_post_meta( $attendee->ID, 'tix_questions', true );
+
+					// Just in case the upgrade script runs more than once
+					$answers_backup = get_post_meta( $attendee->ID, 'tix_questions_backup', true );
+					if ( $answers_backup )
+						$answers = $answers_backup;
+
+					foreach ( $answers as $key => $value )
+						if ( ! empty( $questions_map[ $key ] ) )
+							$new_answers[ $questions_map[ $key ] ] = $value;
+
+					// Update to new answers and don't nuke old ones.
+					update_post_meta( $attendee->ID, 'tix_questions', $new_answers );
+					update_post_meta( $attendee->ID, 'tix_questions_backup', $answers );
+
+					// Update post for other actions to kick in (and generate searchable content, etc.)
+					wp_update_post( $attendee );
+
+					// Delete caches.
+					wp_cache_delete( $attendee->ID, 'posts' );
+					wp_cache_delete( $attendee->ID, 'post_meta' );
+					$count++;
+				}
+			}
+
+			// Remove save_post action since we finished with wp_update_post.
+			remove_action( 'save_post', array( $this, 'save_attendee_post' ) );
+
+			$end_20121227 = microtime( true );
+			$this->log( sprintf( 'Updated %d attendees data in %f seconds.', $count, $end_20121227 - $start_20121227 ), null, null, 'upgrade' );
+			$from = 20121227;
 		}
 
 		$this->log( sprintf( 'Upgrade complete, current version: %s.', $this->version ), 0, null, 'upgrade' );
