@@ -1199,14 +1199,13 @@ class CampTix_Plugin {
 				$this->add_settings_field_helper( 'currency', __( 'Currency', 'camptix' ), 'field_currency' );
 				break;
 			case 'payment':
-				// add_settings_section( 'general', __( 'Payment Configuration', 'camptix' ), array( $this, 'menu_setup_section_payment' ), 'camptix_options' );
 				foreach ( $this->get_available_payment_methods() as $key => $payment_method ) {
 					$payment_method_obj = $this->get_payment_method_by_id( $key );
 
 					add_settings_section( 'payment_' . $key, $payment_method_obj->name, array( $payment_method_obj, '_camptix_settings_section_callback' ), 'camptix_options' );
 					add_settings_field( 'payment_method_' . $key . '_enabled', __( 'Enabled', 'camptix' ), array( $payment_method_obj, '_camptix_settings_enabled_callback' ), 'camptix_options', 'payment_' . $key, array(
 						'name' => "camptix_options[payment_methods][{$key}]",
-						'value' => isset( $this->options['payment_methods'][$key] ) ? (bool) $this->options['payment_methods'][$key] : false,
+						'value' => isset( $this->options['payment_methods'][$key] ) ? (bool) $this->options['payment_methods'][ $key ] : false,
 					) );
 
 					$payment_method_obj->payment_settings_fields();
@@ -1246,10 +1245,6 @@ class CampTix_Plugin {
 		echo '<p>' . __( 'General configuration.', 'camptix' ) . '</p>';
 	}
 
-	function menu_setup_section_payment() {
-		echo '<p>' . __( 'Booyaga' ) . '</p>';
-	}
-
 	/**
 	 * I don't like repeating code, so here's a helper for simple fields.
 	 */
@@ -1270,28 +1265,25 @@ class CampTix_Plugin {
 
 	/**
 	 * Validates options in Tickets > Setup.
-	 * @todo actually validate please
 	 */
 	function validate_options( $input ) {
 		$output = $this->options;
 
 		if ( isset( $input['event_name'] ) )
-			$output['event_name'] = sanitize_text_field( $input['event_name'] );
+			$output['event_name'] = sanitize_text_field( strip_tags( $input['event_name'] ) );
 
-		if ( isset( $input['currency'] ) )
+		if ( isset( $input['currency'] ) && array_key_exists( $input['currency'], $this->get_currencies() ) )
 			$output['currency'] = $input['currency'];
 
-		$yesno_fields = array(
-			// 'paypal_sandbox',
-		);
+		$yesno_fields = array();
 
 		// Beta features checkboxes
 		if ( $this->beta_features_enabled )
 			$yesno_fields = array_merge( $yesno_fields, $this->get_beta_features() );
 
 		foreach ( $yesno_fields as $field )
-		if ( isset( $input[$field] ) )
-			$output[$field] = (bool) $input[$field];
+			if ( isset( $input[ $field ] ) )
+				$output[ $field ] = (bool) $input[ $field ];
 
 		if ( isset( $input['refunds_date_end'], $input['refunds_enabled'] ) && (bool) $input['refunds_enabled'] && strtotime( $input['refunds_date_end'] ) )
 			$output['refunds_date_end'] = $input['refunds_date_end'];
@@ -1308,14 +1300,13 @@ class CampTix_Plugin {
 
 		$current_user = wp_get_current_user();
 		$log_data = array(
-			'old' => $this->options,
-			'new' => $output,
+			'old'      => $this->options,
+			'new'      => $output,
 			'username' => $current_user->user_login,
 		);
 		$this->log( 'Options updated.', 0, $log_data );
 
 		$output = apply_filters( 'camptix_validate_options', $output );
-
 		return $output;
 	}
 
@@ -1448,9 +1439,9 @@ class CampTix_Plugin {
 	 */
 	function append_currency( $price, $nbsp = true, $currency_key = false ) {
 		$currencies = $this->get_currencies();
-		$currency = $currencies[$this->options['currency']];
+		$currency = $currencies[ $this->options['currency'] ];
 		if ( $currency_key )
-			$currency = $currencies[$currency_key];
+			$currency = $currencies[ $currency_key ];
 
 		if ( ! $currency )
 			$currency = array( 'label' => __( 'U.S. Dollar', 'camptix' ), 'format' => '$ %s' );
@@ -1464,7 +1455,6 @@ class CampTix_Plugin {
 
 	/**
 	 * Oh the holy admin menu!
-	 * @todo find out why New Coupon renders Tickets as the current menu item.
 	 */
 	function admin_menu() {
 		add_submenu_page( 'edit.php?post_type=tix_ticket', __( 'Tools', 'camptix' ), __( 'Tools', 'camptix' ), $this->caps['manage_tools'], 'camptix_tools', array( $this, 'menu_tools' ) );
@@ -1830,10 +1820,11 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Some more magic here.
+	 * Increment summary label.
+	 *
 	 * @see get_summary
-	 * @todo let outsiders use this.
-	 * @warning $summary is passed byref.
+	 * @param $summary array The main summary array, passed by ref.
+	 * @param $label string|array The label to increment in the summary.
 	 */
 	function increment_summary( &$summary, $label ) {
 
@@ -1842,10 +1833,10 @@ class CampTix_Plugin {
 			$label = implode( ', ', (array) $label );
 
 		$key = 'tix_' . md5( $label );
-		if ( isset( $summary[$key] ) )
-			$summary[$key]['count']++;
+		if ( isset( $summary[ $key ] ) )
+			$summary[ $key ]['count']++;
 		else
-			$summary[$key] = array( 'label' => $label, 'count' => 1 );
+			$summary[ $key ] = array( 'label' => $label, 'count' => 1 );
 	}
 
 	/**
@@ -1853,7 +1844,7 @@ class CampTix_Plugin {
 	 */
 	function update_stats( $key, $value ) {
 		$stats = get_option( 'camptix_stats', array() );
-		$stats[$key] = $value;
+		$stats[ $key ] = $value;
 		update_option( 'camptix_stats', $stats );
 		return;
 	}
@@ -1863,10 +1854,10 @@ class CampTix_Plugin {
 	 */
 	function increment_stats( $key, $step = 1 ) {
 		$stats = get_option( 'camptix_stats', array() );
-		if ( ! isset( $stats[$key] ) )
-			$stats[$key] = 0;
+		if ( ! isset( $stats[ $key ] ) )
+			$stats[ $key ] = 0;
 
-		$stats[$key] += $step;
+		$stats[ $key ] += $step;
 		update_option( 'camptix_stats', $stats );
 		return;
 	}
@@ -5419,7 +5410,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * @todo implement
+	 * Verify an order
 	 */
 	function verify_order( &$order = array() ) {
 		$tickets_objects = get_posts( array(
