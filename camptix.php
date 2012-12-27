@@ -976,7 +976,7 @@ class CampTix_Plugin {
 		return apply_filters( 'camptix_default_options', array(
 			'currency' => 'USD',
 			'event_name' => get_bloginfo( 'name' ),
-			'version' => $this->version,
+			'version' => 0,
 			'reservations_enabled' => false,
 			'refunds_enabled' => false,
 			'refund_all_enabled' => false,
@@ -1003,6 +1003,12 @@ class CampTix_Plugin {
 		/*$options['version'] = 0;
 		update_option( 'camptix_options', $options );
 		die();/**/
+
+		// Fresh installs require no upgrades.
+		if ( $options['version'] == 0 ) {
+			$options['version'] = $this->version;
+			update_option( 'camptix_options', $options );
+		}
 
 		// Let's see if we need to run an upgrade scenario.
 		if ( $options['version'] < $this->version ) {
