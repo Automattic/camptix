@@ -3303,7 +3303,7 @@ class CampTix_Plugin {
 								<input id="tix-add-question-name" class="regular-text" type="text" />
 							</td>
 						</tr>
-						<tr valign="top">
+						<tr valign="top" class="tix-add-question-values-row">
 							<th scope="row">
 								<label><?php _e( 'Values', 'camptix' ); ?></label>
 							</th>

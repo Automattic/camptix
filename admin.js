@@ -70,7 +70,19 @@
 			$( '#tix-add-question-new' ).click(function() {
 				$( '#tix-add-question-action' ).hide();
 				$( '#tix-add-question-new-form' ).show();
+				$( '#tix-add-question-type' ).change();
 				return false;
+			});
+
+			// Show/hide the values input for certain question types.
+			$( '#tix-add-question-type' ).change(function() {
+				var value = $(this).val();
+				var $row = $('.tix-add-question-values-row');
+
+				if ( value.match( /radio|checkbox|select/ ) )
+					$( $row ).show();
+				else
+					$( $row ).hide();
 			});
 
 			$( '#tix-add-question-new-form-cancel' ).click(function() {
@@ -122,6 +134,7 @@
 				// Clear form
 				$('#tix-add-question-new-form input[type="text"], #tix-add-question-new-form select').val('');
 				$('#tix-add-question-new-form input[type="checkbox"]').attr('checked',false);
+				$( '#tix-add-question-type' ).change();
 				return false;
 			});
 
