@@ -19,8 +19,8 @@ class CampTix_Plugin {
 	public $debug;
 	public $beta_features_enabled;
 	public $version = 20121227;
-	public $css_version = 20121004;
-	public $js_version = 20121004;
+	public $css_version = 20121227;
+	public $js_version = 20121227;
 	public $caps;
 
 	public $addons = array();
@@ -3230,8 +3230,9 @@ class CampTix_Plugin {
 							<span class="tix-field-type"><?php echo esc_html( get_post_meta( $question->ID, 'tix_type', true ) ); ?></span>
 						</div>
 						<div class="tix-item-inner-right">
-							<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 27px; position: relative; top: 3px;">&equiv;</a>
-							<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Delete', 'camptix' ); ?>" style="font-size: 18px;">&times;</a>
+							<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Move', 'camptix' ); ?></a>
+							<a href="#" class="tix-item-edit" title="<?php esc_attr_e( 'Edit', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Edit', 'camptix' ); ?></a>
+							<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Remove', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_attr_e( 'Remove', 'camptix' ); ?></a>
 						</div>
 						<div class="tix-item-inner-middle">
 							<span class="tix-field-name"><?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?></span>
@@ -3251,7 +3252,7 @@ class CampTix_Plugin {
 									sprintf( '<a id="tix-add-question-existing" style="font-weight: bold;" href="#">%s</a>', __( 'existing one', 'camptix' ) )
 								);
 					?>
-					</span>
+				</span>
 				<div id="tix-add-question-new-form">
 					<div class="tix-item tix-item-sortable tix-prototype tix-new">
 						<div class="tix-item-inner">
@@ -3266,8 +3267,9 @@ class CampTix_Plugin {
 								<span class="tix-field-type"><?php _e( 'Type', 'camptix' ); ?></span>
 							</div>
 							<div class="tix-item-inner-right">
-								<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 27px; position: relative; top: 3px;">&equiv;</a>
-								<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Delete', 'camptix' ); ?>" style="font-size: 18px;">&times;</a>
+								<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Move', 'camptix' ); ?></a>
+								<a href="#" class="tix-item-edit" title="<?php esc_attr_e( 'Edit', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Edit', 'camptix' ); ?></a>
+								<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Remove', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_attr_e( 'Remove', 'camptix' ); ?></a>
 							</div>
 							<div class="tix-item-inner-middle">
 								<span class="tix-field-name"><?php _e( 'Field', 'camptix' ); ?></span>
@@ -3623,6 +3625,10 @@ class CampTix_Plugin {
 				update_post_meta( $question_id, 'tix_values', $question['values'] );
 				update_post_meta( $question_id, 'tix_required', $question['required'] );
 				update_post_meta( $question_id, 'tix_type', $question['type'] );
+
+				// Don't add duplicate questions to the ticket/order.
+				if ( in_array( $question_id, $order ) )
+					continue;
 
 				// Add question to this ticket
 				add_post_meta( $post_id, 'tix_question_id', $question_id );

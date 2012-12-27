@@ -75,6 +75,7 @@
 	padding-left: 8px;
 	padding-right: 8px;
 	padding-top: 4px;
+	text-transform: uppercase;
 }
 
 .tix-ticket-questions .tix-item-inner-right a {
@@ -88,6 +89,10 @@
 .tix-ticket-questions .tix-item-inner-right a:hover,
 .tix-ticket-questions .tix-item-inner-right a:focus {
 	color: #333;
+}
+
+.tix-ticket-questions .tix-item-inner-right a.tix-item-delete:hover {
+	color: red;
 }
 
 .tix-ticket-questions span.tix-field-type {

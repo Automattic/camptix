@@ -161,7 +161,7 @@
 			});
 
 			$( '.tix-item-delete' ).live( 'click', function() {
-				if ( ! confirm( 'Are you sure you want to delete this question?' ) )
+				if ( ! confirm( 'Are you sure you want to remove this question?' ) )
 					return false;
 
 				$(this).parents('.tix-item').remove();
