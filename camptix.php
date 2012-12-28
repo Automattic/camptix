@@ -420,7 +420,7 @@ class CampTix_Plugin {
 				wp_enqueue_style( 'jquery-ui', plugins_url( '/external/jquery-ui.css', __FILE__ ), array(), $this->version );
 
 				wp_enqueue_style( 'camptix-admin', plugins_url( '/admin.css', __FILE__ ), array(), $this->css_version );
-				wp_enqueue_script( 'camptix-admin', plugins_url( '/admin.js', __FILE__ ), array( 'jquery', 'jquery-ui-datepicker' ), $this->js_version );
+				wp_enqueue_script( 'camptix-admin', plugins_url( '/admin.js', __FILE__ ), array( 'jquery', 'jquery-ui-datepicker', 'backbone' ), $this->js_version );
 				wp_dequeue_script( 'autosave' );
 			}
 		}
@@ -3192,7 +3192,7 @@ class CampTix_Plugin {
 		$types = $this->get_question_field_types();
 		?>
 		<div class="tix-ticket-questions">
-			<div class="tix-ui-sortable">
+			<div class="tix-ui-sortable" id="tix-questions-container">
 				<div class="tix-item tix-item-required">
 					<div>
 						<input type="hidden" class="tix-field-order" value="0" />
@@ -3211,23 +3211,10 @@ class CampTix_Plugin {
 					$questions = $this->get_sorted_questions( get_the_ID() );
 					$i = 0;
 				?>
-				<?php foreach ( $questions as $question ) : ?>
-				<?php
-					$i++;
-					$is_required = ( intval( get_post_meta( $question->ID, 'tix_required', true ) ) ) ? true : false;
-					$item_class = $is_required ? 'tix-item-required' : '';
-				?>
-				<div class="tix-item tix-item-sortable <?php echo esc_attr( $item_class ); ?>">
-					<div class="tix-item-inner">
-						<input type="hidden" class="tix-field-id" name="tix_questions[<?php echo $i; ?>][id]" value="<?php echo absint( $question->ID ); ?>" />
-						<input type="hidden" class="tix-field-type" name="tix_questions[<?php echo $i; ?>][type]" value="<?php echo esc_attr( get_post_meta( $question->ID, 'tix_type', true ) ); ?>" />
-						<input type="hidden" class="tix-field-name" name="tix_questions[<?php echo $i; ?>][field]" value="<?php echo esc_attr( $question->post_title ); ?>" />
-						<input type="hidden" class="tix-field-required" name="tix_questions[<?php echo $i; ?>][required]" value="<?php echo intval( get_post_meta( $question->ID, 'tix_required', true ) ); ?>" />
-						<input type="hidden" class="tix-field-values" name="tix_questions[<?php echo $i; ?>][values]" value="<?php echo esc_attr( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?>" />
-						<input type="hidden" class="tix-field-order" name="tix_questions[<?php echo $i; ?>][order]" value="<?php echo $i; ?>" />
-
+				<script type="text/template" id="camptix-tmpl-question">
+					<div class="tix-item tix-item-sortable">
 						<div class="tix-item-inner-left">
-							<span class="tix-field-type"><?php echo esc_html( get_post_meta( $question->ID, 'tix_type', true ) ); ?></span>
+							<span class="tix-field-type">{{ data.type }}</span>
 						</div>
 						<div class="tix-item-inner-right">
 							<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Move', 'camptix' ); ?></a>
@@ -3235,14 +3222,24 @@ class CampTix_Plugin {
 							<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Remove', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_attr_e( 'Remove', 'camptix' ); ?></a>
 						</div>
 						<div class="tix-item-inner-middle">
-							<span class="tix-field-name"><?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?></span>
-							<span class="tix-field-required-star">*</span>
-							<span class="tix-field-values"><?php echo esc_html( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?></span>
+							<span class="tix-field-name">{{ data.question }}</span>
+							<span class="tix-field-required-star"><# if ( data.required ) { #>*<# } #></span>
+							<span class="tix-field-values"></span>
 						</div>
+						<div class="tix-clear"></div>
 					</div>
-					<div class="tix-clear"></div>
-				</div>
+				</script>
+				<script>
+				(function($){
+				<?php foreach ( $questions as $question ) : ?>
+					camptix.questions.add( new camptix.models.Question({
+						type: '<?php echo esc_js( get_post_meta( $question->ID, 'tix_type', true ) ); ?>',
+						question: '<?php echo esc_js( apply_filters( 'the_title', $question->post_title ) ); ?>',
+						required: <?php echo esc_js( (int) (bool) get_post_meta( $question->ID, 'tix_required', true ) ); ?>
+					}) );
 				<?php endforeach; ?>
+				}(jQuery));
+				</script>
 			</div>
 
 			<div class="tix-add-question" style="border-top: solid 1px white; background: #f9f9f9;">
@@ -3254,31 +3251,6 @@ class CampTix_Plugin {
 					?>
 				</span>
 				<div id="tix-add-question-new-form">
-					<div class="tix-item tix-item-sortable tix-prototype tix-new">
-						<div class="tix-item-inner">
-							<input type="hidden" class="tix-field-id" value="" />
-							<input type="hidden" class="tix-field-type" value="" />
-							<input type="hidden" class="tix-field-name" value="" />
-							<input type="hidden" class="tix-field-values" value="" />
-							<input type="hidden" class="tix-field-required" value="" />
-							<input type="hidden" class="tix-field-order" value="" />
-
-							<div class="tix-item-inner-left">
-								<span class="tix-field-type"><?php _e( 'Type', 'camptix' ); ?></span>
-							</div>
-							<div class="tix-item-inner-right">
-								<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Move', 'camptix' ); ?></a>
-								<a href="#" class="tix-item-edit" title="<?php esc_attr_e( 'Edit', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Edit', 'camptix' ); ?></a>
-								<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Remove', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_attr_e( 'Remove', 'camptix' ); ?></a>
-							</div>
-							<div class="tix-item-inner-middle">
-								<span class="tix-field-name"><?php _e( 'Field', 'camptix' ); ?></span>
-								<span class="tix-field-required-star">*</span>
-								<span class="tix-field-values"><?php _e( 'Values', 'camptix' ); ?></span>
-							</div>
-						</div>
-						<div class="tix-clear"></div>
-					</div>
 
 					<h4 class="title"><?php _e( 'Add a new question:', 'camptix' ); ?></h4>
 
@@ -3288,7 +3260,7 @@ class CampTix_Plugin {
 								<label><?php _e( 'Type', 'camptix' ); ?></label>
 							</th>
 							<td>
-								<select id="tix-add-question-type">
+								<select id="tix-add-question-type" data-model-attribute="type">
 									<?php foreach ( $types as $key => $label ) : ?>
 									<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
 									<?php endforeach; ?>
@@ -3300,7 +3272,7 @@ class CampTix_Plugin {
 								<label><?php _e( 'Question', 'camptix' ); ?></label>
 							</th>
 							<td>
-								<input id="tix-add-question-name" class="regular-text" type="text" />
+								<input data-model-attribute="question" id="tix-add-question-name" class="regular-text" type="text" />
 							</td>
 						</tr>
 						<tr valign="top" class="tix-add-question-values-row">
@@ -3308,7 +3280,7 @@ class CampTix_Plugin {
 								<label><?php _e( 'Values', 'camptix' ); ?></label>
 							</th>
 							<td>
-								<input id="tix-add-question-values" class="regular-text" type="text" />
+								<input data-model-attribute="values" id="tix-add-question-values" class="regular-text" type="text" />
 								<p class="description"><?php _e( 'Separate multiple values with a comma.', 'camptix' ); ?></p>
 							</td>
 						</tr>
@@ -3317,7 +3289,7 @@ class CampTix_Plugin {
 								<label><?php _e( 'Required', 'camptix' ); ?></label>
 							</th>
 							<td>
-								<label><input id="tix-add-question-required" type="checkbox" /> <?php _e( 'This field is required', 'camptix' ); ?></label>
+								<label><input data-model-attribute="required" id="tix-add-question-required" type="checkbox" /> <?php _e( 'This field is required', 'camptix' ); ?></label>
 							</td>
 						</tr>
 					</table>
@@ -3327,6 +3299,7 @@ class CampTix_Plugin {
 						<span class="description"><?php _e( 'Do not forget to update the ticket post to save changes.', 'camptix' ); ?></span>
 					</p>
 				</div>
+
 				<div id="tix-add-question-existing-form">
 					<h4 class="title"><?php _e( 'Add an existing question:', 'camptix' ); ?></h4>
 

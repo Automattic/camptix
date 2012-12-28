@@ -1,7 +1,83 @@
 /**
  * CampTix Admin JavaScript
  */
+window.camptix = window.camptix || { models: {}, views: {} };
+
 (function($){
+
+	camptix.template_options = {
+		evaluate:    /<#([\s\S]+?)#>/g,
+		interpolate: /\{\{\{([\s\S]+?)\}\}\}/g,
+		escape:      /\{\{([^\}]+?)\}\}(?!\})/g,
+		variable:    'data'
+	};
+
+	var Question = Backbone.Model.extend({
+		type: 'text',
+		question: '',
+		values: '',
+		required: false
+	});
+
+	var QuestionView = Backbone.View.extend({
+		events: {
+			'click a.tix-item-delete': 'clear'
+		},
+
+		initialize: function() {
+			this.model.bind( 'change', this.render, this );
+			this.model.bind( 'destroy', this.remove, this );
+		},
+
+		render: function() {
+			this.template = _.template( $( '#camptix-tmpl-question' ).html(), null, camptix.template_options );
+			this.$el.html( this.template( this.model.toJSON() ) );
+			return this;
+		},
+
+		clear: function(e) {
+			if ( ! confirm( 'Are you sure you want to remove this question?' ) )
+				return false;
+
+			this.model.destroy();
+			return false;
+		}
+	});
+
+	var Questions = Backbone.Collection.extend({
+		model: Question
+	});
+
+	var QuestionsView = Backbone.View.extend({
+		initialize: function() {
+			this.collection.bind( 'add', this.addOne, this );
+		},
+
+		render: function() {
+			return this;
+		},
+
+		addOne: function( item ) {
+			var view = new QuestionView( { model: item } );
+			$('#tix-questions-container').append(view.render().el);
+		}
+	});
+
+	camptix.models.Question = Question;
+	camptix.questions = new Questions();
+	camptix.views.QuestionsView = new QuestionsView({ collection: camptix.questions });
+
+	$(document).ready(function() {
+		$( ".tix-ui-sortable" ).sortable({
+			items: ".tix-item-sortable",
+			handle:'.tix-item-sort-handle',
+			placeholder: "tix-item-highlight",
+			update: function(e, ui) {
+				// tix_refresh_questions_order();
+			}
+		});
+	});
+
 	$(document).ready(function(){
 		$( ".tix-date-field" ).datepicker({
 			dateFormat: 'yy-mm-dd',
@@ -58,15 +134,6 @@
 					$(items[i]).find('input.tix-field-order').val(i);
 			};
 
-			$( ".tix-ui-sortable" ).sortable({
-				items: ".tix-item-sortable",
-				handle:'.tix-item-sort-handle',
-				placeholder: "tix-item-highlight",
-				update: function(e, ui) {
-					tix_refresh_questions_order();
-				}
-			});
-
 			$( '#tix-add-question-new' ).click(function() {
 				$( '#tix-add-question-action' ).hide();
 				$( '#tix-add-question-new-form' ).show();
@@ -92,6 +159,7 @@
 			});
 
 			$( '#tix-add-question-existing' ).click(function() {
+				$( '#tix-add-question-existing-form' ).trigger( 'update.camptix' );
 				$( '#tix-add-question-action' ).hide();
 				$( '#tix-add-question-existing-form' ).show();
 				return false;
@@ -104,37 +172,23 @@
 			});
 
 			$( '#tix-add-question-submit' ).click(function() {
-				var item = $( '#tix-add-question-new-form .tix-item.tix-prototype' ).clone();
+				var question = new camptix.models.Question();
 
-				var type = $( '#tix-add-question-type' ).val();
-				var name = $( '#tix-add-question-name' ).val();
-				var values = $( '#tix-add-question-values' ).val();
-				var required = $( '#tix-add-question-required' ).is( ':checked' );
-				var order = $( '.tix-ticket-questions .tix-item' ).length-1;
+				$('#tix-add-question-new-form').find('input,select').each(function() {
+					var attr = $(this).data('model-attribute');
+					if ( ! attr )
+						return;
 
-				if ( name.length < 1 )
-					return false;
+					question.set( attr, $(this).val() );
+				});
 
-				$(item).find( 'span.tix-field-type' ).text( type );
-				$(item).find( 'span.tix-field-name' ).text( name );
-				$(item).find( 'span.tix-field-values' ).text( values );
-
-				$(item).find( 'input.tix-field-type' ).val( type ).attr( 'name', 'tix_questions[' + order + '][type]' );
-				$(item).find( 'input.tix-field-name' ).val( name ).attr( 'name', 'tix_questions[' + order + '][field]' );
-				$(item).find( 'input.tix-field-values' ).val( values ).attr( 'name', 'tix_questions[' + order + '][values]' );
-				$(item).find( 'input.tix-field-required' ).val( ( required > 0 ) ? 1 : 0 ).attr( 'name', 'tix_questions[' + order + '][required]' );
-				$(item).find( 'input.tix-field-order' ).val( order ).attr( 'name', 'tix_questions[' + order + '][order]' );
-
-				if ( required > 0 )
-					$(item).addClass( 'tix-item-required' );
-
-				$(item).removeClass( 'tix-prototype' );
-				$(item).appendTo( '.tix-ticket-questions .tix-ui-sortable' );
+				console.log(question);
+				camptix.questions.add( question );
 
 				// Clear form
 				$('#tix-add-question-new-form input[type="text"], #tix-add-question-new-form select').val('');
 				$('#tix-add-question-new-form input[type="checkbox"]').attr('checked',false);
-				$( '#tix-add-question-type' ).change();
+				$('#tix-add-question-type').change();
 				return false;
 			});
 
@@ -170,15 +224,8 @@
 
 					$(checkbox).attr('checked',false);
 				});
-				return false;
-			});
 
-			$( '.tix-item-delete' ).live( 'click', function() {
-				if ( ! confirm( 'Are you sure you want to remove this question?' ) )
-					return false;
-
-				$(this).parents('.tix-item').remove();
-				tix_refresh_questions_order();
+				$( '#tix-add-question-existing-form' ).trigger( 'update.camptix' );
 				return false;
 			});
 		}
