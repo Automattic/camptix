@@ -3212,7 +3212,7 @@ class CampTix_Plugin {
 					$i = 0;
 				?>
 				<script type="text/template" id="camptix-tmpl-question">
-					<div class="tix-item tix-item-sortable">
+					<div class="tix-item tix-item-sortable <# if ( data.required ) { #>tix-item-required<# } #>">
 						<div class="tix-item-inner-left">
 							<span class="tix-field-type">{{ data.type }}</span>
 						</div>
@@ -3223,7 +3223,7 @@ class CampTix_Plugin {
 						</div>
 						<div class="tix-item-inner-middle">
 							<span class="tix-field-name">{{ data.question }}</span>
-							<span class="tix-field-required-star"><# if ( data.required ) { #>*<# } #></span>
+							<span class="tix-field-required-star">*</span>
 							<span class="tix-field-values"></span>
 						</div>
 						<div class="tix-clear"></div>
@@ -3289,7 +3289,7 @@ class CampTix_Plugin {
 								<label><?php _e( 'Required', 'camptix' ); ?></label>
 							</th>
 							<td>
-								<label><input data-model-attribute="required" id="tix-add-question-required" type="checkbox" /> <?php _e( 'This field is required', 'camptix' ); ?></label>
+								<label><input data-model-attribute="required" data-model-attribute-type="checkbox" id="tix-add-question-required" type="checkbox" value="1" /> <?php _e( 'This field is required', 'camptix' ); ?></label>
 							</td>
 						</tr>
 					</table>

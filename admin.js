@@ -176,13 +176,20 @@ window.camptix = window.camptix || { models: {}, views: {} };
 
 				$('#tix-add-question-new-form').find('input,select').each(function() {
 					var attr = $(this).data('model-attribute');
+					var attr_type = $(this).data('model-attribute-type');
+
 					if ( ! attr )
 						return;
 
-					question.set( attr, $(this).val() );
+					var value = $(this).val();
+
+					// Special treatment for checkboxes.
+					if ( 'checkbox' == attr_type )
+						value = $(this).prop('checked');
+
+					question.set( attr, value );
 				});
 
-				console.log(question);
 				camptix.questions.add( question );
 
 				// Clear form
