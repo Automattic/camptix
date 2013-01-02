@@ -3222,9 +3222,11 @@ class CampTix_Plugin {
 							<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Remove', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_attr_e( 'Remove', 'camptix' ); ?></a>
 						</div>
 						<div class="tix-item-inner-middle">
+							<input type="hidden" name="tix_questions[]" value="{{ data.json }}" />
+
 							<span class="tix-field-name">{{ data.question }}</span>
 							<span class="tix-field-required-star">*</span>
-							<span class="tix-field-values"></span>
+							<span class="tix-field-values">{{ data.values }}</span>
 						</div>
 						<div class="tix-clear"></div>
 					</div>
@@ -3233,6 +3235,7 @@ class CampTix_Plugin {
 				(function($){
 				<?php foreach ( $questions as $question ) : ?>
 					camptix.questions.add( new camptix.models.Question({
+						post_id: <?php echo esc_js( $question->ID ); ?>,
 						type: '<?php echo esc_js( get_post_meta( $question->ID, 'tix_type', true ) ); ?>',
 						question: '<?php echo esc_js( apply_filters( 'the_title', $question->post_title ) ); ?>',
 						required: <?php echo esc_js( (int) (bool) get_post_meta( $question->ID, 'tix_required', true ) ); ?>
@@ -3316,11 +3319,11 @@ class CampTix_Plugin {
 											<input type="checkbox" class="tix-existing-checkbox" />
 											<?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?>
 
-											<input type="hidden" class="tix-field-id" value="<?php echo absint( $question->ID ); ?>" />
-											<input type="hidden" class="tix-field-type" value="<?php echo esc_attr( get_post_meta( $question->ID, 'tix_type', true ) ); ?>" />
-											<input type="hidden" class="tix-field-name" value="<?php echo esc_attr( $question->post_title ); ?>" />
-											<input type="hidden" class="tix-field-required" value="<?php echo intval( get_post_meta( $question->ID, 'tix_required', true ) ); ?>" />
-											<input type="hidden" class="tix-field-values" value="<?php echo esc_attr( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?>" />
+											<input type="hidden" data-model-attribute="post_id" value="<?php echo absint( $question->ID ); ?>" />
+											<input type="hidden" data-model-attribute="type" value="<?php echo esc_attr( get_post_meta( $question->ID, 'tix_type', true ) ); ?>" />
+											<input type="hidden" data-model-attribute="question" value="<?php echo esc_attr( $question->post_title ); ?>" />
+											<input type="hidden" data-model-attribute="required" value="<?php echo intval( get_post_meta( $question->ID, 'tix_required', true ) ); ?>" />
+											<input type="hidden" data-model-attribute="values" value="<?php echo esc_attr( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?>" />
 										</label>
 									</li>
 									<?php endforeach; ?>
@@ -3545,14 +3548,19 @@ class CampTix_Plugin {
 
 		// Questions
 		if ( isset( $_POST['tix_questions'] ) ) {
-			delete_post_meta( $post_id, 'tix_question_id' );
-			$questions = (array) $_POST['tix_questions'];
-			$order = array();
+
+			// Convert from JSON
+			$questions = stripslashes_deep( $_POST['tix_questions'] ) ;
+			foreach ( $questions as $key => $question )
+				$questions[ $key ] = (array) json_decode( $question );
 
 			usort( $questions, array( $this, 'usort_by_order' ) );
 
+			delete_post_meta( $post_id, 'tix_question_id' );
+			$order = array();
+
 			foreach ( $questions as $question ) {
-				if ( empty( $question['field'] ) || strlen( trim( $question['field'] ) ) < 1 )
+				if ( empty( $question['question'] ) || strlen( trim( $question['question'] ) ) < 1 )
 					continue;
 
 				if ( ! array_key_exists( $question['type'], $this->get_question_field_types() ) )
@@ -3564,8 +3572,8 @@ class CampTix_Plugin {
 					$question_values = array();
 
 				$clean_question = array(
-					'id' => ( isset( $question['id'] ) ) ? absint( $question['id'] ) : false,
-					'field' => strip_tags( $question['field'] ),
+					'post_id' => ( isset( $question['post_id'] ) ) ? absint( $question['post_id'] ) : false,
+					'question' => strip_tags( $question['question'] ),
 					'type' => $question['type'],
 					'values' => $question_values,
 					'required' => isset( $question['required'] ),
@@ -3575,22 +3583,28 @@ class CampTix_Plugin {
 				$question = $clean_question;
 				unset( $clean_question );
 
-				if ( ! $question['id'] ) {
+				if ( ! $question['post_id'] ) {
 
 					// Create a new question
 					$question_id = wp_insert_post( array(
 						'post_type' => 'tix_question',
 						'post_status' => 'publish',
-						'post_title' => $question['field'],
+						'post_title' => $question['question'],
 					) );
 
 				} else {
 
 					// Update question here
-					$question_id = $question['id'];
+					$question_id = $question['post_id'];
+
+					// Make sure we're editing a question.
+					$question_post = get_post( $question_id );
+					if ( $question_post->post_type != 'tix_question' )
+						wp_die( 'Cheating?' );
+
 					wp_update_post( array(
 						'ID' => $question_id,
-						'post_title' => $question['field'],
+						'post_title' => $question['question'],
 					) );
 				}
 

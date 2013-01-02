@@ -13,10 +13,15 @@ window.camptix = window.camptix || { models: {}, views: {} };
 	};
 
 	var Question = Backbone.Model.extend({
-		type: 'text',
-		question: '',
-		values: '',
-		required: false
+		defaults: {
+			post_id: 0,
+			type: 'text',
+			question: '',
+			values: '',
+			required: false,
+			order: 0,
+			json: ''
+		}
 	});
 
 	var QuestionView = Backbone.View.extend({
@@ -30,6 +35,10 @@ window.camptix = window.camptix || { models: {}, views: {} };
 		},
 
 		render: function() {
+			// Update the hidden input.
+			this.model.set( 'json', '' );
+			this.model.set( 'json', JSON.stringify( this.model.toJSON() ) );
+
 			this.template = _.template( $( '#camptix-tmpl-question' ).html(), null, camptix.template_options );
 			this.$el.html( this.template( this.model.toJSON() ) );
 			return this;
@@ -190,6 +199,7 @@ window.camptix = window.camptix || { models: {}, views: {} };
 					question.set( attr, value );
 				});
 
+				console.log( question );
 				camptix.questions.add( question );
 
 				// Clear form
@@ -202,32 +212,17 @@ window.camptix = window.camptix || { models: {}, views: {} };
 			$( '#tix-add-question-existing-form-add' ).click(function() {
 
 				$( '.tix-existing-checkbox:checked' ).each( function( index, checkbox ) {
-					var item = $( '#tix-add-question-new-form .tix-item.tix-prototype' ).clone();
 					var parent = $( checkbox ).parent();
+					var question = new camptix.models.Question();
 
-					var id = $( parent ).find( '.tix-field-id' ).val();
-					var type = $( parent ).find( '.tix-field-type' ).val();
-					var name = $( parent ).find( '.tix-field-name' ).val();
-					var values = $( parent ).find( '.tix-field-values' ).val();
-					var required = $( parent ).find( '.tix-field-required' ).val();
-					var order = $( '.tix-ticket-questions .tix-item' ).length-1;
+					$( parent ).find( 'input' ).each(function() {
+						var attr = $(this).data('model-attribute');
+						if ( ! attr )
+							return;
+						question.set( attr, $(this).val() );
+					});
 
-					$(item).find( 'span.tix-field-type' ).text( type );
-					$(item).find( 'span.tix-field-name' ).text( name );
-					$(item).find( 'span.tix-field-values' ).text( values );
-
-					$(item).find( 'input.tix-field-id' ).val( id ).attr( 'name', 'tix_questions[' + order + '][id]' );
-					$(item).find( 'input.tix-field-type' ).val( type ).attr( 'name', 'tix_questions[' + order + '][type]' );
-					$(item).find( 'input.tix-field-name' ).val( name ).attr( 'name', 'tix_questions[' + order + '][field]' );
-					$(item).find( 'input.tix-field-values' ).val( values ).attr( 'name', 'tix_questions[' + order + '][values]' );
-					$(item).find( 'input.tix-field-required' ).val( ( required > 0 ) ? 1 : 0 ).attr( 'name', 'tix_questions[' + order + '][required]' );
-					$(item).find( 'input.tix-field-order' ).val( order ).attr( 'name', 'tix_questions[' + order + '][order]' );
-
-					if ( required > 0 )
-						$(item).addClass( 'tix-item-required' );
-
-					$(item).removeClass( 'tix-prototype' );
-					$(item).appendTo( '.tix-ticket-questions .tix-ui-sortable' );
+					camptix.questions.add( question );
 
 					$(checkbox).attr('checked',false);
 				});
