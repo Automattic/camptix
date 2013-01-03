@@ -61,7 +61,15 @@ window.camptix = window.camptix || { models: {}, views: {} };
 	});
 
 	var Questions = Backbone.Collection.extend({
-		model: Question
+		model: Question,
+
+		initialize: function() {
+			this.on( 'add', this._add, this );
+		},
+
+		_add: function( item ) {
+			item.set( 'menu_order', this.length );
+		}
 	});
 
 	var QuestionsView = Backbone.View.extend({
@@ -83,23 +91,176 @@ window.camptix = window.camptix || { models: {}, views: {} };
 	camptix.questions = new Questions();
 
 	camptix.questions.on( 'add', function( item ) {
-		item.set( 'menu_order', camptix.questions.length );
+		//item.set( 'menu_order', camptix.questions.length );
 	} );
 
 	camptix.views.QuestionsView = new QuestionsView({ collection: camptix.questions });
 
-	camptix.questions.on( 'add remove', function() {
-		$( '.tix-existing-question' ).each( function() {
-			var question_id = $( this ).data( 'tix-question-id' );
-			var cb = $( this ).find( '.tix-existing-checkbox' );
-			var found = camptix.questions.where( { post_id: parseInt( question_id, 10 ) } );
+	var QuestionForm = Backbone.View.extend({
+		template: null,
+		data: {},
 
-			$( cb ).prop( 'disabled', found.length > 0 );
-			$( this ).toggleClass( 'tix-disabled', found.length > 0 );
-		} );
-	} );
+		initialize: function() {
+			this.$container = $( '#tix-question-form' );
+			this.$action = $( '#tix-add-question-action' );
+
+			this.template = _.template( $( this.template ).html(), null, camptix.template_options );
+			this.render.apply( this );
+			return this;
+		},
+
+		render: function() {
+			this.$el.html( this.template( this.data ) );
+			this.hide.apply( this );
+
+			this.$container.append( this.$el );
+			return this;
+		},
+
+		show: function() {
+			this.$action.hide();
+			this.$el.show();
+			return this;
+		},
+
+		hide: function() {
+			this.$el.hide();
+			this.$action.show();
+			return this;
+		}
+	});
+
+	var NewQuestionForm = QuestionForm.extend({
+		template: '#camptix-tmpl-new-question-form',
+
+		events: {
+			'click .tix-cancel': 'hide',
+			'click .tix-add': 'add'
+		},
+
+		render: function() {
+			var that = this;
+			QuestionForm.prototype.render.apply( this, arguments );
+			this.$type = this.$el.find( '#tix-add-question-type' );
+			this.$type.on( 'change', function() { that.typeChange.apply( that ); } );
+
+			this.typeChange.apply( this );
+			return this;
+		},
+
+		add: function( e ) {
+			var question = new camptix.models.Question();
+
+			this.$el.find( 'input, select' ).each( function() {
+				var attr = $( this ).data( 'model-attribute' );
+				var attr_type = $( this ).data( 'model-attribute-type' );
+
+				if ( ! attr )
+					return;
+
+				var value = $( this ).val();
+
+				// Special treatment for checkboxes.
+				if ( 'checkbox' == attr_type )
+					value = !! $( this ).prop('checked');
+
+				question.set( attr, value, { silent: true } );
+			});
+
+			camptix.questions.add( question );
+
+			// Clear form
+			this.$el.find( 'input[type="text"], select' ).val( '' );
+			this.$el.find( 'input[type="checkbox"]' ).prop( 'checked', false );
+			this.typeChange.apply( this );
+
+			e.preventDefault();
+			return this;
+		},
+
+		typeChange: function() {
+			var value = this.$type.val();
+			var $row = this.$el.find( '.tix-add-question-values-row' );
+
+			if ( value.match( /radio|checkbox|select/ ) )
+				$row.show();
+			else
+				$row.hide();
+
+			return this;
+		}
+	});
+
+	var ExistingQuestionForm = QuestionForm.extend({
+		template: '#camptix-tmpl-existing-question-form',
+
+		events: {
+			'click .tix-cancel': 'hide',
+			'click .tix-add': 'add'
+		},
+
+		initialize: function() {
+			QuestionForm.prototype.initialize.apply( this, arguments );
+			camptix.questions.on( 'add remove', this.update_disabled, this );
+		},
+
+		render: function() {
+			QuestionForm.prototype.render.apply( this, arguments );
+			this.update_disabled.apply( this );
+			return this;
+		},
+
+		add: function( e ) {
+			this.$el.find( '.tix-existing-checkbox:checked' ).each( function( index, checkbox ) {
+				var parent = $( checkbox ).parent();
+				var question = new camptix.models.Question();
+
+				$( parent ).find( 'input' ).each( function() {
+					var attr = $(this).data( 'model-attribute' );
+					if ( ! attr )
+						return;
+
+					question.set( attr, $( this ).val(), { silent: true } );
+				} );
+
+				// Make sure post_id and required are correct types, not integers.
+				question.set( {
+					post_id: parseInt( question.get( 'post_id' ), 10 ),
+					required: !! parseInt( question.get( 'required' ), 10 )
+				}, { silent: true } );
+
+				var found = camptix.questions.where( { post_id: parseInt( question.get( 'post_id' ), 10 ) } );
+
+				// Don't add duplicate existing questions.
+				if ( 0 === found.length )
+					camptix.questions.add( question );
+
+				$( checkbox ).prop( 'checked', false );
+			});
+
+			e.preventDefault();
+			return this;
+		},
+
+		update_disabled: function() {
+			this.$el.find( '.tix-existing-question' ).each( function() {
+				var question_id = $( this ).data( 'tix-question-id' );
+				var cb = $( this ).find( '.tix-existing-checkbox' );
+				var found = camptix.questions.where( { post_id: parseInt( question_id, 10 ) } );
+
+				$( cb ).prop( 'disabled', found.length > 0 );
+				$( this ).toggleClass( 'tix-disabled', found.length > 0 );
+			} );
+
+			return this;
+		}
+	});
 
 	$(document).ready(function(){
+
+		camptix.views.NewQuestionForm = new NewQuestionForm();
+		camptix.views.ExistingQuestionForm = new ExistingQuestionForm();
+
 		$( ".tix-date-field" ).datepicker({
 			dateFormat: 'yy-mm-dd',
 			firstDay: 1
@@ -163,98 +324,12 @@ window.camptix = window.camptix || { models: {}, views: {} };
 		} );
 
 		$( '#tix-add-question-new' ).click( function() {
-			$( '#tix-add-question-action' ).hide();
-			$( '#tix-add-question-new-form' ).show();
-			$( '#tix-add-question-type' ).change();
+			camptix.views.NewQuestionForm.show();
 			return false;
 		} );
 
-		// Show/hide the values input for certain question types.
-		$( '#tix-add-question-type' ).change(function() {
-			var value = $( this ).val();
-			var $row = $( '.tix-add-question-values-row' );
-
-			if ( value.match( /radio|checkbox|select/ ) )
-				$( $row ).show();
-			else
-				$( $row ).hide();
-		});
-
-		$( '#tix-add-question-new-form-cancel' ).click(function() {
-			$( '#tix-add-question-action' ).show();
-			$( '#tix-add-question-new-form' ).hide();
-			return false;
-		});
-
 		$( '#tix-add-question-existing' ).click(function() {
-			$( '#tix-add-question-action' ).hide();
-			$( '#tix-add-question-existing-form' ).show();
-			return false;
-		});
-
-		$( '#tix-add-question-existing-form-cancel' ).click(function() {
-			$( '#tix-add-question-action' ).show();
-			$( '#tix-add-question-existing-form' ).hide();
-			return false;
-		});
-
-		$( '#tix-add-question-submit' ).click(function() {
-			var question = new camptix.models.Question();
-
-			$('#tix-add-question-new-form').find('input,select').each(function() {
-				var attr = $(this).data('model-attribute');
-				var attr_type = $(this).data('model-attribute-type');
-
-				if ( ! attr )
-					return;
-
-				var value = $(this).val();
-
-				// Special treatment for checkboxes.
-				if ( 'checkbox' == attr_type )
-					value = $(this).prop('checked');
-
-				question.set( attr, value, { silent: true } );
-			});
-
-			camptix.questions.add( question );
-
-			// Clear form
-			$('#tix-add-question-new-form input[type="text"], #tix-add-question-new-form select').val('');
-			$('#tix-add-question-new-form input[type="checkbox"]').attr('checked',false);
-			$('#tix-add-question-type').change();
-			return false;
-		});
-
-		$( '#tix-add-question-existing-form-add' ).click(function() {
-
-			$( '.tix-existing-checkbox:checked' ).each( function( index, checkbox ) {
-				var parent = $( checkbox ).parent();
-				var question = new camptix.models.Question();
-
-				$( parent ).find( 'input' ).each( function() {
-					var attr = $(this).data( 'model-attribute' );
-					if ( ! attr )
-						return;
-
-					question.set( attr, $( this ).val(), { silent: true } );
-				} );
-
-				// Make sure post_id and required are correct types, not integers.
-				question.set( {
-					post_id: parseInt( question.get( 'post_id' ), 10 ),
-					required: !! parseInt( question.get( 'required' ), 10 )
-				}, { silent: true } );
-
-				var found = camptix.questions.where( { post_id: parseInt( question.get( 'post_id' ), 10 ) } );
-
-				// Don't add duplicate existing questions.
-				if ( 0 === found.length )
-					camptix.questions.add( question );
-
-				$( checkbox ).prop( 'checked', false );
-			});
-
+			camptix.views.ExistingQuestionForm.show();
 			return false;
 		});
 	});

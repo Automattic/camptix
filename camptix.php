@@ -3221,92 +3221,97 @@ class CampTix_Plugin {
 								);
 					?>
 				</span>
-				<div id="tix-add-question-new-form">
 
-					<h4 class="title"><?php _e( 'Add a new question:', 'camptix' ); ?></h4>
-
-					<table class="form-table">
-						<tr valign="top">
-							<th scope="row">
-								<label><?php _e( 'Type', 'camptix' ); ?></label>
-							</th>
-							<td>
-								<select id="tix-add-question-type" data-model-attribute="type">
-									<?php foreach ( $types as $key => $label ) : ?>
-									<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
-									<?php endforeach; ?>
-								</select>
-							</td>
-						</tr>
-						<tr valign="top">
-							<th scope="row">
-								<label><?php _e( 'Question', 'camptix' ); ?></label>
-							</th>
-							<td>
-								<input data-model-attribute="question" id="tix-add-question-name" class="regular-text" type="text" />
-							</td>
-						</tr>
-						<tr valign="top" class="tix-add-question-values-row">
-							<th scope="row">
-								<label><?php _e( 'Values', 'camptix' ); ?></label>
-							</th>
-							<td>
-								<input data-model-attribute="values" id="tix-add-question-values" class="regular-text" type="text" />
-								<p class="description"><?php _e( 'Separate multiple values with a comma.', 'camptix' ); ?></p>
-							</td>
-						</tr>
-						<tr valign="top">
-							<th scope="row">
-								<label><?php _e( 'Required', 'camptix' ); ?></label>
-							</th>
-							<td>
-								<label><input data-model-attribute="required" data-model-attribute-type="checkbox" id="tix-add-question-required" type="checkbox" value="1" /> <?php _e( 'This field is required', 'camptix' ); ?></label>
-							</td>
-						</tr>
-					</table>
-					<p class="submit">
-						<a href="#" id="tix-add-question-submit" class="button"><?php _e( 'Add Question', 'camptix' ); ?></a>
-						<a href="#" id="tix-add-question-new-form-cancel" class="button"><?php _e( 'Close', 'camptix' ); ?></a>
-						<span class="description"><?php _e( 'Do not forget to update the ticket post to save changes.', 'camptix' ); ?></span>
-					</p>
-				</div>
-
-				<div id="tix-add-question-existing-form">
-					<h4 class="title"><?php _e( 'Add an existing question:', 'camptix' ); ?></h4>
-
-					<div class="categorydiv" id="tix-add-question-existing-list">
-							<ul id="category-tabs" class="category-tabs">
-								<li class="tabs"><?php _e( 'Available Questions', 'camptix' ); ?></li>
-							</ul>
-
-							<div class="tabs-panel">
-								<ul id="categorychecklist" class="categorychecklist form-no-clear">
-									<?php foreach ( $this->get_all_questions() as $question ) : ?>
-									<li class="tix-existing-question" data-tix-question-id="<?php echo absint( $question->ID ); ?>">
-										<label class="selectit">
-											<input type="checkbox" class="tix-existing-checkbox" />
-											<?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?>
-
-											<input type="hidden" data-model-attribute="post_id" value="<?php echo absint( $question->ID ); ?>" />
-											<input type="hidden" data-model-attribute="type" value="<?php echo esc_attr( get_post_meta( $question->ID, 'tix_type', true ) ); ?>" />
-											<input type="hidden" data-model-attribute="question" value="<?php echo esc_attr( $question->post_title ); ?>" />
-											<input type="hidden" data-model-attribute="required" value="<?php echo intval( get_post_meta( $question->ID, 'tix_required', true ) ); ?>" />
-											<input type="hidden" data-model-attribute="values" value="<?php echo esc_attr( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?>" />
-										</label>
-									</li>
-									<?php endforeach; ?>
-								</ul>
-							</div>
-
-					</div>
-
-					<p class="submit">
-						<a href="#" id="tix-add-question-existing-form-add" class="button"><?php _e( 'Add Selected', 'camptix' ); ?></a>
-						<a href="#" id="tix-add-question-existing-form-cancel" class="button"><?php _e( 'Close', 'camptix' ); ?></a>
-						<span class="description"><?php _e( 'Do not forget to update the ticket post to save changes.', 'camptix' ); ?></span>
-					</p>
+				<!-- Forms will go here -->
+				<div id="tix-question-form">
 				</div>
 			</div>
+
+			<script type="text/template" id="camptix-tmpl-new-question-form">
+				<h4 class="title"><?php _e( 'Add a new question:', 'camptix' ); ?></h4>
+
+				<table class="form-table">
+					<tr valign="top">
+						<th scope="row">
+							<label><?php _e( 'Type', 'camptix' ); ?></label>
+						</th>
+						<td>
+							<select id="tix-add-question-type" data-model-attribute="type">
+								<?php foreach ( $types as $key => $label ) : ?>
+								<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row">
+							<label><?php _e( 'Question', 'camptix' ); ?></label>
+						</th>
+						<td>
+							<input data-model-attribute="question" id="tix-add-question-name" class="regular-text" type="text" />
+						</td>
+					</tr>
+					<tr valign="top" class="tix-add-question-values-row">
+						<th scope="row">
+							<label><?php _e( 'Values', 'camptix' ); ?></label>
+						</th>
+						<td>
+							<input data-model-attribute="values" id="tix-add-question-values" class="regular-text" type="text" />
+							<p class="description"><?php _e( 'Separate multiple values with a comma.', 'camptix' ); ?></p>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row">
+							<label><?php _e( 'Required', 'camptix' ); ?></label>
+						</th>
+						<td>
+							<label><input data-model-attribute="required" data-model-attribute-type="checkbox" id="tix-add-question-required" type="checkbox" value="1" /> <?php _e( 'This field is required', 'camptix' ); ?></label>
+						</td>
+					</tr>
+				</table>
+				<p class="submit">
+					<a href="#" class="button tix-add"><?php _e( 'Add Question', 'camptix' ); ?></a>
+					<a href="#" class="button tix-cancel"><?php _e( 'Close', 'camptix' ); ?></a>
+					<span class="description"><?php _e( 'Do not forget to update the ticket post to save changes.', 'camptix' ); ?></span>
+				</p>
+			</script>
+
+			<!-- Add Existing Question Form Template -->
+			<script type="text/template" id="camptix-tmpl-existing-question-form">
+				<h4 class="title"><?php _e( 'Add an existing question:', 'camptix' ); ?></h4>
+
+				<div class="categorydiv" id="tix-add-question-existing-list">
+						<ul id="category-tabs" class="category-tabs">
+							<li class="tabs"><?php _e( 'Available Questions', 'camptix' ); ?></li>
+						</ul>
+
+						<div class="tabs-panel">
+							<ul id="categorychecklist" class="categorychecklist form-no-clear">
+								<?php foreach ( $this->get_all_questions() as $question ) : ?>
+								<li class="tix-existing-question" data-tix-question-id="<?php echo absint( $question->ID ); ?>">
+									<label class="selectit">
+										<input type="checkbox" class="tix-existing-checkbox" />
+										<?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?>
+
+										<input type="hidden" data-model-attribute="post_id" value="<?php echo absint( $question->ID ); ?>" />
+										<input type="hidden" data-model-attribute="type" value="<?php echo esc_attr( get_post_meta( $question->ID, 'tix_type', true ) ); ?>" />
+										<input type="hidden" data-model-attribute="question" value="<?php echo esc_attr( $question->post_title ); ?>" />
+										<input type="hidden" data-model-attribute="required" value="<?php echo intval( get_post_meta( $question->ID, 'tix_required', true ) ); ?>" />
+										<input type="hidden" data-model-attribute="values" value="<?php echo esc_attr( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?>" />
+									</label>
+								</li>
+								<?php endforeach; ?>
+							</ul>
+						</div>
+
+				</div>
+
+				<p class="submit">
+					<a href="#" class="button tix-add"><?php _e( 'Add Selected', 'camptix' ); ?></a>
+					<a href="#" class="button tix-cancel"><?php _e( 'Close', 'camptix' ); ?></a>
+					<span class="description"><?php _e( 'Do not forget to update the ticket post to save changes.', 'camptix' ); ?></span>
+				</p>
+			</script>
 
 			<!-- Question View Template -->
 			<script type="text/template" id="camptix-tmpl-question">
