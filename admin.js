@@ -90,10 +90,6 @@ window.camptix = window.camptix || { models: {}, views: {} };
 	camptix.models.Question = Question;
 	camptix.questions = new Questions();
 
-	camptix.questions.on( 'add', function( item ) {
-		//item.set( 'menu_order', camptix.questions.length );
-	} );
-
 	camptix.views.QuestionsView = new QuestionsView({ collection: camptix.questions });
 
 	var QuestionForm = Backbone.View.extend({
