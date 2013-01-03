@@ -3211,36 +3211,6 @@ class CampTix_Plugin {
 					$questions = $this->get_sorted_questions( get_the_ID() );
 					$i = 0;
 				?>
-				<script type="text/template" id="camptix-tmpl-question">
-					<div class="tix-item-inner-left">
-						<span class="tix-field-type">{{ data.type }}</span>
-					</div>
-					<div class="tix-item-inner-right">
-						<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Move', 'camptix' ); ?></a>
-						<a href="#" class="tix-item-edit" title="<?php esc_attr_e( 'Edit', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Edit', 'camptix' ); ?></a>
-						<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Remove', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_attr_e( 'Remove', 'camptix' ); ?></a>
-					</div>
-					<div class="tix-item-inner-middle">
-						<input type="hidden" name="tix_questions[]" value="{{ data.json }}" />
-
-						<span class="tix-field-name">{{ data.question }}</span>
-						<span class="tix-field-required-star">*</span>
-						<span class="tix-field-values">{{ data.values }}</span>
-					</div>
-					</div>
-				</script>
-				<script>
-				(function($){
-				<?php foreach ( $questions as $question ) : ?>
-					camptix.questions.add( new camptix.models.Question({
-						post_id: <?php echo esc_js( $question->ID ); ?>,
-						type: '<?php echo esc_js( get_post_meta( $question->ID, 'tix_type', true ) ); ?>',
-						question: '<?php echo esc_js( apply_filters( 'the_title', $question->post_title ) ); ?>',
-						required: <?php echo esc_js( (int) (bool) get_post_meta( $question->ID, 'tix_required', true ) ); ?>
-					}) );
-				<?php endforeach; ?>
-				}(jQuery));
-				</script>
 			</div>
 
 			<div class="tix-add-question" style="border-top: solid 1px white; background: #f9f9f9;">
@@ -3312,7 +3282,7 @@ class CampTix_Plugin {
 							<div class="tabs-panel">
 								<ul id="categorychecklist" class="categorychecklist form-no-clear">
 									<?php foreach ( $this->get_all_questions() as $question ) : ?>
-									<li class="tix-existing-question">
+									<li class="tix-existing-question" data-tix-question-id="<?php echo absint( $question->ID ); ?>">
 										<label class="selectit">
 											<input type="checkbox" class="tix-existing-checkbox" />
 											<?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?>
@@ -3337,6 +3307,41 @@ class CampTix_Plugin {
 					</p>
 				</div>
 			</div>
+
+			<!-- Question View Template -->
+			<script type="text/template" id="camptix-tmpl-question">
+				<div class="tix-item-inner-left">
+					<span class="tix-field-type">{{ data.type }}</span>
+				</div>
+				<div class="tix-item-inner-right">
+					<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Move', 'camptix' ); ?></a>
+					<a href="#" class="tix-item-edit" title="<?php esc_attr_e( 'Edit', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Edit', 'camptix' ); ?></a>
+					<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Remove', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_attr_e( 'Remove', 'camptix' ); ?></a>
+				</div>
+				<div class="tix-item-inner-middle">
+					<input type="hidden" name="tix_questions[]" value="{{ data.json }}" />
+
+					<span class="tix-field-name">{{ data.question }}</span>
+					<span class="tix-field-required-star">*</span>
+					<span class="tix-field-values">{{ data.values }}</span>
+				</div>
+				</div>
+			</script>
+
+			<!-- Add Questions to the List -->
+			<script>
+			(function($){
+			<?php foreach ( $questions as $question ) : ?>
+				camptix.questions.add( new camptix.models.Question( {
+					post_id: <?php echo esc_js( $question->ID ); ?>,
+					type: '<?php echo esc_js( get_post_meta( $question->ID, 'tix_type', true ) ); ?>',
+					question: '<?php echo esc_js( apply_filters( 'the_title', $question->post_title ) ); ?>',
+					required: <?php echo esc_js( (int) (bool) get_post_meta( $question->ID, 'tix_required', true ) ); ?>,
+					values: '<?php echo esc_js( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?>'
+				} ) );
+			<?php endforeach; ?>
+			}(jQuery));
+			</script>
 		</div>
 		<?php
 	}

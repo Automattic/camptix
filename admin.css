@@ -136,6 +136,9 @@
 #tix-add-question-existing-list {
 	width: 90%;
 }
+.tix-existing-question.tix-disabled label {
+	color: #ccc;
+}
 .tix-item .tix-field-required-star {
 	display: none;
 }
