@@ -29,7 +29,8 @@ window.camptix = window.camptix || { models: {}, views: {} };
 		className: 'tix-item tix-item-sortable',
 
 		events: {
-			'click a.tix-item-delete': 'clear'
+			'click a.tix-item-delete': 'clear',
+			'click a.tix-item-edit': 'edit'
 		},
 
 		initialize: function() {
@@ -57,6 +58,11 @@ window.camptix = window.camptix || { models: {}, views: {} };
 			this.model.destroy();
 			$( '.tix-ui-sortable' ).trigger( 'sortupdate' );
 			return false;
+		},
+
+		edit: function(e) {
+			camptix.views.EditQuestionForm.show( this.model );
+			return this;
 		}
 	});
 
@@ -187,6 +193,63 @@ window.camptix = window.camptix || { models: {}, views: {} };
 		}
 	});
 
+	var EditQuestionForm = NewQuestionForm.extend({
+		render: function() {
+			NewQuestionForm.prototype.render.apply( this, arguments );
+
+			this.$el.find( 'h4' ).text( 'Edit question:' );
+			this.$el.find( '.tix-add' ).text( 'Save Question' );
+			return this;
+		},
+
+		show: function( question ) {
+			this.question = question;
+
+			this.$el.find( 'input, select' ).each( function() {
+				var attr = $( this ).data( 'model-attribute' );
+				var attr_type = $( this ).data( 'model-attribute-type' );
+
+				if ( ! attr )
+					return;
+
+				// Special treatment for checkboxes.
+				if ( 'checkbox' == attr_type )
+					$( this ).prop( 'checked', !! question.get( attr ) );
+				else
+					$( this ).val( question.get( attr ) );
+			} );
+
+			this.typeChange.apply( this );
+			NewQuestionForm.prototype.show.apply( this, arguments );
+		},
+
+		add: function( e ) {
+			question = this.question;
+
+			this.$el.find( 'input, select' ).each( function() {
+				var attr = $( this ).data( 'model-attribute' );
+				var attr_type = $( this ).data( 'model-attribute-type' );
+				var value;
+
+				if ( ! attr )
+					return;
+
+				value = $( this ).val();
+
+				// Special treatment for checkboxes.
+				if ( 'checkbox' == attr_type )
+					value = !! $( this ).prop( 'checked' );
+
+				question.set( attr, value, { silent: false } );
+			} );
+
+			delete this.question;
+			this.hide.apply( this );
+			e.preventDefault();
+			return this;
+		}
+	});
+
 	var ExistingQuestionForm = QuestionForm.extend({
 		template: '#camptix-tmpl-existing-question-form',
 
@@ -255,6 +318,7 @@ window.camptix = window.camptix || { models: {}, views: {} };
 	$(document).ready(function(){
 
 		camptix.views.NewQuestionForm = new NewQuestionForm();
+		camptix.views.EditQuestionForm = new EditQuestionForm();
 		camptix.views.ExistingQuestionForm = new ExistingQuestionForm();
 
 		$( ".tix-date-field" ).datepicker({
