@@ -13,18 +13,25 @@ window.camptix = window.camptix || { models: {}, views: {} };
 	};
 
 	var Question = Backbone.Model.extend({
+		initialize: function() {
+			// this.set( 'id', this.cid );
+		},
+
 		defaults: {
 			post_id: 0,
 			type: 'text',
 			question: '',
 			values: '',
 			required: false,
-			order: 0,
+			menu_order: 0,
 			json: ''
 		}
 	});
 
 	var QuestionView = Backbone.View.extend({
+
+		className: 'tix-item tix-item-sortable',
+
 		events: {
 			'click a.tix-item-delete': 'clear'
 		},
@@ -35,9 +42,13 @@ window.camptix = window.camptix || { models: {}, views: {} };
 		},
 
 		render: function() {
+			console.log( 'render' );
 			// Update the hidden input.
-			this.model.set( 'json', '' );
-			this.model.set( 'json', JSON.stringify( this.model.toJSON() ) );
+			this.model.set( { json: '' }, { silent: true } );
+			this.model.set( { json: JSON.stringify( this.model.toJSON() ) }, { silent: true } );
+
+			this.$el.toggleClass( 'tix-item-required', !! this.model.get( 'required' ) );
+			this.$el.data( 'tix-cid', this.model.cid );
 
 			this.template = _.template( $( '#camptix-tmpl-question' ).html(), null, camptix.template_options );
 			this.$el.html( this.template( this.model.toJSON() ) );
@@ -63,26 +74,39 @@ window.camptix = window.camptix || { models: {}, views: {} };
 		},
 
 		render: function() {
+			console.log('questions view render');
 			return this;
 		},
 
 		addOne: function( item ) {
+			console.log('addOne');
 			var view = new QuestionView( { model: item } );
-			$('#tix-questions-container').append(view.render().el);
+			$('#tix-questions-container').append( view.render().el );
 		}
 	});
 
 	camptix.models.Question = Question;
 	camptix.questions = new Questions();
+
+	camptix.questions.on( 'add', function( item ) {
+		item.set( 'menu_order', camptix.questions.length );
+	});
+
 	camptix.views.QuestionsView = new QuestionsView({ collection: camptix.questions });
 
 	$(document).ready(function() {
-		$( ".tix-ui-sortable" ).sortable({
-			items: ".tix-item-sortable",
-			handle:'.tix-item-sort-handle',
-			placeholder: "tix-item-highlight",
-			update: function(e, ui) {
-				// tix_refresh_questions_order();
+		$( '.tix-ui-sortable' ).sortable({
+			items: '.tix-item-sortable',
+			handle: '.tix-item-sort-handle',
+			placeholder: 'tix-item-highlight'
+		});
+
+		$( '.tix-ui-sortable' ).on( 'sortupdate', function( e, ui ) {
+			var items = $( '.tix-ui-sortable .tix-item-sortable' );
+			for ( var i = 0; i < items.length; i++ ) {
+				var cid = $( items[i] ).data( 'tix-cid' );
+				var model = camptix.questions.getByCid( cid );
+				model.set( 'menu_order', i + 1 );
 			}
 		});
 	});

@@ -3212,23 +3212,21 @@ class CampTix_Plugin {
 					$i = 0;
 				?>
 				<script type="text/template" id="camptix-tmpl-question">
-					<div class="tix-item tix-item-sortable <# if ( data.required ) { #>tix-item-required<# } #>">
-						<div class="tix-item-inner-left">
-							<span class="tix-field-type">{{ data.type }}</span>
-						</div>
-						<div class="tix-item-inner-right">
-							<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Move', 'camptix' ); ?></a>
-							<a href="#" class="tix-item-edit" title="<?php esc_attr_e( 'Edit', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Edit', 'camptix' ); ?></a>
-							<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Remove', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_attr_e( 'Remove', 'camptix' ); ?></a>
-						</div>
-						<div class="tix-item-inner-middle">
-							<input type="hidden" name="tix_questions[]" value="{{ data.json }}" />
+					<div class="tix-item-inner-left">
+						<span class="tix-field-type">{{ data.type }}</span>
+					</div>
+					<div class="tix-item-inner-right">
+						<a href="#" class="tix-item-sort-handle" title="<?php esc_attr_e( 'Move', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Move', 'camptix' ); ?></a>
+						<a href="#" class="tix-item-edit" title="<?php esc_attr_e( 'Edit', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_html_e( 'Edit', 'camptix' ); ?></a>
+						<a href="#" class="tix-item-delete" title="<?php esc_attr_e( 'Remove', 'camptix' ); ?>" style="font-size: 8px; position: relative; top: 3px;"><?php esc_attr_e( 'Remove', 'camptix' ); ?></a>
+					</div>
+					<div class="tix-item-inner-middle">
+						<input type="hidden" name="tix_questions[]" value="{{ data.json }}" />
 
-							<span class="tix-field-name">{{ data.question }}</span>
-							<span class="tix-field-required-star">*</span>
-							<span class="tix-field-values">{{ data.values }}</span>
-						</div>
-						<div class="tix-clear"></div>
+						<span class="tix-field-name">{{ data.question }}</span>
+						<span class="tix-field-required-star">*</span>
+						<span class="tix-field-values">{{ data.values }}</span>
+					</div>
 					</div>
 				</script>
 				<script>
@@ -3551,8 +3549,10 @@ class CampTix_Plugin {
 
 			// Convert from JSON
 			$questions = stripslashes_deep( $_POST['tix_questions'] ) ;
-			foreach ( $questions as $key => $question )
+			foreach ( $questions as $key => $question ) {
 				$questions[ $key ] = (array) json_decode( $question );
+				$questions[ $key ]['order'] = $questions[ $key ]['menu_order'];
+			}
 
 			usort( $questions, array( $this, 'usort_by_order' ) );
 
