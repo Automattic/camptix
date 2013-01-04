@@ -1521,38 +1521,102 @@ class CampTix_Plugin {
 	 */
 	function get_currencies() {
 		return apply_filters( 'camptix_currencies', array(
-			'USD' => array(
-				'label' => __( 'U.S. Dollar', 'camptix' ),
-				'format' => '$ %s',
-			),
-			'EUR' => array(
-				'label' => __( 'Euro', 'camptix' ),
-				'format' => '€ %s',
+			'AUD' => array(
+				'label' => __( 'Australian Dollar', 'camptix' ),
+				'format' => '$ %s'
 			),
 			'CAD' => array(
 				'label' => __( 'Canadian Dollar', 'camptix' ),
-				'format' => 'CAD %s',
+				'format' => '$ %s'
 			),
-			'NOK' => array(
-				'label' => __( 'Norwegian Krone', 'camptix' ),
-				'format' => 'NOK %s',
-			),
-			'PLN' => array(
-				'label' => __( 'Polish Zloty', 'camptix' ),
-				'format' => 'PLN %s',
-			),
-			'JPY' => array(
-				'label' => __( 'Japanese Yen', 'camptix' ),
-				'format' => 'JPY %s',
+			'EUR' => array(
+				'label' => __( 'Euro', 'camptix' ),
+				'format' => '€ %s'
 			),
 			'GBP' => array(
 				'label' => __( 'Pound Sterling', 'camptix' ),
-				'format' => '£ %s',
+				'format' => '£ %s'
+			),
+			'JPY' => array(
+				'label' => __( 'Japanese Yen', 'camptix' ),
+				'format' => '&#165; %s'
+			),
+			'USD' => array(
+				'label' => __( 'U.S. Dollar', 'camptix' ),
+				'format' => '$ %s'
+			),
+			'NZD' => array(
+				'label' => __( 'N.Z. Dollar', 'camptix' ),
+				'format' => '$ %s'
+			),
+			'CHF' => array(
+				'label' => __( 'Swiss Franc', 'camptix' ),
+				'format' => '%s Fr'
+			),
+			'HKD' => array(
+				'label' => __( 'Hong Kong Dollar', 'camptix' ),
+				'format' => '$ %s'
+			),
+			'SGD' => array(
+				'label' => __( 'Singapore Dollar', 'camptix' ),
+				'format' => '$ %s'
+			),
+			'SEK' => array(
+				'label' => __( 'Swedish Krona', 'camptix' ),
+				'format' => '%s &#107;&#114;'
+			),
+			'DKK' => array(
+				'label' => __( 'Danish Krone', 'camptix' ),
+				'format' => '%s &#107;&#114;'
+			),
+			'PLN' => array(
+				'label' => __( 'Polish Zloty', 'camptix' ),
+				'format' => '%s &#122;&#322;'
+			),
+			'NOK' => array(
+				'label' => __( 'Norwegian Krone', 'camptix' ),
+				'format' => '%s &#107;&#114;'
+			),
+			'HUF' => array(
+				'label' => __( 'Hungarian Forint', 'camptix' ),
+				'format' => '%s &#70;&#116;'
+			),
+			'CZK' => array(
+				'label' => __( 'Czech Koruna', 'camptix' ),
+				'format' => '%s &#75;&#269;'
 			),
 			'ILS' => array(
 				'label' => __( 'Israeli New Sheqel', 'camptix' ),
-				'format' => '&#8362; %s',
+				'format' => '&#8362; %s'
 			),
+			'MXN' => array(
+				'label' => __( 'Mexican Peso', 'camptix' ),
+				'format' => '$ %s'
+			),
+			'BRL' => array(
+				'label' => __( 'Brazilian Real', 'camptix' ),
+				'format' => '&#82;&#36; %s'
+			),
+			'MYR' => array(
+				'label' => __( 'Malaysian Ringgit', 'camptix' ),
+				'format' => '&#82;&#77; %s'
+			),
+			'PHP' => array(
+				'label' => __( 'Philippine Peso', 'camptix' ),
+				'format' => '&#8369; %s'
+			),
+			'TWD' => array(
+				'label' => __( 'New Taiwan Dollar', 'camptix' ),
+				'format' => '&#78;&#84;&#36; %s'
+			),
+			'THB' => array(
+				'label' => __( 'Thai Baht', 'camptix' ),
+				'format' => '&#3647; %s'
+			),
+			'TRY' => array(
+				'label' => __( 'Turkish Lira', 'camptix' ),
+				'format' => 'TRY %s' // Unicode is &#8378; but this doesn't seem to be widely supported yet (introduced Sep 2012)
+			)
 		) );
 	}
 
