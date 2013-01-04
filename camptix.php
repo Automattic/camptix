@@ -817,8 +817,8 @@ class CampTix_Plugin {
 			'public' => false,
 			'query_var' => false,
 			'publicly_queryable' => false,
-			'show_ui' => true,
-			'show_in_menu' => 'edit.php?post_type=tix_ticket',
+			'show_ui' => ( $this->debug && current_user_can( $this->caps['manage_options'] ) ),
+			'show_in_menu' => ( $this->debug && current_user_can( $this->caps['manage_options'] ) ) ? 'edit.php?post_type=tix_ticket' : false,
 			'supports' => array( 'title', 'custom-fields' ),
 		) );
 
