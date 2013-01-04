@@ -16,7 +16,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	public $id = 'paypal';
 	public $name = 'PayPal';
 	public $description = 'PayPal Express Checkout';
-	public $supported_currencies = array( 'USD', 'EUR', 'CAD', 'NOK', 'PLN', 'JPY', 'GBP', 'ILS' );
+	public $supported_currencies = array( 'AUD', 'CAD', 'EUR', 'GBP', 'JPY', 'USD', 'NZD', 'CHF', 'HKD', 'SGD', 'SEK', 
+		'DKK', 'PLN', 'NOK', 'HUF', 'CZK', 'ILS', 'MXN', 'BRL', 'MYR', 'PHP', 'TWD', 'THB', 'TRY');
 
 	/**
 	 * We can have an array to store our options.
