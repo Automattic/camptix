@@ -4660,7 +4660,7 @@ class CampTix_Plugin {
 			$this->notice( __( 'Please note that the payment for this ticket is still pending.', 'camptix' ) );
 
 		$ticket = get_post( $ticket_id );
-		$questions = $this->get_sorted_questions( $ticket->ID );
+		$questions = $this->get_sorted_questions_new( $ticket->ID );
 		$answers = (array) get_post_meta( $attendee->ID, 'tix_questions', true );
 		$ticket_info = array(
 			'first_name' => get_post_meta( $attendee->ID, 'tix_first_name', true ),
@@ -5392,7 +5392,7 @@ class CampTix_Plugin {
 
 			$answers = array();
 			if ( isset( $_POST['tix_attendee_questions'][$i] ) ) {
-				$questions = $this->get_sorted_questions( $ticket->ID );
+				$questions = $this->get_sorted_questions_new( $ticket->ID );
 
 				foreach ( $questions as $question ) {
 					if ( isset( $_POST['tix_attendee_questions'][$i][$question->ID] ) )
