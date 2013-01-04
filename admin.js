@@ -19,7 +19,7 @@ window.camptix = window.camptix || { models: {}, views: {} };
 			question: '',
 			values: '',
 			required: false,
-			menu_order: 0,
+			order: 0,
 			json: ''
 		}
 	});
@@ -61,6 +61,8 @@ window.camptix = window.camptix || { models: {}, views: {} };
 		},
 
 		edit: function(e) {
+			camptix.views.NewQuestionForm.hide();
+			camptix.views.ExistingQuestionForm.hide();
 			camptix.views.EditQuestionForm.show( this.model );
 			return this;
 		}
@@ -74,7 +76,7 @@ window.camptix = window.camptix || { models: {}, views: {} };
 		},
 
 		_add: function( item ) {
-			item.set( 'menu_order', this.length );
+			item.set( 'order', this.length );
 		}
 	});
 
@@ -95,7 +97,6 @@ window.camptix = window.camptix || { models: {}, views: {} };
 
 	camptix.models.Question = Question;
 	camptix.questions = new Questions();
-
 	camptix.views.QuestionsView = new QuestionsView({ collection: camptix.questions });
 
 	var QuestionForm = Backbone.View.extend({
@@ -379,7 +380,7 @@ window.camptix = window.camptix || { models: {}, views: {} };
 			for ( var i = 0; i < items.length; i++ ) {
 				var cid = $( items[i] ).data( 'tix-cid' );
 				var model = camptix.questions.getByCid( cid );
-				model.set( 'menu_order', i + 1 );
+				model.set( 'order', i + 1 );
 			}
 		} );
 

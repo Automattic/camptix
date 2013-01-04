@@ -3561,7 +3561,6 @@ class CampTix_Plugin {
 			$questions = stripslashes_deep( $_POST['tix_questions'] ) ;
 			foreach ( $questions as $key => $question ) {
 				$questions[ $key ] = (array) json_decode( $question );
-				$questions[ $key ]['order'] = $questions[ $key ]['menu_order'];
 			}
 
 			usort( $questions, array( $this, 'usort_by_order' ) );
