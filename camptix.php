@@ -1335,6 +1335,9 @@ class CampTix_Plugin {
 					$payment_method_obj->payment_settings_fields();
 				}
 				break;
+			case 'email-templates':
+				add_settings_section( 'general', __( 'E-mail Templates', 'camptix' ), array( $this, 'menu_setup_section_email_templates' ), 'camptix_options' );
+				break;
 			case 'beta':
 
 				if ( ! $this->beta_features_enabled )
@@ -1363,6 +1366,10 @@ class CampTix_Plugin {
 
 	function menu_setup_section_beta() {
 		echo '<p>' . __( 'Beta features are things that are being worked on in CampTix, but are not quite finished yet. You can try them out, but we do not recommend doing that in a live environment on a real event. If you have any kind of feedback on any of the beta features, please let us know.', 'camptix' ) . '</p>';
+	}
+
+	function menu_setup_section_email_templates() {
+		echo '<p>' . __( 'Customize your confirmation e-mail templates.', 'camptix' ) . '</p>';
 	}
 
 	function menu_setup_section_general() {
@@ -1750,6 +1757,7 @@ class CampTix_Plugin {
 		$sections = array(
 			'general' => __( 'General', 'camptix' ),
 			'payment' => __( 'Payment', 'camptix' ),
+			// 'email-templates' => __( 'E-mail Templates', 'camptix' ),
 		);
 
 		if ( $this->beta_features_enabled )
@@ -3400,6 +3408,7 @@ class CampTix_Plugin {
 			<!-- Add Questions to the List -->
 			<script>
 			(function($){
+			$(document).trigger( 'load-questions.camptix' );
 			<?php foreach ( $questions as $question ) : ?>
 				camptix.questions.add( new camptix.models.Question( {
 					post_id: <?php echo esc_js( $question->ID ); ?>,
