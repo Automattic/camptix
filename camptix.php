@@ -16,6 +16,8 @@ class CampTix_Plugin {
 	protected $infos;
 	protected $admin_notices;
 
+	protected $tmp;
+
 	public $debug;
 	public $beta_features_enabled;
 	public $version = 20121227;
@@ -84,6 +86,7 @@ class CampTix_Plugin {
 		$this->options = $this->get_options();
 		$this->debug = (bool) apply_filters( 'camptix_debug', false );
 		$this->beta_features_enabled = (bool) apply_filters( 'camptix_beta_features_enabled', false );
+		$this->tmp = array();
 
 		// Capability mapping.
 		$this->caps = apply_filters( 'camptix_capabilities', array(
@@ -147,6 +150,7 @@ class CampTix_Plugin {
 
 		add_action( 'camptix_question_fields_init', array( $this, 'question_fields_init' ) );
 		add_action( 'camptix_init_notify_shortcodes', array( $this, 'init_notify_shortcodes' ), 9 );
+		add_action( 'camptix_init_email_templates_shortcodes', array( $this, 'init_email_templates_shortcodes' ), 9 );
 
 		// Other things required during init.
 		$this->custom_columns();
@@ -295,6 +299,36 @@ class CampTix_Plugin {
 
 			$this->log( 'Email job complete and published.', $email->ID, null, 'notify' );
 		}
+	}
+
+	function init_email_templates_shortcodes() {
+		remove_all_shortcodes();
+
+		// Use the same ones as the notify shortcode
+		add_shortcode( 'first_name', array( $this, 'notify_shortcode_first_name' ) );
+		add_shortcode( 'last_name', array( $this, 'notify_shortcode_last_name' ) );
+		add_shortcode( 'email', array( $this, 'notify_shortcode_email' ) );
+
+		add_shortcode( 'ticket_url', array( $this, 'email_template_shortcode_ticket_url' ) );
+		add_shortcode( 'receipt', array( $this, 'email_template_shortcode_receipt' ) );
+	}
+
+	/**
+	 * Returns the ticket access/edit URL.
+	 *
+	 * @uses $this->tmp() to retrieve the ticket url
+	 */
+	function email_template_shortcode_ticket_url( $atts ) {
+		return $this->tmp( 'ticket_url' );
+	}
+
+	/**
+	 * Returns the e-mail receipt content.
+	 *
+	 * @uses $this->tmp() to retrieve receipt content.
+	 */
+	function email_template_shortcode_receipt( $atts ) {
+		return $this->tmp( 'receipt' );
 	}
 
 	/**
@@ -6007,6 +6041,8 @@ class CampTix_Plugin {
 		if ( ! $attendees )
 			return;
 
+		do_action( 'camptix_init_email_templates_shortcodes' );
+
 		$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
 		$receipt_email = get_post_meta( $attendees[0]->ID, 'tix_receipt_email', true );
 		$order = get_post_meta( $attendees[0]->ID, 'tix_order', true );
@@ -6023,6 +6059,9 @@ class CampTix_Plugin {
 		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $order['total'], false ) );
 		$signature = apply_filters( 'camptix_ticket_email_signature', __( 'Let us know if you have any questions!', 'camptix' ) );
 
+		// Set the tmp receipt for shortcodes use.
+		$this->tmp( 'receipt', $receipt_content );
+
 		/**
 		 * If there's more than one attendee we should e-mail a separate ticket to each attendee,
 		 * but only if the payment was from draft to completed or pending.For non-draft to ... tickets
@@ -6034,7 +6073,11 @@ class CampTix_Plugin {
 				$edit_token = get_post_meta( $attendee->ID, 'tix_edit_token', true );
 				$edit_link = $this->get_edit_attendee_link( $attendee->ID, $edit_token );
 
-				$content = sprintf( __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n%s\n\n%s", 'camptix' ), $edit_link, $signature );
+				$this->notify_shortcodes_attendee_id = $attendee->ID;
+				$this->tmp( 'ticket_url', $edit_link );
+
+				$content = do_shortcode( $this->options['email_template_multiple_purchase'] );
+
 				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
 
 				$this->log( sprintf( 'Sent ticket e-mail to %s and receipt to %s.', $attendee_email, $receipt_email ), $attendee->ID );
@@ -6048,9 +6091,20 @@ class CampTix_Plugin {
 		 * Let's now e-mail the receipt, directly after a purchas has been made.
 		 */
 		if ( $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
-			$edit_link = $this->get_access_tickets_link( $access_token );
 
+			// Fetch the attendee who's supposed to get the receipt.
+			$receipt_attendee = $attendees[0]; // default to the first one.
+			foreach ( $attendees as $attendee ) {
+				if ( $receipt_email == get_post_meta( $attendee->ID, 'tix_email', true ) ) {
+					$receipt_attendee = $attendee;
+					break;
+				}
+			}
+
+			$edit_link = $this->get_access_tickets_link( $access_token );
 			$payment_status = '';
+			$this->tmp( 'ticket_url', $edit_link );
+			$this->notify_shortcodes_attendee_id = $receipt_attendee->ID;
 
 			// If the status is pending, let the buyer know about that in the receipt.
 			if ( 'pending' == $to_status )
@@ -6058,26 +6112,31 @@ class CampTix_Plugin {
 
 			if ( count( $attendees ) == 1 ) {
 
-				$content = sprintf( __( "Hey there!\n\nYou have purchased the following ticket:\n\n%s\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n%s\n\n%s%s", 'camptix' ), $receipt_content, $edit_link, $payment_status, $signature );
+				$content = do_shortcode( $this->options['email_template_single_purchase'] );
+
 				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
 
-				$this->log( sprintf( 'Sent a ticket and receipt to %s.', $receipt_email ), $attendees[0]->ID );
+				$this->log( sprintf( 'Sent a ticket and receipt to %s.', $receipt_email ), $receipt_attendee->ID );
 				$this->wp_mail( $receipt_email, $subject, $content );
 
-				do_action( 'camptix_ticket_emailed', $attendees[0]->ID );
+				do_action( 'camptix_ticket_emailed', $receipt_attendee->ID );
 
 			} elseif ( count( $attendees ) > 1 ) {
 
-				$content = sprintf( __( "Hey there!\n\nYou have purchased the following tickets:\n\n%s\n\nYou can edit the information for all the purchased tickets at any time before the event, by visiting the following link:\n\n%s\n\n%s%s", 'camptix' ), $receipt_content, $edit_link, $payment_status, $signature );
+				$this->notify_shortcodes_attendee_id = $receipt_attendee->ID;
+
+				$content = do_shortcode( $this->options['email_template_multiple_purchase_receipt'] );
+
 				$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['event_name'] );
 
-				$this->log( sprintf( 'Sent a receipt to %s.', $receipt_email ), $attendees[0]->ID );
+				$this->log( sprintf( 'Sent a receipt to %s.', $receipt_email ), $receipt_attendee->ID );
 				$this->wp_mail( $receipt_email, $subject, $content );
 			}
 		}
 
 		/**
 		 * This is mainly for notifications that would set the status after an IPN.
+		 * @todo E-mail Templates
 		 */
 		if ( $from_status == 'pending' && $to_status == 'publish' ) {
 			$edit_link = $this->get_access_tickets_link( $access_token );
@@ -6095,6 +6154,10 @@ class CampTix_Plugin {
 			$this->log( sprintf( 'Sending failed e-mail notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
+
+		$this->notify_shortcodes_attendee_id = false;
+		$this->tmp( 'ticket_url', false );
+		$this->tmp( 'receipt', false );
 	}
 
 	function redirect_with_error_flags( $query_args = array() ) {
@@ -6322,6 +6385,16 @@ class CampTix_Plugin {
 		}
 
 		$this->addons[] = $classname;
+	}
+
+	function tmp( $key, $value = null ) {
+		if ( null !== $value )
+			$this->tmp[ $key ] = $value;
+
+		if ( isset( $this->tmp[ $key ] ) )
+			$value = $this->tmp[ $key ];
+
+		return $value;
 	}
 }
 
