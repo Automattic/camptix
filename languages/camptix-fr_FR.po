@@ -5,14 +5,14 @@ msgstr ""
 "Project-Id-Version: CampTix Event Ticketing 1.2.1\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/camptix\n"
 "POT-Creation-Date: 2012-12-01 18:37:47+00:00\n"
+"PO-Revision-Date: 2013-01-09 18:05+0400\n"
+"Last-Translator: Konstantin Kovshenin <kovshenin@gmail.com>\n"
+"Language-Team: WordPress-Francophone <traduction@wordpress-fr.net>\n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2012-12-24 15:21+0400\n"
-"Last-Translator: Konstantin Kovshenin <kovshenin@gmail.com>\n"
-"Language-Team: WordPress-Francophone <traduction@wordpress-fr.net>\n"
 "Plural-Forms: nplurals=2; plural=n>1;\n"
-"Language: fr_FR\n"
 "X-Generator: Poedit 1.5.4\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
@@ -606,7 +606,7 @@ msgstr "Outils CampTix"
 
 #: camptix.php:1618
 msgid "Summarize"
-msgstr "Résumer"
+msgstr "Résumé"
 
 #: camptix.php:1619 camptix.php:2068 camptix.php:2077
 msgid "Revenue"
@@ -626,7 +626,7 @@ msgstr "Rembourser"
 
 #: camptix.php:1648
 msgid "Summarize by"
-msgstr "Résumé par"
+msgstr "Résumer par"
 
 #: camptix.php:1668
 msgid "Show Summary"
@@ -666,7 +666,7 @@ msgstr "Jour d'achat"
 
 #: camptix.php:2064 camptix.php:2073
 msgid "Sold"
-msgstr "Vendu"
+msgstr "Vendus"
 
 #: camptix.php:2066 camptix.php:2075
 msgid "Sub-Total"
@@ -674,7 +674,7 @@ msgstr "Sous-total"
 
 #: camptix.php:2067 camptix.php:2076
 msgid "Discounted"
-msgstr "Décompté"
+msgstr "Décomptés"
 
 #: camptix.php:2081
 msgid ""
@@ -692,7 +692,7 @@ msgstr "Rapport de revenus généré en %s secondes."
 
 #: camptix.php:2105
 msgid "Export all attendees data to"
-msgstr "Exporter tous les participants vers"
+msgstr "Exporter tous les participants au format"
 
 #: camptix.php:2110
 msgid "(coming soon)"
@@ -908,7 +908,7 @@ msgstr ""
 
 #: camptix.php:2829 camptix.php:3310
 msgid "Leave blank for auto-availability"
-msgstr "Laisser vide pour une disponibilité automatique"
+msgstr "Laisser vide pour une disponibilité auto-gérée."
 
 #: camptix.php:2832 camptix.php:3313
 msgid "Start:"
@@ -1004,7 +1004,7 @@ msgstr "nouvelle question"
 
 #: camptix.php:3119
 msgid "existing one"
-msgstr "question existente"
+msgstr "question existante"
 
 #: camptix.php:3133 camptix.php:3153
 msgid "Type"
@@ -1053,7 +1053,7 @@ msgstr ""
 
 #: camptix.php:3196
 msgid "Add an existing question:"
-msgstr "Ajouter une question existente :"
+msgstr "Ajouter une question existante :"
 
 #: camptix.php:3200
 msgid "Available Questions"
@@ -1082,7 +1082,7 @@ msgstr ""
 
 #: camptix.php:3280
 msgid "Applies to:"
-msgstr "S'applique à :"
+msgstr "S'applique à&rsquo;:"
 
 #: camptix.php:3282
 msgid "All"
@@ -1495,7 +1495,7 @@ msgid ""
 msgstr ""
 "Bonjour !\n"
 "\n"
-"Vous avez achetez le ticket suivant :\n"
+"Vous avez acheté le ticket suivant :\n"
 "\n"
 "%s\n"
 "\n"
