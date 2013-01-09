@@ -995,6 +995,10 @@ class CampTix_Plugin {
 			'refund_all_enabled' => false,
 			'archived' => false,
 			'payment_methods' => array(),
+
+			'email_template_single_purchase' => __( "Hi there!\n\nYou have purchased the following ticket:\n\n[receipt]\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
+			'email_template_multiple_purchase' => __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
+			'email_template_multiple_purchase_receipt' => __( "Hi there!\n\nYou have purchased the following tickets:\n\n[receipt]\n\nYou can edit the information for all the purchased tickets at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
 		) );
 	}
 
@@ -1337,6 +1341,12 @@ class CampTix_Plugin {
 				break;
 			case 'email-templates':
 				add_settings_section( 'general', __( 'E-mail Templates', 'camptix' ), array( $this, 'menu_setup_section_email_templates' ), 'camptix_options' );
+				$this->add_settings_field_helper( 'email_template_single_purchase', __( 'Single purchase', 'camptix' ), 'field_textarea' );
+				$this->add_settings_field_helper( 'email_template_multiple_purchase', __( 'Multiple purchase', 'camptix' ), 'field_textarea' );
+				$this->add_settings_field_helper( 'email_template_multiple_purchase_receipt', __( 'Multiple purchase (receipt)', 'camptix' ), 'field_textarea' );
+
+				// Add a reset templates button
+				add_action( 'camptix_setup_buttons', array( $this, 'setup_buttons_reset_templates' ) );
 				break;
 			case 'beta':
 
@@ -1385,13 +1395,17 @@ class CampTix_Plugin {
 
 		$args = array(
 			'name' => sprintf( 'camptix_options[%s]', $key ),
-			'value' => $this->options[$key],
+			'value' => ( ! empty( $this->options[ $key ] ) ) ? $this->options[ $key ] : null,
 		);
 
 		if ( $description )
 			$args['description'] = $description;
 
 		add_settings_field( $key, $title, array( $this, $callback_method ), 'camptix_options', $section, $args );
+	}
+
+	function setup_buttons_reset_templates() {
+		submit_button( __( 'Reset Default', 'camptix' ), 'secondary', 'tix-reset-templates', false );
 	}
 
 	/**
@@ -1429,6 +1443,22 @@ class CampTix_Plugin {
 					$output['payment_methods'][ $key ] = (bool) $input['payment_methods'][ $key ];
 		}
 
+		// E-mail templates
+		$email_templates = array(
+			'single_purchase',
+			'multiple_purchase',
+			'multiple_purchase_receipt',
+		);
+
+		foreach ( $email_templates as $template )
+			if ( isset( $input[ 'email_template_' . $template ] ) )
+				$output[ 'email_template_' . $template ] = $input[ 'email_template_' . $template ];
+
+		// If the Reset Defaults button was hit
+		if ( isset( $_POST['tix-reset-templates'] ) )
+			foreach ( $email_templates as $template )
+				unset( $output[ 'email_template_' . $template ] );
+
 		$current_user = wp_get_current_user();
 		$log_data = array(
 			'old'      => $this->options,
@@ -1457,6 +1487,12 @@ class CampTix_Plugin {
 	function field_text( $args ) {
 		?>
 		<input type="text" name="<?php echo esc_attr( $args['name'] ); ?>" value="<?php echo esc_attr( $args['value'] ); ?>" class="regular-text" />
+		<?php
+	}
+
+	function field_textarea( $args ) {
+		?>
+		<textarea class="large-text" rows="5" name="<?php echo esc_attr( $args['name'] ); ?>"><?php echo esc_textarea( $args['value'] ); ?></textarea>
 		<?php
 	}
 
@@ -1724,8 +1760,11 @@ class CampTix_Plugin {
 				<?php
 					settings_fields( 'camptix_options' );
 					do_settings_sections( 'camptix_options' );
-					submit_button();
 				?>
+				<p class="submit">
+					<?php submit_button( '', 'primary', 'submit', false ); ?>
+					<?php do_action( 'camptix_setup_buttons' ); ?>
+				</p>
 			</form>
 			<?php if ( $this->debug ) : ?>
 			<pre><?php
@@ -1757,7 +1796,7 @@ class CampTix_Plugin {
 		$sections = array(
 			'general' => __( 'General', 'camptix' ),
 			'payment' => __( 'Payment', 'camptix' ),
-			// 'email-templates' => __( 'E-mail Templates', 'camptix' ),
+			'email-templates' => __( 'E-mail Templates', 'camptix' ),
 		);
 
 		if ( $this->beta_features_enabled )
