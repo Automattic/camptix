@@ -5571,6 +5571,8 @@ class CampTix_Plugin {
 				// Write post content (triggers save_post).
 				wp_update_post( array( 'ID' => $post_id ) );
 				$attendee->post_id = $post_id;
+				
+				do_action( 'camptix_new_tix_attendee', $post_id );
 			}
 		}
 
