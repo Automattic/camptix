@@ -259,7 +259,7 @@ class CampTix_Plugin {
 							$this->log( sprintf( '%s is not a valid e-mail, removing from queue.', $attendee_email ), $email->ID, $data, 'notify' );
 						} else {
 
-							$this->notify_shortcodes_attendee_id = $attendee_id;
+							$this->tmp( 'attendee_id', $attendee_id );
 							$email_content = do_shortcode( $email->post_content );
 							$email_title = do_shortcode( $email->post_title );
 
@@ -281,7 +281,7 @@ class CampTix_Plugin {
 
 				// Clean post meta cache.
 				$this->filter_post_meta = false;
-				$this->notify_shortcodes_attendee_id = false;
+				$this->tmp( 'attendee_id', false );
 			}
 		}
 
@@ -348,35 +348,35 @@ class CampTix_Plugin {
 	 * Notify shortcode: returns the attendee first name.
 	 */
 	function notify_shortcode_first_name( $atts ) {
-		if ( $this->notify_shortcodes_attendee_id )
-			return get_post_meta( $this->notify_shortcodes_attendee_id, 'tix_first_name', true );
+		if ( $this->tmp( 'attendee_id' ) )
+			return get_post_meta( $this->tmp( 'attendee_id' ), 'tix_first_name', true );
 	}
 
 	/**
 	 * Notify shortcode: returns the attendee last name.
 	 */
 	function notify_shortcode_last_name( $atts ) {
-		if ( $this->notify_shortcodes_attendee_id )
-			return get_post_meta( $this->notify_shortcodes_attendee_id, 'tix_last_name', true );
+		if ( $this->tmp( 'attendee_id' ) )
+			return get_post_meta( $this->tmp( 'attendee_id' ), 'tix_last_name', true );
 	}
 
 	/**
 	 * Notify shortcode: returns the attendee e-mail address.
 	 */
 	function notify_shortcode_email( $atts ) {
-		if ( $this->notify_shortcodes_attendee_id )
-			return get_post_meta( $this->notify_shortcodes_attendee_id, 'tix_email', true );
+		if ( $this->tmp( 'attendee_id' ) )
+			return get_post_meta( $this->tmp( 'attendee_id' ), 'tix_email', true );
 	}
 
 	/**
 	 * Notify shortcode: returns the attendee edit url
 	 */
 	function notify_shortcode_ticket_url( $atts ) {
-		if ( ! $this->notify_shortcodes_attendee_id )
+		if ( ! $this->tmp( 'attendee_id' ) )
 			return;
 
-		$edit_token = get_post_meta( $this->notify_shortcodes_attendee_id, 'tix_edit_token', true );
-		return $this->get_edit_attendee_link( $this->notify_shortcodes_attendee_id, $edit_token );
+		$edit_token = get_post_meta( $this->tmp( 'attendee_id' ), 'tix_edit_token', true );
+		return $this->get_edit_attendee_link( $this->tmp( 'attendee_id' ), $edit_token );
 	}
 
 	/**
@@ -2680,12 +2680,12 @@ class CampTix_Plugin {
 						) );
 
 						if ( $attendees_ids )
-							$this->notify_shortcodes_attendee_id = array_shift( $attendees_ids );
+							$this->tmp( 'attendee_id', array_shift( $attendees_ids ) );
 
 						$subject = do_shortcode( $form_data['subject'] );
 						$content = do_shortcode( $form_data['body'] );
 
-						unset( $this->notify_shortcodes_attendee_id );
+						$this->tmp( 'attendee_id', false );
 					?>
 					<tr>
 						<th scope="row">Preview</th>
@@ -6073,7 +6073,7 @@ class CampTix_Plugin {
 				$edit_token = get_post_meta( $attendee->ID, 'tix_edit_token', true );
 				$edit_link = $this->get_edit_attendee_link( $attendee->ID, $edit_token );
 
-				$this->notify_shortcodes_attendee_id = $attendee->ID;
+				$this->tmp( 'attendee_id', $attendee->ID );
 				$this->tmp( 'ticket_url', $edit_link );
 
 				$content = do_shortcode( $this->options['email_template_multiple_purchase'] );
@@ -6104,7 +6104,7 @@ class CampTix_Plugin {
 			$edit_link = $this->get_access_tickets_link( $access_token );
 			$payment_status = '';
 			$this->tmp( 'ticket_url', $edit_link );
-			$this->notify_shortcodes_attendee_id = $receipt_attendee->ID;
+			$this->tmp( 'attendee_id', $receipt_attendee->ID );
 
 			// If the status is pending, let the buyer know about that in the receipt.
 			if ( 'pending' == $to_status )
@@ -6122,8 +6122,6 @@ class CampTix_Plugin {
 				do_action( 'camptix_ticket_emailed', $receipt_attendee->ID );
 
 			} elseif ( count( $attendees ) > 1 ) {
-
-				$this->notify_shortcodes_attendee_id = $receipt_attendee->ID;
 
 				$content = do_shortcode( $this->options['email_template_multiple_purchase_receipt'] );
 
@@ -6155,7 +6153,7 @@ class CampTix_Plugin {
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 
-		$this->notify_shortcodes_attendee_id = false;
+		$this->tmp( 'attendee_id', false );
 		$this->tmp( 'ticket_url', false );
 		$this->tmp( 'receipt', false );
 	}
@@ -6387,7 +6385,7 @@ class CampTix_Plugin {
 		$this->addons[] = $classname;
 	}
 
-	function tmp( $key, $value = null ) {
+	public function tmp( $key, $value = null ) {
 		if ( null !== $value )
 			$this->tmp[ $key ] = $value;
 
