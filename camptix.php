@@ -167,7 +167,7 @@ class CampTix_Plugin {
 		add_filter( 'cron_schedules', array( $this, 'cron_schedules' ) );
 
 		add_action( 'tix_scheduled_every_ten_minutes', array( $this, 'send_emails_batch' ) );
-		add_action( 'tix_scheduled_every_ten_minutes', array( $this, 'process_refund_all' ) );
+		// add_action( 'tix_scheduled_every_ten_minutes', array( $this, 'process_refund_all' ) );
 
 		add_action( 'tix_scheduled_daily', array( $this, 'review_timeout_payments' ) );
 
@@ -6324,7 +6324,7 @@ class CampTix_Plugin {
 		if ( is_email( get_option( 'admin_email' ) ) && is_array( $headers ) )
 			$headers[] = sprintf( 'From: %s <%s>', $this->options['event_name'], get_option( 'admin_email' ) );
 
-		$this->log( sprintf( 'Sent e-mail to %s.', $to ), null, array( 'subject' => $subject, 'message' => $message ) );
+		$this->log( sprintf( 'Sent e-mail to %s.', $to ), null, array( 'subject' => $subject, 'message' => $message ), 'email' );
 		return wp_mail( $to, $subject, $message, $headers, $attachments );
 	}
 
@@ -6385,6 +6385,16 @@ class CampTix_Plugin {
 		$this->addons[] = $classname;
 	}
 
+	/**
+	 * Temporary storage (non-persistent)
+	 *
+	 * Use this fuction to access the CampTix temporary storage for things like attendee_id
+	 * for notify shortcodes, and receipt for e-mail templates, etc. You can also use it to
+	 * store your own stuff, but don't forget to cleanup when you're done.
+	 *
+	 * @param $key string The key to access/store the value with.
+	 * @param $value mixed An optional value when storing things.
+	 */
 	public function tmp( $key, $value = null ) {
 		if ( null !== $value )
 			$this->tmp[ $key ] = $value;
