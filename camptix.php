@@ -196,6 +196,10 @@ class CampTix_Plugin {
 	function send_emails_batch() {
 		global $wpdb;
 
+		// Sometimes Cron can run before $this->init()
+		if ( ! did_action( 'camptix_init' ) )
+			$this->init();
+
 		// Grab only one e-mail job at a time.
 		$email = get_posts( array(
 			'post_type' => 'tix_email',
