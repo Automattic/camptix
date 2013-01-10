@@ -3,7 +3,7 @@ Contributors: automattic, kovshenin, andreamiddleton
 Tags: ticketing, event ticketing
 Requires at least: 3.4
 Tested up to: 3.4.1
-Stable tag: 1.2.1
+Stable tag: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,6 +44,13 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.3 =
+* Added the ability to edit confirmation e-mails
+* Reworked ticket questions, both under the hood and UI
+* Added support to edit new and existing questions
+* Added a bunch of currencies for PayPal
+* Few bug fixes and minor enhancements
 
 = 1.2.1 =
 * Numerous bugs fixed
