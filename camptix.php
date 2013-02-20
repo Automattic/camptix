@@ -4194,7 +4194,7 @@ class CampTix_Plugin {
 		if ( ! get_query_var( 'tix_action' ) )
 			return $this->shortcode_contents = $this->form_start();
 
-		return $this->shortcode_contets = 'Hmmm.';
+		return $this->shortcode_contents = 'Hmmm.';
 	}
 
 	/**
