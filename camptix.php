@@ -751,7 +751,7 @@ class CampTix_Plugin {
 		$questions = get_posts( array(
 			'post_type' => 'tix_question',
 			'post_status' => 'publish',
-			'posts_per_page' => -1,
+			'posts_per_page' => 100,
 		) );
 
 		return $questions;
