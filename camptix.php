@@ -1572,7 +1572,7 @@ class CampTix_Plugin {
 		</div>
 
 		<?php if ( isset( $args['description'] ) ) : ?>
-		<p class="description"><?php echo $args['description']; ?></p>
+		<p class="description"><?php echo wp_post_kses( $args['description'] ); ?></p>
 		<?php endif; ?>
 		<?php
 	}
