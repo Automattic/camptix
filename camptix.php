@@ -3671,12 +3671,9 @@ class CampTix_Plugin {
 		if ( ! isset( $_POST['action'] ) || 'editpost' != $_POST['action'] )
 			return;
 
-		/**
-		 * @todo figure out security issue with .org
-		 */
 		// Security check.
-		// $nonce_action = 'update-tix_ticket_' . $post_id; // see edit-form-advanced.php
-		// check_admin_referer( $nonce_action );
+		$nonce_action = 'update-post_' . $post_id; // http://core.trac.wordpress.org/changeset/21504
+		check_admin_referer( $nonce_action );
 
 		if ( isset( $_POST['tix_price'] ) )
 			update_post_meta( $post_id, 'tix_price', floatval( $_POST['tix_price'] ) );
@@ -3748,7 +3745,7 @@ class CampTix_Plugin {
 
 					// Make sure we're editing a question.
 					$question_post = get_post( $question_id );
-					if ( $question_post->post_type != 'tix_question' || ! current_user_can( 'edit_post', $qestion_id ) )
+					if ( $question_post->post_type != 'tix_question' || ! current_user_can( 'edit_post', $question_id ) )
 						wp_die( 'Cheating?' );
 
 					wp_update_post( array(
@@ -3910,12 +3907,9 @@ class CampTix_Plugin {
 		if ( ! isset( $_POST['action'] ) || 'editpost' != $_POST['action'] )
 			return;
 
-		/**
-		 * @todo figure out security issue with .org
-		 */
 		// Security check.
-		// $nonce_action = 'update-tix_coupon_' . $post_id; // see edit-form-advanced.php
-		// check_admin_referer( $nonce_action );
+		$nonce_action = 'update-post_' . $post_id; // http://core.trac.wordpress.org/changeset/21504
+		check_admin_referer( $nonce_action );
 
 		if ( isset( $_POST['tix_discount_price'], $_POST['tix_discount_percent'] ) ) {
 			$price = fleatval( $_POST['tix_discount_price'] );
