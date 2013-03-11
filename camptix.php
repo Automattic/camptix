@@ -4785,7 +4785,7 @@ class CampTix_Plugin {
 			$this->redirect_with_error_flags();
 		}
 
-		if ( ! isset( $_REQUEST['tix_attendee_id'] ) || empty( $_REQUEST['tix_attendee_id'] ) || ! intval( $_REQUEST['tix_attendee'] ) ) {
+		if ( ! isset( $_REQUEST['tix_attendee_id'] ) || empty( $_REQUEST['tix_attendee_id'] ) || ! intval( $_REQUEST['tix_attendee_id'] ) ) {
 			$this->error_flags['invalid_edit_token'] = true;
 			$this->redirect_with_error_flags();
 		}
