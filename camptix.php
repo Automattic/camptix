@@ -5561,8 +5561,11 @@ class CampTix_Plugin {
 				$questions = $this->get_sorted_questions( $ticket->ID );
 
 				foreach ( $questions as $question ) {
-					if ( isset( $_POST['tix_attendee_questions'][ $i ][ $question->ID ] ) )
-						$answers[ $question->ID ] = strip_tags( $_POST['tix_attendee_questions'][ $i ][ $question->ID ] );
+					if ( isset( $_POST['tix_attendee_questions'][ $i ][ $question->ID ] ) ) {
+						$answer = $_POST['tix_attendee_questions'][ $i ][ $question->ID ];
+						$answer = ( is_array( $answer ) ) ? array_map( 'strip_tags', $answer ) : strip_tags( $answer );
+						$answers[ $question->ID ] = $answer;
+					}
 
 					if ( (bool) get_post_meta( $question->ID, 'tix_required', true ) && empty( $answers[ $question->ID ] ) ) {
 						$this->error_flags['required_fields'] = true;
