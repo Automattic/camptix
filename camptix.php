@@ -722,11 +722,9 @@ class CampTix_Plugin {
 		if ( ! empty( $_REQUEST['post_type' ] ) && ! in_array( $_REQUEST['post_type'], array( 'tix_attendee', 'tix_ticket' ) ) )
 			return;
 
-		$user = wp_get_current_user();
-
 		// If first time editing, disable advanced items by default.
-		if ( false === get_user_option( 'manageedit-tix_attendeecolumnshidden' ) ) {
-			update_user_option( $user->ID, 'manageedit-tix_attendeecolumnshidden', array(
+		if ( false === $this->get_user_option( 'manageedit-tix_attendeecolumnshidden' ) ) {
+			$this->update_user_option( get_current_user_id(), 'manageedit-tix_attendeecolumnshidden', array(
 				'tix_order_total',
 				'tix_ticket_price',
 				'tix_reservation',
@@ -734,12 +732,39 @@ class CampTix_Plugin {
 			), true );
 		}
 
-		if ( false === get_user_option( 'manageedit-tix_ticketcolumnshidden' ) ) {
-			update_user_option( $user->ID, 'manageedit-tix_ticketcolumnshidden', array(
+		if ( false === $this->get_user_option( 'manageedit-tix_ticketcolumnshidden' ) ) {
+			$this->update_user_option( get_current_user_id(), 'manageedit-tix_ticketcolumnshidden', array(
 				'tix_purchase_count',
 				'tix_reserved',
 			), true );
 		}
+	}
+
+	/**
+	 * Filterable call to get_user_option
+	 */
+	function get_user_option( $option_name, $user_id = 0 ) {
+		if ( empty( $user_id ) )
+			$user_id = get_current_user_id();
+
+		$value = apply_filters( 'camptix_get_user_option', null, $option_name, $user_id );
+
+		if ( is_null( $value ) )
+			$value = get_user_option( $option_name, $user_id );
+
+		return $value;
+	}
+
+	/**
+	 * Filterable call to update_user_option
+	 */
+	function update_user_option( $user_id, $option_name, $option_value, $global = false ) {
+		$value = apply_filters( 'camptix_update_user_option', null, $user_id, $option_name, $option_value, $global );
+
+		if ( is_null( $value ) )
+			$value = update_user_option( $user_id, $option_name, $option_value, $global );
+
+		return $value;
 	}
 
 	/**
