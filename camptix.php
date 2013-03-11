@@ -1055,10 +1055,6 @@ class CampTix_Plugin {
 		// Allow plugins to hi-jack or read the options.
 		$options = apply_filters( 'camptix_options', $options );
 
-		/*$options['version'] = 20121226;
-		update_option( 'camptix_options', $options );
-		die();/**/
-
 		// Fresh installs require no upgrades.
 		if ( $options['version'] == 0 ) {
 			$options['version'] = $this->version;
@@ -1082,16 +1078,6 @@ class CampTix_Plugin {
 				update_option( 'camptix_options', $options );
 			}
 
-		}
-
-		if ( current_user_can( $this->caps['manage_options'] ) && isset( $_GET['tix_reset_version'] ) ) {
-			$options['version'] = 0;
-			update_option( 'camptix_options', $options );
-		}
-
-		if ( current_user_can( $this->caps['manage_options'] ) && isset( $_GET['tix_delete_options'] ) ) {
-			delete_option( 'camptix_options' );
-			$options = $default_options;
 		}
 
 		return $options;
@@ -1950,7 +1936,7 @@ class CampTix_Plugin {
 		<?php
 			$fields = $this->get_available_summary_fields();
 			$summary = $this->get_summary( $summarize_by );
-			$summary_title = $fields[$summarize_by];
+			$summary_title = $fields[ $summarize_by ];
 			$alt = '';
 
 			$rows = array();
@@ -1984,7 +1970,7 @@ class CampTix_Plugin {
 
 			$fields = $this->get_available_summary_fields();
 			$summary = $this->get_summary( $summarize_by );
-			$summary_title = $fields[$summarize_by];
+			$summary_title = $fields[ $summarize_by ];
 			$filename = sprintf( 'camptix-summary-%s-%s.csv', sanitize_title_with_dashes( $summary_title ), date( 'Y-m-d' ) );
 
 			header( 'Content-Type: text/csv' );
@@ -2571,9 +2557,9 @@ class CampTix_Plugin {
 
 			// If everything went well.
 			if ( count( $errors ) == 0 && isset( $_POST['tix_notify_submit'] ) && $_POST['tix_notify_submit'] ) {
-				$tickets = (array) $_POST['tix_notify_tickets'];
-				$subject = $_POST['tix_notify_subject'];
-				$body = $_POST['tix_notify_body'];
+				$tickets = array_map( 'absint', (array) $_POST['tix_notify_tickets'] );
+				$subject = sanitize_text_field( wp_kses_post( stripslashes( $_POST['tix_notify_subject'] ) ) );
+				$body = wp_kses_post( stripslashes( $_POST['tix_notify_body'] ) );
 				$recipients = array();
 
 				$paged = 1;
@@ -2627,10 +2613,10 @@ class CampTix_Plugin {
 						add_settings_error( 'camptix', false, $error );
 
 				// Keep form data.
-				$form_data['subject'] = stripslashes( $_POST['tix_notify_subject'] );
-				$form_data['body'] = stripslashes( $_POST['tix_notify_body'] );
+				$form_data['subject'] = wp_kses_post( stripslashes( $_POST['tix_notify_subject'] ) );
+				$form_data['body'] = wp_kses_post( stripslashes( $_POST['tix_notify_body'] ) );
 				if ( isset( $_POST['tix_notify_tickets'] ) )
-					$form_data['tickets'] = $_POST['tix_notify_tickets'];
+					$form_data['tickets'] = array_map( 'absint', (array) $_POST['tix_notify_tickets'] );
 			}
 		}
 		?>
@@ -2792,7 +2778,7 @@ class CampTix_Plugin {
 		);
 
 		foreach ( $checkboxes as $checkbox ) {
-			if ( ! isset( $_POST[$checkbox] ) || $_POST[$checkbox] != '1' ) {
+			if ( ! isset( $_POST[ $checkbox ] ) || $_POST[ $checkbox ] != '1' ) {
 				add_settings_error( 'camptix', 'none', __( 'Looks like you have missed a checkbox or two. Try again!', 'camptix' ), 'error' );
 				return;
 			}
@@ -3693,16 +3679,20 @@ class CampTix_Plugin {
 		// check_admin_referer( $nonce_action );
 
 		if ( isset( $_POST['tix_price'] ) )
-			update_post_meta( $post_id, 'tix_price', $_POST['tix_price'] );
+			update_post_meta( $post_id, 'tix_price', floatval( $_POST['tix_price'] ) );
 
 		if ( isset( $_POST['tix_quantity'] ) )
 			update_post_meta( $post_id, 'tix_quantity', intval( $_POST['tix_quantity'] ) );
 
-		if ( isset( $_POST['tix_start'] ) )
+		if ( isset( $_POST['tix_start'] ) ) {
+			$_POST['tix_start'] = preg_match( '/^\d{4}\-\d{2}\-\d{2}$/', $_POST['tix_start'] ) ? $_POST['tix_start'] : '';
 			update_post_meta( $post_id, 'tix_start', $_POST['tix_start'] );
+		}
 
-		if ( isset( $_POST['tix_end'] ) )
+		if ( isset( $_POST['tix_end'] ) ) {
+			$_POST['tix_end'] = preg_match( '/^\d{4}\-\d{2}\-\d{2}$/', $_POST['tix_end'] ) ? $_POST['tix_end'] : '';
 			update_post_meta( $post_id, 'tix_end', $_POST['tix_end'] );
+		}
 
 		// Questions
 		if ( isset( $_POST['tix_questions'] ) ) {
@@ -3732,7 +3722,7 @@ class CampTix_Plugin {
 
 				$clean_question = array(
 					'post_id' => ( isset( $question['post_id'] ) ) ? absint( $question['post_id'] ) : false,
-					'question' => strip_tags( $question['question'] ),
+					'question' => wp_kses_post( $question['question'] ),
 					'type' => $question['type'],
 					'values' => $question_values,
 					'required' => isset( $question['required'] ),
@@ -3758,7 +3748,7 @@ class CampTix_Plugin {
 
 					// Make sure we're editing a question.
 					$question_post = get_post( $question_id );
-					if ( $question_post->post_type != 'tix_question' )
+					if ( $question_post->post_type != 'tix_question' || ! current_user_can( 'edit_post', $qestion_id ) )
 						wp_die( 'Cheating?' );
 
 					wp_update_post( array(
@@ -3795,7 +3785,7 @@ class CampTix_Plugin {
 				&& ! empty( $_POST['tix_reservation_name'] ) && intval( $_POST['tix_reservation_quantity'] ) > 0 ) {
 
 				$reservation_id = sanitize_title_with_dashes( $_POST['tix_reservation_name'] );
-				$reservation_name = $_POST['tix_reservation_name'];
+				$reservation_name = sanitize_text_field( $_POST['tix_reservation_name'] );
 				$reservation_quantity = intval( $_POST['tix_reservation_quantity'] );
 				$reservation_token = md5( 'caMptix-r353rv4t10n' . rand( 1, 9999 ) . time() . $reservation_id . $post_id );
 				$reservation = array(
@@ -3885,7 +3875,7 @@ class CampTix_Plugin {
 
 		foreach ( $search_meta_fields as $key )
 			if ( get_post_meta( $post_id, $key, true ) )
-				$data[$key] = sprintf( "%s:%s", $key, maybe_serialize( get_post_meta( $post_id, $key, true ) ) );
+				$data[ $key ] = sprintf( "%s:%s", $key, maybe_serialize( get_post_meta( $post_id, $key, true ) ) );
 
 		$first_name = get_post_meta( $post_id, 'tix_first_name', true );
 		$last_name = get_post_meta( $post_id, 'tix_last_name', true );
@@ -3928,7 +3918,7 @@ class CampTix_Plugin {
 		// check_admin_referer( $nonce_action );
 
 		if ( isset( $_POST['tix_discount_price'], $_POST['tix_discount_percent'] ) ) {
-			$price = (float) $_POST['tix_discount_price'];
+			$price = fleatval( $_POST['tix_discount_price'] );
 			$percent = intval( $_POST['tix_discount_percent'] );
 			if ( $price > 0 ) { // a price discount has priority over % discount.
 				update_post_meta( $post_id, 'tix_discount_price', $price );
@@ -3956,10 +3946,12 @@ class CampTix_Plugin {
 		}
 
 		if ( isset( $_POST['tix_coupon_start'] ) ) {
+			$_POST['tix_coupon_start'] = preg_match( '/^\d{4}\-\d{2}\-\d{2}$/', $_POST['tix_coupon_start'] ) ? $_POST['tix_coupon_start'] : '';
 			update_post_meta( $post_id, 'tix_coupon_start', $_POST['tix_coupon_start'] );
 		}
 
 		if ( isset( $_POST['tix_coupon_end'] ) ) {
+			$_POST['tix_coupon_end'] = preg_match( '/^\d{4}\-\d{2}\-\d{2}$/', $_POST['tix_coupon_end'] ) ? $_POST['tix_coupon_end'] : '';
 			update_post_meta( $post_id, 'tix_coupon_end', $_POST['tix_coupon_end'] );
 		}
 
@@ -4069,8 +4061,8 @@ class CampTix_Plugin {
 		// Populate selected tickets from $_POST!
 		if ( isset( $_POST['tix_tickets_selected'] ) )
 			foreach ( $_POST['tix_tickets_selected'] as $ticket_id => $count )
-				if ( isset( $this->tickets[$ticket_id] ) && $count > 0 )
-					$this->tickets_selected[$ticket_id] = intval( $count );
+				if ( isset( $this->tickets[ $ticket_id ] ) && $count > 0 )
+					$this->tickets_selected[ $ticket_id ] = intval( $count );
 
 		// Make an order.
 		$this->order = array( 'items' => array(), 'total' => 0 );
@@ -4090,11 +4082,11 @@ class CampTix_Plugin {
 		}
 
 		if ( isset( $_REQUEST['tix_coupon'] ) )
-			$this->order['coupon'] = $_REQUEST['tix_coupon'];
+			$this->order['coupon'] = sanitize_text_field( $_REQUEST['tix_coupon'] );
 
 		if ( isset( $_REQUEST['tix_reservation_id'], $_REQUEST['tix_reservation_token'] ) ) {
-			$this->order['reservation_id'] = $_REQUEST['tix_reservation_id'];
-			$this->order['reservation_token'] = $_REQUEST['tix_reservation_token'];
+			$this->order['reservation_id'] = sanitize_text_field( $_REQUEST['tix_reservation_id'] );
+			$this->order['reservation_token'] = sanitize_text_field( $_REQUEST['tix_reservation_token'] );
 		}
 
 		// Check whether this is a valid order.
@@ -4105,23 +4097,23 @@ class CampTix_Plugin {
 		$tickets_excess = 0;
 		$coupons_applied = 0;
 		foreach ( $this->tickets_selected as $ticket_id => $count ) {
-			$ticket = $this->tickets[$ticket_id];
+			$ticket = $this->tickets[ $ticket_id ];
 
 			// Don't allow more than 10 tickets of each type to be purchased in bulk.
 			if ( $count > 10 && $ticket->tix_remaining > 10 ) {
-				$this->tickets_selected[$ticket_id] = 10;
+				$this->tickets_selected[ $ticket_id ] = 10;
 				$count = 10;
 				$tickets_excess += $count - 10;
 			}
 
 			// ref: #1001
 			if ( $count > $ticket->tix_remaining ) {
-				$this->tickets_selected[$ticket_id] = $ticket->tix_remaining;
+				$this->tickets_selected[ $ticket_id ] = $ticket->tix_remaining;
 				$tickets_excess += $count - $ticket->tix_remaining;
 
 				// Remove the ticket if count is 0.
-				if ( $this->tickets_selected[$ticket_id] < 1 )
-					unset( $this->tickets_selected[$ticket_id] );
+				if ( $this->tickets_selected[ $ticket_id ] < 1 )
+					unset( $this->tickets_selected[ $ticket_id ] );
 			}
 
 			// ref: #1002
@@ -4143,12 +4135,12 @@ class CampTix_Plugin {
 
 			$extra = $coupons_applied - $this->coupon->tix_coupon_remaining;
 			foreach ( array_reverse( $this->tickets_selected, true ) as $ticket_id => $count ) {
-				if ( $this->tickets[$ticket_id]->tix_coupon_applied ) {
+				if ( $this->tickets[ $ticket_id ]->tix_coupon_applied ) {
 					if ( $extra >= $count && $extra > 0 ) {
-						unset( $this->tickets_selected[$ticket_id] );
+						unset( $this->tickets_selected[ $ticket_id ] );
 						$extra -= $count;
 					} elseif ( $extra > 0 ) {
-						$this->tickets_selected[$ticket_id] -= $extra;
+						$this->tickets_selected[ $ticket_id ] -= $extra;
 						$extra -= $count;
 					}
 				}
@@ -4636,7 +4628,7 @@ class CampTix_Plugin {
 
 		ob_start();
 
-		if ( ! isset( $_REQUEST['tix_access_token'] ) || empty( $_REQUEST['tix_access_token'] ) ) {
+		if ( ! isset( $_REQUEST['tix_access_token'] ) || empty( $_REQUEST['tix_access_token'] ) || ! ctype_alnum( $_REQUEST['tix_access_token'] ) ) {
 			$this->error_flags['invalid_access_token'] = true;
 			$this->redirect_with_error_flags();
 			die();
@@ -4644,6 +4636,8 @@ class CampTix_Plugin {
 
 		$access_token = $_REQUEST['tix_access_token'];
 		$is_refundable = false;
+
+		if ( ! $access)
 
 		// Let's get one attendee
  		$attendees = get_posts( array(
@@ -4767,12 +4761,12 @@ class CampTix_Plugin {
 		$post->post_content = $this->shortcode_str;
 
 		ob_start();
-		if ( ! isset( $_REQUEST['tix_edit_token'] ) || empty( $_REQUEST['tix_edit_token'] ) ) {
+		if ( ! isset( $_REQUEST['tix_edit_token'] ) || empty( $_REQUEST['tix_edit_token'] ) || ! ctype_alnum( $_REQUEST['tix_edit_token'] ) ) {
 			$this->error_flags['invalid_edit_token'] = true;
 			$this->redirect_with_error_flags();
 		}
 
-		if ( ! isset( $_REQUEST['tix_attendee_id'] ) || empty( $_REQUEST['tix_attendee_id'] ) ) {
+		if ( ! isset( $_REQUEST['tix_attendee_id'] ) || empty( $_REQUEST['tix_attendee_id'] ) || ! intval( $_REQUEST['tix_attendee'] ) ) {
 			$this->error_flags['invalid_edit_token'] = true;
 			$this->redirect_with_error_flags();
 		}
@@ -4835,7 +4829,7 @@ class CampTix_Plugin {
 			$new_answers = array();
 			foreach ( $questions as $question ) {
 				if ( isset( $_POST['tix_ticket_questions'][ $question->ID ] ) ) {
-					$new_answers[$question->ID] = stripslashes_deep( $posted['tix_ticket_questions'][ $question->ID ] );
+					$new_answers[ $question->ID ] = strip_tags( stripslashes_deep( $posted['tix_ticket_questions'][ $question->ID ] ) );
 				}
 
 				// @todo maybe check $user_values against $type and $question_values
@@ -4854,9 +4848,9 @@ class CampTix_Plugin {
 			} else {
 
 				// Save info
-				update_post_meta( $attendee->ID, 'tix_first_name', $new_ticket_info['first_name'] );
-				update_post_meta( $attendee->ID, 'tix_last_name', $new_ticket_info['last_name'] );
-				update_post_meta( $attendee->ID, 'tix_email', $new_ticket_info['email'] );
+				update_post_meta( $attendee->ID, 'tix_first_name', sanitize_text_field( $new_ticket_info['first_name'] ) );
+				update_post_meta( $attendee->ID, 'tix_last_name', sanitize_text_field( $new_ticket_info['last_name'] ) );
+				update_post_meta( $attendee->ID, 'tix_email', sanitize_email( $new_ticket_info['email'] ) );
 				update_post_meta( $attendee->ID, 'tix_questions', $new_answers );
 
 				wp_update_post( $attendee ); // triggers save_attendee
@@ -4933,7 +4927,7 @@ class CampTix_Plugin {
 		// Clean things up before and after the shortcode.
 		$post->post_content = $this->shortcode_str;
 
-		if ( ! $this->options['refunds_enabled'] || ! isset( $_REQUEST['tix_access_token'] ) || empty( $_REQUEST['tix_access_token'] ) ) {
+		if ( ! $this->options['refunds_enabled'] || ! isset( $_REQUEST['tix_access_token'] ) || ! ctype_alnum( $_REQUEST['tix_access_token'] ) ) {
 			$this->error_flags['invalid_access_token'] = true;
 			$this->redirect_with_error_flags();
 			die();
@@ -5526,13 +5520,16 @@ class CampTix_Plugin {
 				continue;
 			}
 
-			$ticket = $this->tickets[$attendee_info['ticket_id']];
+			$ticket = $this->tickets[ $attendee_info['ticket_id'] ];
 			if ( ! $this->is_ticket_valid_for_purchase( $ticket->ID ) ) {
 				$this->error_flags['tickets_excess'] = true;
 				continue;
 			}
 
 			$attendee_info = array_map( 'trim', $attendee_info );
+
+			$attendee_info['first_name'] = sanitize_text_field( $attendee_info['first_name'] );
+			$attendee_info['last_name'] = sanitize_text_field( $attendee_info['last_name'] );
 
 			if ( empty( $attendee_info['first_name'] ) || empty( $attendee_info['last_name'] ) )
 				$this->error_flags['required_fields'] = true;
@@ -5541,14 +5538,14 @@ class CampTix_Plugin {
 				$this->error_flags['invalid_email'] = true;
 
 			$answers = array();
-			if ( isset( $_POST['tix_attendee_questions'][$i] ) ) {
+			if ( isset( $_POST['tix_attendee_questions'][ $i ] ) ) {
 				$questions = $this->get_sorted_questions( $ticket->ID );
 
 				foreach ( $questions as $question ) {
-					if ( isset( $_POST['tix_attendee_questions'][$i][$question->ID] ) )
-						$answers[$question->ID] = $_POST['tix_attendee_questions'][$i][$question->ID];
+					if ( isset( $_POST['tix_attendee_questions'][ $i ][ $question->ID ] ) )
+						$answers[ $question->ID ] = strip_tags( $_POST['tix_attendee_questions'][ $i ][ $question->ID ] );
 
-					if ( (bool) get_post_meta( $question->ID, 'tix_required', true ) && empty( $answers[$question->ID] ) ) {
+					if ( (bool) get_post_meta( $question->ID, 'tix_required', true ) && empty( $answers[ $question->ID ] ) ) {
 						$this->error_flags['required_fields'] = true;
 						break;
 					}
@@ -5573,7 +5570,7 @@ class CampTix_Plugin {
 		}
 
 		// @todo maybe check if email is one of the attendees emails
-		if ( isset( $_POST['tix_receipt_email_js'] ) && is_email( $_POST['tix_receipt_email_js']) )
+		if ( isset( $_POST['tix_receipt_email_js'] ) && is_email( $_POST['tix_receipt_email_js'] ) )
 			$receipt_email = $_POST['tix_receipt_email_js'];
 
 		if ( ! is_email( $receipt_email ) )
@@ -5626,8 +5623,8 @@ class CampTix_Plugin {
 
 				// Cash
 				update_post_meta( $post_id, 'tix_order_total', (float) $this->order['total'] );
-				update_post_meta( $post_id, 'tix_ticket_price', (float) $this->tickets[$attendee->ticket_id]->tix_price );
-				update_post_meta( $post_id, 'tix_ticket_discounted_price', (float) $this->tickets[$attendee->ticket_id]->tix_discounted_price );
+				update_post_meta( $post_id, 'tix_ticket_price', (float) $this->tickets[ $attendee->ticket_id ]->tix_price );
+				update_post_meta( $post_id, 'tix_ticket_discounted_price', (float) $this->tickets[ $attendee->ticket_id ]->tix_discounted_price );
 
 				// @todo sanitize questions
 				update_post_meta( $post_id, 'tix_questions', $attendee->answers );
