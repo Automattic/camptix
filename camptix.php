@@ -3937,7 +3937,7 @@ class CampTix_Plugin {
 		check_admin_referer( $nonce_action );
 
 		if ( isset( $_POST['tix_discount_price'], $_POST['tix_discount_percent'] ) ) {
-			$price = fleatval( $_POST['tix_discount_price'] );
+			$price = floatval( $_POST['tix_discount_price'] );
 			$percent = intval( $_POST['tix_discount_percent'] );
 			if ( $price > 0 ) { // a price discount has priority over % discount.
 				update_post_meta( $post_id, 'tix_discount_price', $price );
