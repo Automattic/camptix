@@ -4848,7 +4848,9 @@ class CampTix_Plugin {
 			$new_answers = array();
 			foreach ( $questions as $question ) {
 				if ( isset( $_POST['tix_ticket_questions'][ $question->ID ] ) ) {
-					$new_answers[ $question->ID ] = strip_tags( stripslashes_deep( $posted['tix_ticket_questions'][ $question->ID ] ) );
+					$answer = stripslashes_deep( $posted['tix_ticket_questions'][ $question->ID ] );
+					$answer = ( is_array( $answer ) ) ? array_map( 'strip_tags', $answer ) : strip_tags( $answer );
+					$new_answers[ $question->ID ] = $answer;
 				}
 
 				// @todo maybe check $user_values against $type and $question_values
