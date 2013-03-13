@@ -4656,8 +4656,6 @@ class CampTix_Plugin {
 		$access_token = $_REQUEST['tix_access_token'];
 		$is_refundable = false;
 
-		if ( ! $access)
-
 		// Let's get one attendee
  		$attendees = get_posts( array(
 			'posts_per_page' => 1,
