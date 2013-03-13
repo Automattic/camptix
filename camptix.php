@@ -5693,11 +5693,10 @@ class CampTix_Plugin {
 				return;
 			}
 
+			/**
+			 * @todo: Better error messaging for misconfigured payment methods
+			 */
 			$payment_method_obj->payment_checkout( $payment_token );
-
-			// Check whether there were any immediate payment errors.
-			if ( $this->error_flags )
-				return $this->form_attendee_info();
 
 		} else { // free beer for everyone!
 			$this->payment_result( $payment_token, self::PAYMENT_STATUS_COMPLETED );
