@@ -360,6 +360,56 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		 * @todo maybe check tix_paypal_token for security.
 		 */
 
+		$attendees = get_posts( array(
+			'posts_per_page' => 1,
+			'post_type' => 'tix_attendee',
+			'post_status' => 'any',
+			'meta_query' => array(
+				array(
+					'key' => 'tix_payment_token',
+					'compare' => '=',
+					'value' => $payment_token,
+					'type' => 'CHAR',
+				),
+			),
+		) );
+
+		if ( ! $attendees )
+			die( 'attendees not found' );
+
+		/**
+		 * It might be related to browsers, or it might be not, but PayPal has this thing
+		 * where it would complete a payment and then redirect the user to the payment_cancel
+		 * page. Here, before actually cancelling an attendee's ticket, we look up their
+		 * transaction ID, and if they have one, we check its status with PayPal.
+		 */
+
+		// Look for an associated transaction ID, in case this purchase has already been made.
+		$transaction_id = get_post_meta( $attendees[0]->ID, 'tix_transaction_id', true );
+		$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
+
+		if ( ! empty( $transaction_id ) ) {
+			$request = $this->request( array(
+				'METHOD' => 'GetTransactionDetails',
+				'TRANSACTIONID' => $transaction_id,
+			) );
+
+			$transaction_details = wp_parse_args( wp_remote_retrieve_body( $request ) );
+			if ( isset( $transaction_details['ACK'] ) && $transaction_details['ACK'] == 'Success' ) {
+				$status = $this->get_status_from_string( $transaction_details['PAYMENTSTATUS'] );
+				if ( in_array( $status, array(
+					CampTix_Plugin::PAYMENT_STATUS_PENDING,
+					CampTix_Plugin::PAYMENT_STATUS_COMPLETED,
+				) ) ) {
+
+					// False alarm. The payment has indeed been made and no need to cancel.
+					wp_safe_redirect( $camptix->get_access_tickets_link( $access_token ) );
+					die();
+				}
+			}
+		}
+
+		// Set the associated attendees to cancelled.
 		return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_CANCELLED );
 	}
 
