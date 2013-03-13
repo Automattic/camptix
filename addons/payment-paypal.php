@@ -403,6 +403,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				) ) ) {
 
 					// False alarm. The payment has indeed been made and no need to cancel.
+					$this->log( 'False alarm on payment_cancel. This transaction is valid.', 0, $transaction_details );
 					wp_safe_redirect( $camptix->get_access_tickets_link( $access_token ) );
 					die();
 				}
