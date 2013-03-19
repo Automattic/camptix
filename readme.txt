@@ -1,7 +1,7 @@
 === CampTix Event Ticketing ===
 Contributors: automattic, kovshenin, andreamiddleton
 Tags: ticketing, event ticketing
-Requires at least: 3.4
+Requires at least: 3.5
 Tested up to: 3.5.1
 Stable tag: 1.3
 License: GPLv2 or later
