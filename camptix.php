@@ -4456,7 +4456,7 @@ class CampTix_Plugin {
 			$this->error( __( 'The chosen receipt e-mail address is either empty or invalid.', 'camptix' ) );
 
 		if ( isset( $this->error_flags['payment_failed'] ) )
-			$this->error( __( 'An payment error has occurred, looks like chosen payment method is not responding. Please try again later.', 'camptix' ) );
+			$this->error( __( 'A payment error has occurred, looks like chosen payment method is not responding. Please try again later.', 'camptix' ) );
 
 		if ( isset( $this->error_flags['invalid_payment_method'] ) )
 			$this->error( __( 'You have selected an invalid payment method. Please try again.', 'camptix' ) );
@@ -5710,7 +5710,10 @@ class CampTix_Plugin {
 			/**
 			 * @todo: Better error messaging for misconfigured payment methods
 			 */
-			$payment_method_obj->payment_checkout( $payment_token );
+			$result = $payment_method_obj->payment_checkout( $payment_token );
+			if ( self::PAYMENT_STATUS_FAILED == $result ) {
+				return $this->form_attendee_info();
+			}
 
 		} else { // free beer for everyone!
 			$this->payment_result( $payment_token, self::PAYMENT_STATUS_COMPLETED );
@@ -6027,7 +6030,7 @@ class CampTix_Plugin {
 				if ( 'checkout' == get_query_var( 'tix_action' ) ) {
 					$this->error_flag( 'payment_failed' );
 					// $this->error_data['boogie'] = 'woogie'; // @todo Add error data and parse it
-					return;
+					return $result;
 
 				} else {
 					$this->error_flag( 'payment_failed' );
