@@ -3,7 +3,7 @@ Contributors: automattic, kovshenin, andreamiddleton
 Tags: ticketing, event ticketing
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 1.3
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,6 +44,12 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.3.1
+* Better escaping and sanitization
+* Better error messages during failed payments
+* Fixed a bug where the shortcode would display in plain text
+* Other minor bug fixes and clean ups
 
 = 1.3 =
 * Added the ability to edit confirmation e-mails
