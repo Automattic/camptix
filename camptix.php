@@ -6002,6 +6002,7 @@ class CampTix_Plugin {
 
 		// Send out the tickets and receipt if necessary.
 		$this->email_tickets( $payment_token, $from_status, $to_status );
+		do_action( 'camptix_payment_result', $payment_token, $result, $data );
 
 		// Let's make a clean exit out of all of this.
 		switch ( $result ) :
