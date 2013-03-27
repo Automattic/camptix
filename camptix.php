@@ -927,6 +927,7 @@ class CampTix_Plugin {
 				'edit_post' => $this->caps['manage_attendees'],
 				'delete_post' => $this->caps['delete_attendees'],
 				'read_post' => $this->caps['manage_attendees'],
+				'create_posts' => 'do_not_allow',
 			),
 		) );
 
