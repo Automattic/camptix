@@ -624,7 +624,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'VERSION' => '88.0', // https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_PreviousAPIVersionsNVP
 		), (array) $payload );
 
-		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => 20 ) );
+		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => apply_filters( 'camptix_paypal_timeout', 20 ) ) );
 	}
 
 	/**
@@ -636,7 +636,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		$url = $options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr';
 		$payload = 'cmd=_notify-validate&' . http_build_query( $payload );
-		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => 20 ) );
+		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => apply_filters( 'camptix_paypal_timeout', 20 ) ) );
 	}
 }
 
