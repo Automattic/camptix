@@ -1063,6 +1063,7 @@ class CampTix_Plugin {
 			'refund_all_enabled' => false,
 			'archived' => false,
 			'payment_methods' => array(),
+			'remaining_visible' => true,
 
 			'email_template_single_purchase' => __( "Hi there!\n\nYou have purchased the following ticket:\n\n[receipt]\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
 			'email_template_multiple_purchase' => __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
@@ -1379,6 +1380,7 @@ class CampTix_Plugin {
 				add_settings_section( 'general', __( 'General Configuration', 'camptix' ), array( $this, 'menu_setup_section_general' ), 'camptix_options' );
 				$this->add_settings_field_helper( 'event_name', __( 'Event Name', 'camptix' ), 'field_text' );
 				$this->add_settings_field_helper( 'currency', __( 'Currency', 'camptix' ), 'field_currency' );
+				$this->add_settings_field_helper( 'remaining_visible', __( 'Number of tickets visible', 'camptix' ), 'field_yesno');
 				break;
 			case 'payment':
 				foreach ( $this->get_available_payment_methods() as $key => $payment_method ) {
@@ -1473,6 +1475,9 @@ class CampTix_Plugin {
 
 		if ( isset( $input['currency'] ) && array_key_exists( $input['currency'], $this->get_currencies() ) )
 			$output['currency'] = $input['currency'];
+
+		if ( isset( $input['remaining_visible'] ) )
+			$output['remaining_visible'] = $input['remaining_visible'];
 
 		$yesno_fields = array();
 
@@ -4317,7 +4322,7 @@ class CampTix_Plugin {
 					<tr>
 						<th class="tix-column-description"><?php _e( 'Description', 'camptix' ); ?></th>
 						<th class="tix-column-price"><?php _e( 'Price', 'camptix' ); ?></th>
-						<th class="tix-column-remaining"><?php _e( 'Remaining', 'camptix' ); ?></th>
+						<?php if ($this->options['remaining_visible']) : ?><th class="tix-column-remaining"><?php _e( 'Remaining', 'camptix' ); ?></th><?php endif; ?>
 						<th class="tix-column-quantity"><?php _e( 'Quantity', 'camptix' ); ?></th>
 					</tr>
 				</thead>
@@ -4361,7 +4366,9 @@ class CampTix_Plugin {
 									Free
 								<?php endif; ?>
 							</td>
-							<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo $ticket->tix_remaining; ?></td>
+							<?php if ($this->options['remaining_visible']) : ?>
+								<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo $ticket->tix_remaining; ?></td>
+							<?php endif; ?>
 							<td class="tix-column-quantity" style="vertical-align: middle;">
 								<select name="tix_tickets_selected[<?php echo $ticket->ID; ?>]">
 									<?php foreach ( range( 0, $max ) as $value ) : ?>
