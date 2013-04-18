@@ -6255,15 +6255,21 @@ class CampTix_Plugin {
 		return ( $a < $b ) ? 1 : -1;
 	}
 
-	public function notice( $notice ) {
+	public function notice( $notice, $raw = false ) {
+		if ( $raw )
+			$notice = 'raw:'.$notice;
 		$this->notices[] = $notice;
 	}
 
-	public function error( $error ) {
+	public function error( $error, $raw = false ) {
+		if ( $raw )
+			$error = 'raw:'.$error;
 		$this->errors[] = $error;
 	}
 
-	public function info( $info ) {
+	public function info( $info, $raw = false ) {
+		if ( $raw )
+			$info = 'raw:'.$info;
 		$this->infos[] = $info;
 	}
 
@@ -6280,7 +6286,10 @@ class CampTix_Plugin {
 				if ( in_array( $message, $printed ) ) continue;
 
 				$printed[] = $message;
-				echo '<p class="tix-error">' . esc_html( $message ) . '</p>';
+				if ( substr($message, 0, 4) === 'raw:' )
+					echo '<p class="tix-error">' .   substr($message, 4, 0) . '</p>';
+				else
+					echo '<p class="tix-error">' . esc_html( $message ) . '</p>';
 			}
 			echo '</div><!-- #tix-errors -->';
 		}
@@ -6291,7 +6300,10 @@ class CampTix_Plugin {
 				if ( in_array( $message, $printed ) ) continue;
 
 				$printed[] = $message;
-				echo '<p class="tix-notice">' . esc_html( $message ) . '</p>';
+				if ( substr($message, 0, 4) === 'raw:' )
+					echo '<p class="tix-notice">' .  substr($message, 4) . '</p>';
+				else
+					echo '<p class="tix-notice">' . esc_html( $message ) . '</p>';
 			}
 			echo '</div><!-- #tix-notices -->';
 		}
@@ -6302,7 +6314,10 @@ class CampTix_Plugin {
 				if ( in_array( $message, $printed ) ) continue;
 
 				$printed[] = $message;
-				echo '<p class="tix-info">' . esc_html( $message ) . '</p>';
+				if ( substr($message, 0, 4) === 'raw:' )
+					echo '<p class="tix-info">' .   substr($message, 4) . '</p>';
+				else
+					echo '<p class="tix-info">' . esc_html( $message ) . '</p>';
 			}
 			echo '</div><!-- #tix-infos -->';
 		}
