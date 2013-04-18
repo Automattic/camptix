@@ -4693,8 +4693,10 @@ class CampTix_Plugin {
 			die();
 		}
 
-		if ( $attendees[0]->post_status == 'pending' )
+		if ( $attendees[0]->post_status == 'pending' ) {
 			$this->notice( __( 'Please note that the payment for this set of tickets is still pending.', 'camptix' ) );
+			do_action('camptix_payment_pending', $attendees[0]);			
+		}
 		?>
 		<div id="tix">
 		<?php do_action( 'camptix_notices' ); ?>
@@ -4832,8 +4834,10 @@ class CampTix_Plugin {
 			$this->redirect_with_error_flags();
 		}
 
-		if ( $attendee->post_status == 'pending' )
+		if ( $attendee->post_status == 'pending' ) {
 			$this->notice( __( 'Please note that the payment for this ticket is still pending.', 'camptix' ) );
+			do_action('camptix_payment_pending', $attendee);
+		}
 
 		$ticket = get_post( $ticket_id );
 		$questions = $this->get_sorted_questions( $ticket->ID );
