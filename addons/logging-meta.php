@@ -48,7 +48,7 @@ class CampTix_Addon_Logging_Meta extends CampTix_Addon {
 		);
 
 		foreach ( $post_types as $post_type )
-			add_meta_box( 'tix_log', 'CampTix Meta Log', array( $this, 'metabox_log' ), $post_type, 'normal' );
+			add_meta_box( 'tix_log', __( 'CampTix Meta Log', 'camptix' ), array( $this, 'metabox_log' ), $post_type, 'normal' );
 	}
 
 	/**
@@ -67,7 +67,7 @@ class CampTix_Addon_Logging_Meta extends CampTix_Addon {
 			$rows[] = array( date( 'Y-m-d H:i:s', intval( $entry['timestamp'] ) ), esc_html( $entry['message'] ) );
 
 		if ( count( $rows ) < 1 )
-			$rows[] = array( 'No log entries yet.', '' );
+			$rows[] = array( __( 'No log entries yet.', 'camptix' ), '' );
 
 		$camptix->table( $rows, 'tix-log-table' );
 	}

@@ -23,7 +23,7 @@ class CampTix_Addon_Twitter_Field extends CampTix_Addon {
 
 	function question_field_types( $types ) {
 		return array_merge( $types, array(
-			'twitter' => 'Twitter (public)',
+			'twitter' => __( 'Twitter (public)', 'camptix' ),
 		) );
 	}
 

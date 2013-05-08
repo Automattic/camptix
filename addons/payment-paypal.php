@@ -575,11 +575,6 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		} else {
 			$this->log( 'Error during SetExpressCheckout.', null, $response );
 			$error_code = isset( $response['L_ERRORCODE0'] ) ? $response['L_ERRORCODE0'] : 0;
-			$error_message = isset( $response['L_LONGMESSAGE0'] ) ? $response['L_LONGMESSAGE0'] : '';
-
-			if ( ! empty( $error_message ) )
-				$camptix->error( sprintf( __( 'PayPal error: %s (%d)', 'camptix' ), $error_message, $error_code ) );
-
 			return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, array(
 				'error_code' => $error_code,
 				'raw' => $request,
@@ -597,8 +592,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		$i = 0;
 		foreach ( $order['items'] as $item ) {
-			$payload['L_PAYMENTREQUEST_0_NAME' . $i] = substr( strip_tags( $event_name . ': ' . $item['name'] ), 0, 127 );
-			$payload['L_PAYMENTREQUEST_0_DESC' . $i] = substr( strip_tags( $item['description'] ), 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_NAME' . $i] = substr( $event_name . ': ' . $item['name'], 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_DESC' . $i] = substr( $item['description'], 0, 127 );
 			$payload['L_PAYMENTREQUEST_0_NUMBER' . $i] = $item['id'];
 			$payload['L_PAYMENTREQUEST_0_AMT' . $i] = $item['price'];
 			$payload['L_PAYMENTREQUEST_0_QTY' . $i] = $item['quantity'];
@@ -629,7 +624,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'VERSION' => '88.0', // https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_PreviousAPIVersionsNVP
 		), (array) $payload );
 
-		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => apply_filters( 'camptix_paypal_timeout', 20 ) ) );
+		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => 20 ) );
 	}
 
 	/**
@@ -641,7 +636,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		$url = $options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr';
 		$payload = 'cmd=_notify-validate&' . http_build_query( $payload );
-		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => apply_filters( 'camptix_paypal_timeout', 20 ) ) );
+		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => 20 ) );
 	}
 }
 
