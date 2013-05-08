@@ -19,7 +19,7 @@ class CampTix_Addon_URL_Field extends CampTix_Addon {
 
 	function question_field_types( $types ) {
 		return array_merge( $types, array(
-			'url' => 'URL (public)',
+			'url' => __( 'URL (public)', 'camptix' ),
 		) );
 	}
 
