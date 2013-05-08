@@ -56,8 +56,8 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		if ( in_array( $this->camptix_options['currency'], $this->supported_currencies ) )
 			return $this->field_yesno( $args );
 
+		_e( 'Disabled', 'camptix' );
 		?>
-		Disabled
 		<p class="description"><?php printf( __( '%s is not supported by this payment method.', 'camptix' ), '<code>' . $this->camptix_options['currency'] . '</code>' ); ?></p>
 		<?php
 	}
