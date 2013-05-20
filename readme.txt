@@ -45,7 +45,7 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 
 == Changelog ==
 
-= 1.3.1
+= 1.3.1 =
 * Better escaping and sanitization
 * Better error messages during failed payments
 * Fixed a bug where the shortcode would display in plain text
