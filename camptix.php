@@ -2909,7 +2909,7 @@ class CampTix_Plugin {
 		}
 
 		foreach ( $attendees as $attendee ) {
-			// If another cron instace has this, or same txn has been refunded.
+			// If another cron instance has this, or same txn has been refunded.
 			if ( ! get_post_meta( $attendee->ID, 'tix_pending_refund', true ) )
 				continue;
 
