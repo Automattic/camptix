@@ -4943,6 +4943,11 @@ class CampTix_Plugin {
 				</table>
 				<p>
 					<input type="submit" value="<?php esc_attr_e( 'Save Attendee Information', 'camptix' ); ?>" style="float: right; cursor: pointer;" />
+
+					<?php if ( (bool) $this->options['refunds_enabled'] && strtotime( $this->options['refunds_date_end'] ) > current_time( 'timestamp' ) ) : ?>
+						<input type="submit" value="<?php esc_attr_e( 'Cancel and Refund My Ticket', 'camptix' ); ?>" style="float: right; cursor: pointer; margin-right: 20px;" />
+					<?php endif; ?>
+
 					<br class="tix-clear" />
 				</p>
 			</form>
