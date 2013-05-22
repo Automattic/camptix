@@ -613,6 +613,37 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		return $payload;
 	}
 
+	function payment_refund( $payment_token ) {		// @todo update param? if so, update in base class too
+		return true;
+
+		/*
+		$payload = array(
+			'METHOD'        => 'RefundTransaction',
+			'TRANSACTIONID' => $transaction['TRANSACTIONID'],
+			'REFUNDTYPE'    => 'Full',
+		);
+
+		$request  = $this->request( $payload );
+		$response = wp_parse_args( wp_remote_retrieve_body( $request ) );
+
+
+		$txn = wp_parse_args( wp_remote_retrieve_body( $this->paypal_request( $payload ) ) );
+		if ( isset( $txn['ACK'], $txn['REFUNDTRANSACTIONID'] ) && $txn['ACK'] == 'Success' ) {
+			$refund_txn_id = $txn['REFUNDTRANSACTIONID'];
+			foreach ( $attendees as $attendee ) {
+				$this->log( sprintf( 'Refunded %s by user request in %s.', $transaction['TRANSACTIONID'], $refund_txn_id ), $attendee->ID, $txn, 'refund' );
+				$this->log( 'Refund reason attached with data.', $attendee->ID, $reason, 'refund' );
+				$attendee->post_status = 'refund';
+				wp_update_post( $attendee );
+			}
+
+		}
+		else {
+			return false;
+		}
+		*/
+	}
+
 	/**
 	 * Use this method to fire a POST request to the PayPal API.
 	 */

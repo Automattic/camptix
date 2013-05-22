@@ -84,6 +84,10 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		die( __FUNCTION__ . ' not implemented' );
 	}
 
+	function payment_refund( $payment_token ) {
+		die( __FUNCTION__ . ' not implemented' );
+	}
+
 	function payment_settings_fields() {
 		return;
 	}
