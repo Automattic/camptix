@@ -4956,8 +4956,6 @@ class CampTix_Plugin {
 	function form_refund_request() {
 		global $post;
 
-		die( 'needs implementation' );
-
 		// Clean things up before and after the shortcode.
 		$post->post_content = $this->shortcode_str;
 
@@ -5004,10 +5002,12 @@ class CampTix_Plugin {
 		$tickets = array();
 
 		foreach ( $attendees as $attendee ) {
-			$txn_id = get_post_meta( $attendee->ID, 'tix_paypal_transaction_id', true );
+			$txn_id = get_post_meta( $attendee->ID, 'tix_transaction_id', true );
 			if ( $txn_id ) {
-				$transactions[$txn_id] = get_post_meta( $attendee->ID, 'tix_paypal_transaction_details', true );
+				$transactions[$txn_id] = get_post_meta( $attendee->ID, 'tix_transaction_details', true );
 				$order_total = get_post_meta( $attendee->ID, 'tix_order_total', true );
+				$receipt_email = get_post_meta( $attendee->ID, 'tix_receipt_email', true );
+				$payment_method = get_post_meta( $attendee->ID, 'tix_payment_method', true );
 			}
 			$ticket_id = get_post_meta( $attendee->ID, 'tix_ticket_id', true );
 
@@ -5025,7 +5025,7 @@ class CampTix_Plugin {
 		}
 
 		$transaction = array_shift( $transactions );
-		if ( ! isset( $transaction['EMAIL'], $transaction['TRANSACTIONID'], $transaction['PAYMENTSTATUS'], $transaction['AMT'], $transaction['CURRENCYCODE'] ) ) {
+		if ( ! isset( $receipt_email, $transaction['raw']['PAYMENTINFO_0_TRANSACTIONID'], $transaction['raw']['PAYMENTINFO_0_PAYMENTSTATUS'], $transaction['raw']['PAYMENTINFO_0_AMT'], $transaction['raw']['PAYMENTINFO_0_CURRENCYCODE'] ) ) {
 			$this->error_flags['cannot_refund'] = true;
 			$this->redirect_with_error_flags();
 			die();
@@ -5041,24 +5041,32 @@ class CampTix_Plugin {
 				$this->error( __( 'You have to agree to the terms to request a refund.', 'camptix' ) );
 			} else {
 
-				$payload = array(
-					'METHOD' => 'RefundTransaction',
-					'TRANSACTIONID' => $transaction['TRANSACTIONID'],
-					'REFUNDTYPE' => 'Full',
-				);
+				$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
 
-				$txn = wp_parse_args( wp_remote_retrieve_body( $this->paypal_request( $payload ) ) );
-				if ( isset( $txn['ACK'], $txn['REFUNDTRANSACTIONID'] ) && $txn['ACK'] == 'Success' ) {
-					$refund_txn_id = $txn['REFUNDTRANSACTIONID'];
+				// Bail if a payment method does not exist.
+				if ( ! $payment_method_obj ) {
+					$this->error_flags['cannot_refund'] = true;
+					$this->redirect_with_error_flags();
+					die();
+				}
+
+				/**
+				 * @todo: Better error messaging for misconfigured payment methods
+				 */
+
+				// Attempt to process the refund transaction
+				$result = $payment_method_obj->payment_refund( $payment_token );	// need to create method in base and paypal classes. pass diff param?
+				if ( 'success????' == $result ) {									// update
+					$refund_txn_id = $txn['REFUNDTRANSACTIONID'];					// update
 					foreach ( $attendees as $attendee ) {
-						$this->log( sprintf( 'Refunded %s by user request in %s.', $transaction['TRANSACTIONID'], $refund_txn_id ), $attendee->ID, $txn, 'refund' );
+						$this->log( sprintf( 'Refunded %s by user request in %s.', $transaction['raw']['PAYMENTINFO_0_TRANSACTIONID'], $refund_txn_id ), $attendee->ID, $txn, 'refund' );
 						$this->log( 'Refund reason attached with data.', $attendee->ID, $reason, 'refund' );
 						$attendee->post_status = 'refund';
 						wp_update_post( $attendee );
 					}
 
 					$this->info( __( 'Your tickets have been successfully refunded.', 'camptix' ) );
-					ob_end_clean();
+					ob_end_clean();													// don't think this should be here
 					return $this->form_refund_success();
 				} else {
 					$this->error( __( 'Can not refund the transaction at this time. Please try again later.', 'camptix' ) );
@@ -5083,11 +5091,11 @@ class CampTix_Plugin {
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'E-mail', 'camptix' ); ?></td>
-							<td class="tix-right"><?php echo esc_html( $transaction['EMAIL'] ); ?></td>
+							<td class="tix-right"><?php echo esc_html( $receipt_email ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Original Payment', 'camptix' ); ?></td>
-							<td class="tix-right"><?php printf( "%s %s", $transaction['CURRENCYCODE'], $transaction['AMT'] ); ?></td>
+							<td class="tix-right"><?php printf( "%s %s", $transaction['raw']['PAYMENTINFO_0_CURRENCYCODE'], $transaction['raw']['PAYMENTINFO_0_AMT'] ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Purchased Tickets', 'camptix' ); ?></td>
@@ -5099,7 +5107,7 @@ class CampTix_Plugin {
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Refund Amount', 'camptix' ); ?></td>
-							<td class="tix-right"><?php printf( "%s %s", $transaction['CURRENCYCODE'], $transaction['AMT'] ); ?></td>
+							<td class="tix-right"><?php printf( "%s %s", $transaction['raw']['PAYMENTINFO_0_CURRENCYCODE'], $transaction['raw']['PAYMENTINFO_0_AMT'] ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Refund Reason', 'camptix' ); ?></td>
@@ -5108,7 +5116,7 @@ class CampTix_Plugin {
 
 					</tbody>
 				</table>
-				<p class="tix-description"><?php _e( 'Refunds can take up to several days to process. All purchased tickets will be cancelled. Partial refunds and refunds to a different account that the original purchaser, are unavailable. You have to agree to these terms before requesting a refund.', 'camptix' ); ?></p>
+				<p class="tix-description"><?php _e( 'Refunds can take up to several days to process. All purchased tickets will be cancelled. Partial refunds and refunds to a different account than the original purchaser, are unavailable. You have to agree to these terms before requesting a refund.', 'camptix' ); ?></p>
 				<p class="tix-submit">
 					<label><input type="checkbox" name="tix_refund_request_confirmed" value="1"> <?php _e( 'I agree to the above terms', 'camptix' ); ?></label>
 					<input type="submit" value="<?php esc_attr_e( 'Send Request', 'camptix' ); ?>" />
@@ -5141,11 +5149,8 @@ class CampTix_Plugin {
 
 	/**
 	 * Return true if an attendee_id is refundable.
-	 * @todo implement
 	 */
 	function is_refundable( $attendee_id ) {
-		return false;
-
 		if ( ! $this->options['refunds_enabled'] )
 			return false;
 
@@ -5159,7 +5164,7 @@ class CampTix_Plugin {
 			return false;
 
 		$attendee = get_post( $attendee_id );
-		if ( $attendee->post_status == 'publish' && (float) get_post_meta( $attendee->ID, 'tix_order_total', true ) > 0 && get_post_meta( $attendee->ID, 'tix_paypal_transaction_id', true ) )
+		if ( $attendee->post_status == 'publish' && (float) get_post_meta( $attendee->ID, 'tix_order_total', true ) > 0 && get_post_meta( $attendee->ID, 'tix_transaction_id', true ) )
 			return true;
 
 		return false;
