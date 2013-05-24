@@ -48,6 +48,7 @@ class CampTix_Plugin {
 	const PAYMENT_STATUS_FAILED = 4;
 	const PAYMENT_STATUS_TIMEOUT = 5;
 	const PAYMENT_STATUS_REFUNDED = 6;
+	CONST PAYMENT_STATUS_REFUND_FAILED = 7;
 
 	/**
 	 * Fired as soon as this file is loaded, don't do anything
@@ -5004,10 +5005,13 @@ class CampTix_Plugin {
 		foreach ( $attendees as $attendee ) {
 			$txn_id = get_post_meta( $attendee->ID, 'tix_transaction_id', true );
 			if ( $txn_id ) {
-				$transactions[$txn_id] = get_post_meta( $attendee->ID, 'tix_transaction_details', true );
-				$order_total = get_post_meta( $attendee->ID, 'tix_order_total', true );
-				$receipt_email = get_post_meta( $attendee->ID, 'tix_receipt_email', true );
-				$payment_method = get_post_meta( $attendee->ID, 'tix_payment_method', true );
+				$transactions[ $txn_id ] 					= get_post_meta( $attendee->ID, 'tix_transaction_details', true );
+				$transactions[ $txn_id ]['transaction_id']	= $txn_id;
+				$transactions[ $txn_id ]['payment_amount']	= get_post_meta( $attendee->ID, 'tix_order_total', true );
+				$transactions[ $txn_id ]['receipt_email']	= get_post_meta( $attendee->ID, 'tix_receipt_email', true );
+				$transactions[ $txn_id ]['payment_method']	= get_post_meta( $attendee->ID, 'tix_payment_method', true );
+				$transactions[ $txn_id ]['payment_token']	= get_post_meta( $attendee->ID, 'tix_payment_token', true );
+				$transactions[ $txn_id ]['currency_code']	= $this->get_order_currency_code( $attendee->ID, $transactions[ $txn_id ]['payment_method'] );
 			}
 			$ticket_id = get_post_meta( $attendee->ID, 'tix_ticket_id', true );
 
@@ -5015,17 +5019,16 @@ class CampTix_Plugin {
 				$tickets[$ticket_id]++;
 			else
 				$tickets[$ticket_id] = 1;
-
 		}
 
-		if ( count( $transactions ) != 1 || $order_total <= 0 ) {
+		if ( count( $transactions ) != 1 || $transactions[ $txn_id ]['payment_amount'] <= 0 ) {
 			$this->error_flags['cannot_refund'] = true;
 			$this->redirect_with_error_flags();
 			die();
 		}
 
 		$transaction = array_shift( $transactions );
-		if ( ! isset( $receipt_email, $transaction['raw']['PAYMENTINFO_0_TRANSACTIONID'], $transaction['raw']['PAYMENTINFO_0_PAYMENTSTATUS'], $transaction['raw']['PAYMENTINFO_0_AMT'], $transaction['raw']['PAYMENTINFO_0_CURRENCYCODE'] ) ) {
+		if ( ! $transaction['receipt_email'] || ! $transaction['transaction_id'] || ! $transaction['payment_amount'] || ! $transaction['currency_code'] ) {
 			$this->error_flags['cannot_refund'] = true;
 			$this->redirect_with_error_flags();
 			die();
@@ -5041,7 +5044,7 @@ class CampTix_Plugin {
 				$this->error( __( 'You have to agree to the terms to request a refund.', 'camptix' ) );
 			} else {
 
-				$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
+				$payment_method_obj = $this->get_payment_method_by_id( $transaction['payment_method'] );
 
 				// Bail if a payment method does not exist.
 				if ( ! $payment_method_obj ) {
@@ -5055,18 +5058,14 @@ class CampTix_Plugin {
 				 */
 
 				// Attempt to process the refund transaction
-				$result = $payment_method_obj->payment_refund( $payment_token );	// need to create method in base and paypal classes. pass diff param?
-				if ( 'success????' == $result ) {									// update
-					$refund_txn_id = $txn['REFUNDTRANSACTIONID'];					// update
+				$result = $payment_method_obj->payment_refund( $transaction['payment_token'], $transaction['transaction_id'] );
+				if ( CampTix_Plugin::PAYMENT_STATUS_REFUNDED == $result ) {
 					foreach ( $attendees as $attendee ) {
-						$this->log( sprintf( 'Refunded %s by user request in %s.', $transaction['raw']['PAYMENTINFO_0_TRANSACTIONID'], $refund_txn_id ), $attendee->ID, $txn, 'refund' );
+						update_post_meta( $attendee->ID, 'tix_refund_reason', $reason );
 						$this->log( 'Refund reason attached with data.', $attendee->ID, $reason, 'refund' );
-						$attendee->post_status = 'refund';
-						wp_update_post( $attendee );
 					}
 
 					$this->info( __( 'Your tickets have been successfully refunded.', 'camptix' ) );
-					ob_end_clean();													// don't think this should be here
 					return $this->form_refund_success();
 				} else {
 					$this->error( __( 'Can not refund the transaction at this time. Please try again later.', 'camptix' ) );
@@ -5091,11 +5090,11 @@ class CampTix_Plugin {
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'E-mail', 'camptix' ); ?></td>
-							<td class="tix-right"><?php echo esc_html( $receipt_email ); ?></td>
+							<td class="tix-right"><?php echo esc_html( $transaction['receipt_email'] ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Original Payment', 'camptix' ); ?></td>
-							<td class="tix-right"><?php printf( "%s %s", $transaction['raw']['PAYMENTINFO_0_CURRENCYCODE'], $transaction['raw']['PAYMENTINFO_0_AMT'] ); ?></td>
+							<td class="tix-right"><?php printf( "%s %s", $transaction['currency_code'], $transaction['payment_amount'] ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Purchased Tickets', 'camptix' ); ?></td>
@@ -5107,7 +5106,7 @@ class CampTix_Plugin {
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Refund Amount', 'camptix' ); ?></td>
-							<td class="tix-right"><?php printf( "%s %s", $transaction['raw']['PAYMENTINFO_0_CURRENCYCODE'], $transaction['raw']['PAYMENTINFO_0_AMT'] ); ?></td>
+							<td class="tix-right"><?php printf( "%s %s", $transaction['currency_code'], $transaction['payment_amount'] ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Refund Reason', 'camptix' ); ?></td>
@@ -5128,6 +5127,29 @@ class CampTix_Plugin {
 		$contents = ob_get_contents();
 		ob_end_clean();
 		return $contents;
+	}
+
+	/**
+	 * Retrieves the currency code associated with the attendee's order
+	 * In the past, the currency code wasn't saved in the database by the payment methods and was only accessible through the raw payment gateway response.
+	 * This method attempts to retrieve the code from the database, but falls back to using the raw response if necessary.
+	 */
+	function get_order_currency_code( $attendee_id, $payment_method )
+	{
+		$currency_code = get_post_meta( $attendee_id, 'tix_currency_code', true );
+
+		if ( ! $currency_code ) {
+			$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
+			if ( $payment_method_obj ) {
+				$currency_code = $payment_method_obj->get_order_currency_code( $attendee_id );
+			}
+		}
+
+		if ( ! $currency_code ) {
+			$currency_code = '';
+		}
+
+		return $currency_code;
 	}
 
 	function form_refund_success() {
@@ -5653,6 +5675,7 @@ class CampTix_Plugin {
 				update_post_meta( $post_id, 'tix_payment_token', $payment_token );
 				update_post_meta( $post_id, 'tix_edit_token', $edit_token );
 				update_post_meta( $post_id, 'tix_payment_method', $payment_method );
+				update_post_meta( $post_id, 'tix_currency_code', $this->options['currency'] );
 				update_post_meta( $post_id, 'tix_order', $this->order );
 
 				update_post_meta( $post_id, 'tix_timestamp', time() );
@@ -5978,6 +6001,13 @@ class CampTix_Plugin {
 			if ( self::PAYMENT_STATUS_REFUNDED == $result ) {
 				$attendee->post_status = 'refund';
 				wp_update_post( $attendee );
+				update_post_meta( $attendee->ID, 'tix_refund_transaction_id', $data['refund_transaction_id'] );
+				update_post_meta( $attendee->ID, 'tix_refund_transaction_details', $data['refund_transaction_details'] );
+				$this->log( sprintf( 'Refunded %s by user request in %s.', $transaction_id, $data['refund_transaction_id'] ), $attendee->ID, $data, 'refund' );
+			}
+
+			if ( self::PAYMENT_STATUS_REFUND_FAILED == $result ) {
+				return $result;
 			}
 
 			$this->log( sprintf( 'Payment result for %s.', $transaction_id ), $attendee->ID, $data );
@@ -6056,8 +6086,7 @@ class CampTix_Plugin {
 				break;
 
 			case self::PAYMENT_STATUS_REFUNDED :
-				// @todo what do we do when a purchase is refunded?
-				die();
+				return $result;
 				break;
 
 			default:
@@ -6140,6 +6169,26 @@ class CampTix_Plugin {
 		}
 
 		/**
+		 * If an order with multiple attendees is refunded, let all of them know
+		 * Don't send one to the attendee who placed the order, though, because they'll get a separate notification
+		 */
+		if ( count( $attendees ) > 1 && 'publish' == $from_status && 'refund' == $to_status ) {
+			foreach ( $attendees as $attendee ) {
+				$attendee_email = get_post_meta( $attendee->ID, 'tix_email', true );
+
+				if ( $attendee_email != $receipt_email ) {
+					$subject = sprintf( __( "Your Refund for %s", 'camptix' ), $this->options['event_name'] );
+					$content = sprintf( __( "Hey there!\n\nYour ticket for %s has been refunded. If you change your mind and still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $this->get_tickets_url() );
+
+					$this->log( sprintf( 'Sending refund e-mail notification to %s.', $attendee_email ), $attendees[0]->ID );
+					$this->wp_mail( $attendee_email, $subject, $content );
+
+					do_action( 'camptix_refund_emailed', $attendee->ID );
+				}
+			}
+		}
+
+		/**
 		 * Let's now e-mail the receipt, directly after a purchas has been made.
 		 */
 		if ( $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
@@ -6202,6 +6251,14 @@ class CampTix_Plugin {
 			$content = sprintf( __( "Hey there!\n\nWe're so sorry, but it looks like your payment for %s has failed! Please check your payment transactions for more details. If you still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $this->get_tickets_url() );
 
 			$this->log( sprintf( 'Sending failed e-mail notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
+			$this->wp_mail( $receipt_email, $subject, $content );
+		}
+
+		if ( $from_status == 'publish' && $to_status == 'refund' ) {
+			$subject = sprintf( __( "Your Refund for %s", 'camptix' ), $this->options['event_name'] );
+			$content = sprintf( __( "Hey there!\n\nYour refund for %s has been completed. If you change your mind and still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $this->get_tickets_url() );
+
+			$this->log( sprintf( 'Sending refund e-mail notification to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 
