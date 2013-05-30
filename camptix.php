@@ -48,7 +48,7 @@ class CampTix_Plugin {
 	const PAYMENT_STATUS_FAILED = 4;
 	const PAYMENT_STATUS_TIMEOUT = 5;
 	const PAYMENT_STATUS_REFUNDED = 6;
-	CONST PAYMENT_STATUS_REFUND_FAILED = 7;
+	const PAYMENT_STATUS_REFUND_FAILED = 7;
 
 	/**
 	 * Fired as soon as this file is loaded, don't do anything
