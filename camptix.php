@@ -5005,13 +5005,13 @@ class CampTix_Plugin {
 		foreach ( $attendees as $attendee ) {
 			$txn_id = get_post_meta( $attendee->ID, 'tix_transaction_id', true );
 			if ( $txn_id ) {
-				$transactions[ $txn_id ] 					= get_post_meta( $attendee->ID, 'tix_transaction_details', true );
-				$transactions[ $txn_id ]['transaction_id']	= $txn_id;
-				$transactions[ $txn_id ]['payment_amount']	= get_post_meta( $attendee->ID, 'tix_order_total', true );
-				$transactions[ $txn_id ]['receipt_email']	= get_post_meta( $attendee->ID, 'tix_receipt_email', true );
-				$transactions[ $txn_id ]['payment_method']	= get_post_meta( $attendee->ID, 'tix_payment_method', true );
-				$transactions[ $txn_id ]['payment_token']	= get_post_meta( $attendee->ID, 'tix_payment_token', true );
-				$transactions[ $txn_id ]['currency_code']	= $this->get_order_currency_code( $attendee->ID, $transactions[ $txn_id ]['payment_method'] );
+				$transactions[ $txn_id ]                   = get_post_meta( $attendee->ID, 'tix_transaction_details', true );
+				$transactions[ $txn_id ]['transaction_id'] = $txn_id;
+				$transactions[ $txn_id ]['payment_amount'] = get_post_meta( $attendee->ID, 'tix_order_total', true );
+				$transactions[ $txn_id ]['receipt_email']  = get_post_meta( $attendee->ID, 'tix_receipt_email', true );
+				$transactions[ $txn_id ]['payment_method'] = get_post_meta( $attendee->ID, 'tix_payment_method', true );
+				$transactions[ $txn_id ]['payment_token']  = get_post_meta( $attendee->ID, 'tix_payment_token', true );
+				$transactions[ $txn_id ]['currency_code']  = $this->get_order_currency_code( $attendee->ID, $transactions[ $txn_id ]['payment_method'] );
 			}
 			$ticket_id = get_post_meta( $attendee->ID, 'tix_ticket_id', true );
 
@@ -5134,8 +5134,7 @@ class CampTix_Plugin {
 	 * In the past, the currency code wasn't saved in the database by the payment methods and was only accessible through the raw payment gateway response.
 	 * This method attempts to retrieve the code from the database, but falls back to using the raw response if necessary.
 	 */
-	function get_order_currency_code( $attendee_id, $payment_method )
-	{
+	function get_order_currency_code( $attendee_id, $payment_method ) {
 		$currency_code = get_post_meta( $attendee_id, 'tix_currency_code', true );
 
 		if ( ! $currency_code ) {

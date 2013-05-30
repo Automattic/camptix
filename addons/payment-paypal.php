@@ -599,11 +599,11 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		$i = 0;
 		foreach ( $order['items'] as $item ) {
-			$payload['L_PAYMENTREQUEST_0_NAME' . $i] = substr( strip_tags( $event_name . ': ' . $item['name'] ), 0, 127 );
-			$payload['L_PAYMENTREQUEST_0_DESC' . $i] = substr( strip_tags( $item['description'] ), 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_NAME' . $i]   = substr( strip_tags( $event_name . ': ' . $item['name'] ), 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_DESC' . $i]   = substr( strip_tags( $item['description'] ), 0, 127 );
 			$payload['L_PAYMENTREQUEST_0_NUMBER' . $i] = $item['id'];
-			$payload['L_PAYMENTREQUEST_0_AMT' . $i] = $item['price'];
-			$payload['L_PAYMENTREQUEST_0_QTY' . $i] = $item['quantity'];
+			$payload['L_PAYMENTREQUEST_0_AMT' . $i]    = $item['price'];
+			$payload['L_PAYMENTREQUEST_0_QTY' . $i]    = $item['quantity'];
 			$i++;
 		}
 
@@ -642,9 +642,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		}
 
 		$refund_data = array(
-			'transaction_id'      			=> $transaction_id,
-			'refund_transaction_id'			=> isset( $response['REFUNDTRANSACTIONID'] ) ? $response['REFUNDTRANSACTIONID'] : false,
-			'refund_transaction_details' 	=> array(
+			'transaction_id'             => $transaction_id,
+			'refund_transaction_id'      => isset( $response['REFUNDTRANSACTIONID'] ) ? $response['REFUNDTRANSACTIONID'] : false,
+			'refund_transaction_details' => array(
 				'raw' => $response,
 			),
 		);
