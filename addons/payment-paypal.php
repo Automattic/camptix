@@ -682,11 +682,6 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		$payload = 'cmd=_notify-validate&' . http_build_query( $payload );
 		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => apply_filters( 'camptix_paypal_timeout', 20 ) ) );
 	}
-
-	function get_order_currency_code( $attendee_id ) {
-		$transaction_details = get_post_meta( $attendee_id, 'tix_transaction_details', true );
-		return $transaction_details['raw']['PAYMENTINFO_0_CURRENCYCODE'];
-	}
 }
 
 /**

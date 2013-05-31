@@ -155,13 +155,6 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		return (array) get_post_meta( $attendees[0]->ID, 'tix_order', true );
 	}
 
-	function get_order_currency_code( $attendee_id ) {
-		global $camptix;
-		$camptix->log( __FUNCTION__ . ' not implemented in payment module.', 0, null );
-
-		return '';
-	}
-
 	/**
 	 * A text input for the Settings API, name and value attributes
 	 * should be specified in $args. Same goes for the rest.

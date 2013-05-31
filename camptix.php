@@ -5011,7 +5011,6 @@ class CampTix_Plugin {
 				$transactions[ $txn_id ]['receipt_email']  = get_post_meta( $attendee->ID, 'tix_receipt_email', true );
 				$transactions[ $txn_id ]['payment_method'] = get_post_meta( $attendee->ID, 'tix_payment_method', true );
 				$transactions[ $txn_id ]['payment_token']  = get_post_meta( $attendee->ID, 'tix_payment_token', true );
-				$transactions[ $txn_id ]['currency_code']  = $this->get_order_currency_code( $attendee->ID, $transactions[ $txn_id ]['payment_method'] );
 			}
 			$ticket_id = get_post_meta( $attendee->ID, 'tix_ticket_id', true );
 
@@ -5028,7 +5027,7 @@ class CampTix_Plugin {
 		}
 
 		$transaction = array_shift( $transactions );
-		if ( ! $transaction['receipt_email'] || ! $transaction['transaction_id'] || ! $transaction['payment_amount'] || ! $transaction['currency_code'] ) {
+		if ( ! $transaction['receipt_email'] || ! $transaction['transaction_id'] || ! $transaction['payment_amount'] ) {
 			$this->error_flags['cannot_refund'] = true;
 			$this->redirect_with_error_flags();
 			die();
@@ -5094,7 +5093,7 @@ class CampTix_Plugin {
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Original Payment', 'camptix' ); ?></td>
-							<td class="tix-right"><?php printf( "%s %s", $transaction['currency_code'], $transaction['payment_amount'] ); ?></td>
+							<td class="tix-right"><?php printf( "%s %s", $this->options['currency'], $transaction['payment_amount'] ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Purchased Tickets', 'camptix' ); ?></td>
@@ -5106,7 +5105,7 @@ class CampTix_Plugin {
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Refund Amount', 'camptix' ); ?></td>
-							<td class="tix-right"><?php printf( "%s %s", $transaction['currency_code'], $transaction['payment_amount'] ); ?></td>
+							<td class="tix-right"><?php printf( "%s %s", $this->options['currency'], $transaction['payment_amount'] ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Refund Reason', 'camptix' ); ?></td>
@@ -5127,28 +5126,6 @@ class CampTix_Plugin {
 		$contents = ob_get_contents();
 		ob_end_clean();
 		return $contents;
-	}
-
-	/**
-	 * Retrieves the currency code associated with the attendee's order
-	 * In the past, the currency code wasn't saved in the database by the payment methods and was only accessible through the raw payment gateway response.
-	 * This method attempts to retrieve the code from the database, but falls back to using the raw response if necessary.
-	 */
-	function get_order_currency_code( $attendee_id, $payment_method ) {
-		$currency_code = get_post_meta( $attendee_id, 'tix_currency_code', true );
-
-		if ( ! $currency_code ) {
-			$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
-			if ( $payment_method_obj ) {
-				$currency_code = $payment_method_obj->get_order_currency_code( $attendee_id );
-			}
-		}
-
-		if ( ! $currency_code ) {
-			$currency_code = '';
-		}
-
-		return $currency_code;
 	}
 
 	function form_refund_success() {
@@ -5674,7 +5651,6 @@ class CampTix_Plugin {
 				update_post_meta( $post_id, 'tix_payment_token', $payment_token );
 				update_post_meta( $post_id, 'tix_edit_token', $edit_token );
 				update_post_meta( $post_id, 'tix_payment_method', $payment_method );
-				update_post_meta( $post_id, 'tix_currency_code', $this->options['currency'] );
 				update_post_meta( $post_id, 'tix_order', $this->order );
 
 				update_post_meta( $post_id, 'tix_timestamp', time() );
