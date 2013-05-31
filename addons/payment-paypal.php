@@ -618,8 +618,10 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	/**
 	 * Submits a refund request to PayPal and returns the result
 	 */
-	function payment_refund( $payment_token, $transaction_id ) {
+	function payment_refund( $payment_token ) {
 		global $camptix;
+
+		$transaction_id = $camptix->get_data_from_payment_token( $payment_token, 'tix_transaction_id' );
 
 		// Craft and submit the request
 		$payload = array(

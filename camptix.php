@@ -5057,7 +5057,7 @@ class CampTix_Plugin {
 				 */
 
 				// Attempt to process the refund transaction
-				$result = $payment_method_obj->payment_refund( $transaction['payment_token'], $transaction['transaction_id'] );
+				$result = $payment_method_obj->payment_refund( $transaction['payment_token'] );
 				if ( CampTix_Plugin::PAYMENT_STATUS_REFUNDED == $result ) {
 					foreach ( $attendees as $attendee ) {
 						update_post_meta( $attendee->ID, 'tix_refund_reason', $reason );
@@ -5882,6 +5882,43 @@ class CampTix_Plugin {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get's a piece of data associated with a payment token
+	 *
+	 * @param string $payment_token
+	 * @param string $field The name of the post meta field, e.g., 'tix_transaction_id'
+	 * @return mixed
+	 */
+	function get_data_from_payment_token( $payment_token, $field ) {
+	 	$attendees = $this->get_attendees_from_payment_token( $payment_token );
+		if ( isset( $attendees[0]->ID ) )
+			$data = get_post_meta( $attendees[0]->ID, $field, true );
+		else
+			$data = false;
+
+		return $data;
+	}
+
+	/**
+	 * Retrieves the attendee associated with a given the payment token
+	 *
+	 * @param string $payment_token
+	 * @return array
+	 */
+	function get_attendees_from_payment_token( $payment_token ) {
+		$attendees = get_posts( array(
+			'post_type'      => 'tix_attendee',
+			'meta_query'     => array(
+				array(
+					'key'    => 'tix_payment_token',
+					'value'  => $payment_token,
+				)
+			),
+		) );
+
+		return $attendees;
 	}
 
 	/**
