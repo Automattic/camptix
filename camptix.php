@@ -1638,7 +1638,6 @@ class CampTix_Plugin {
 			'JPY' => array(
 				'label' => __( 'Japanese Yen', 'camptix' ),
 				'format' => '&#165; %s',
-				'plaintext_format' => __( 'JPY %s', 'camptix' ),
 			),
 			'USD' => array(
 				'label' => __( 'U.S. Dollar', 'camptix' ),
@@ -1663,37 +1662,30 @@ class CampTix_Plugin {
 			'SEK' => array(
 				'label' => __( 'Swedish Krona', 'camptix' ),
 				'format' => '%s &#107;&#114;',
-				'plaintext_format' => __( '%s KR', 'camptix' ),
 			),
 			'DKK' => array(
 				'label' => __( 'Danish Krone', 'camptix' ),
 				'format' => '%s &#107;&#114;',
-				'plaintext_format' => __( '%s KR', 'camptix' ),
 			),
 			'PLN' => array(
 				'label' => __( 'Polish Zloty', 'camptix' ),
 				'format' => '%s &#122;&#322;',
-				'plaintext_format' => __( '%s PLN', 'camptix' ),
 			),
 			'NOK' => array(
 				'label' => __( 'Norwegian Krone', 'camptix' ),
 				'format' => '%s &#107;&#114;',
-				'plaintext_format' => __( '%s KR', 'camptix' ),
 			),
 			'HUF' => array(
 				'label' => __( 'Hungarian Forint', 'camptix' ),
 				'format' => '%s &#70;&#116;',
-				'plaintext_format' => __( '%s FT', 'camptix' ),
 			),
 			'CZK' => array(
 				'label' => __( 'Czech Koruna', 'camptix' ),
 				'format' => '%s &#75;&#269;',
-				'plaintext_format' => __( '%s CZK', 'camptix' ),
 			),
 			'ILS' => array(
 				'label' => __( 'Israeli New Sheqel', 'camptix' ),
 				'format' => '&#8362; %s',
-				'plaintext_format' => __( 'ILS %s', 'camptix' ),
 			),
 			'MXN' => array(
 				'label' => __( 'Mexican Peso', 'camptix' ),
@@ -1702,27 +1694,22 @@ class CampTix_Plugin {
 			'BRL' => array(
 				'label' => __( 'Brazilian Real', 'camptix' ),
 				'format' => '&#82;&#36; %s',
-				'plaintext_format' => 'R$ %s',
 			),
 			'MYR' => array(
 				'label' => __( 'Malaysian Ringgit', 'camptix' ),
 				'format' => '&#82;&#77; %s',
-				'plaintext_format' => __( 'RM %s', 'camptix' ),
 			),
 			'PHP' => array(
 				'label' => __( 'Philippine Peso', 'camptix' ),
 				'format' => '&#8369; %s',
-				'plaintext_format' => __( 'PHP %s', 'camptix' ),
 			),
 			'TWD' => array(
 				'label' => __( 'New Taiwan Dollar', 'camptix' ),
 				'format' => '&#78;&#84;&#36; %s',
-				'plaintext_format' => __( 'NT$ %s', 'camptix' ),
 			),
 			'THB' => array(
 				'label' => __( 'Thai Baht', 'camptix' ),
 				'format' => '&#3647; %s',
-				'plaintext_format' => __( 'THB %s', 'camptix' ),
 			),
 			'TRY' => array(
 				'label' => __( 'Turkish Lira', 'camptix' ),
@@ -1733,10 +1720,10 @@ class CampTix_Plugin {
 
 	/**
 	 * Give me a price and I'll format it according to the set currency for
-	 * display. If the intended context can't handle HTML entities (like a plain-text e-mail),
-	 * then make sure to set $nbsp and $context appropriately.
+	 * display. Don't send my output anywhere but the screen, because I will
+	 * print &nbsp; and other things.
 	 */
-	function append_currency( $price, $nbsp = true, $currency_key = false, $context = 'html' ) {
+	function append_currency( $price, $nbsp = true, $currency_key = false ) {
 		$currencies = $this->get_currencies();
 		$currency = $currencies[ $this->options['currency'] ];
 		if ( $currency_key )
@@ -1745,9 +1732,7 @@ class CampTix_Plugin {
 		if ( ! $currency )
 			$currency = array( 'label' => __( 'U.S. Dollar', 'camptix' ), 'format' => '$ %s' );
 
-		$currency_format = ( 'plaintext' == $context && isset( $currency['plaintext_format'] ) && ! empty( $currency['plaintext_format'] ) ) ? $currency['plaintext_format'] : $currency['format'];
-
-		$with_currency = sprintf( $currency_format, number_format( (float) $price, 2 ) );
+		$with_currency = sprintf( $currency['format'], number_format( (float) $price, 2 ) );
 		if ( $nbsp )
 			$with_currency = str_replace( ' ', '&nbsp;', $with_currency );
 
@@ -6146,13 +6131,13 @@ class CampTix_Plugin {
 		$receipt_content = '';
 		foreach ( $order['items'] as $item ) {
 			$ticket = get_post( $item['id'] );
-			$receipt_content .= sprintf( "* %s (%s) x%d = %s\n", $ticket->post_title, $this->append_currency( $item['price'], false, false, 'plaintext' ), $item['quantity'], $this->append_currency( $item['price'] * $item['quantity'], false, false, 'plaintext' ) );
+			$receipt_content .= sprintf( "* %s (%s) x%d = %s\n", $ticket->post_title, $this->append_currency( $item['price'], false ), $item['quantity'], $this->append_currency( $item['price'] * $item['quantity'], false ) );
 		}
 
 		if ( isset( $order['coupon'] ) && $order['coupon'] )
 			$receipt_content .= sprintf( '* ' . __( 'Coupon used: %s') . "\n", $order['coupon'] );
 
-		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $order['total'], false, false, 'plaintext' ) );
+		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $order['total'], false ) );
 		$signature = apply_filters( 'camptix_ticket_email_signature', __( 'Let us know if you have any questions!', 'camptix' ) );
 
 		// Set the tmp receipt for shortcodes use.
