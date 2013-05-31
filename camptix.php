@@ -5918,6 +5918,7 @@ class CampTix_Plugin {
 	function get_attendees_from_payment_token( $payment_token ) {
 		$attendees = get_posts( array(
 			'post_type'      => 'tix_attendee',
+			'post_status'    => 'any',
 			'meta_query'     => array(
 				array(
 					'key'    => 'tix_payment_token',
