@@ -1637,7 +1637,7 @@ class CampTix_Plugin {
 			),
 			'JPY' => array(
 				'label' => __( 'Japanese Yen', 'camptix' ),
-				'format' => '&#165; %s',
+				'format' => '¥ %s',
 			),
 			'USD' => array(
 				'label' => __( 'U.S. Dollar', 'camptix' ),
@@ -1661,31 +1661,31 @@ class CampTix_Plugin {
 			),
 			'SEK' => array(
 				'label' => __( 'Swedish Krona', 'camptix' ),
-				'format' => '%s &#107;&#114;',
+				'format' => '%s kr',
 			),
 			'DKK' => array(
 				'label' => __( 'Danish Krone', 'camptix' ),
-				'format' => '%s &#107;&#114;',
+				'format' => '%s kr',
 			),
 			'PLN' => array(
 				'label' => __( 'Polish Zloty', 'camptix' ),
-				'format' => '%s &#122;&#322;',
+				'format' => '%s Zł',
 			),
 			'NOK' => array(
 				'label' => __( 'Norwegian Krone', 'camptix' ),
-				'format' => '%s &#107;&#114;',
+				'format' => '%s kr',
 			),
 			'HUF' => array(
 				'label' => __( 'Hungarian Forint', 'camptix' ),
-				'format' => '%s &#70;&#116;',
+				'format' => '%s FT',
 			),
 			'CZK' => array(
 				'label' => __( 'Czech Koruna', 'camptix' ),
-				'format' => '%s &#75;&#269;',
+				'format' => '%s Kč',
 			),
 			'ILS' => array(
 				'label' => __( 'Israeli New Sheqel', 'camptix' ),
-				'format' => '&#8362; %s',
+				'format' => '₪ %s',
 			),
 			'MXN' => array(
 				'label' => __( 'Mexican Peso', 'camptix' ),
@@ -1693,23 +1693,23 @@ class CampTix_Plugin {
 			),
 			'BRL' => array(
 				'label' => __( 'Brazilian Real', 'camptix' ),
-				'format' => '&#82;&#36; %s',
+				'format' => 'R$ %s',
 			),
 			'MYR' => array(
 				'label' => __( 'Malaysian Ringgit', 'camptix' ),
-				'format' => '&#82;&#77; %s',
+				'format' => 'RM %s',
 			),
 			'PHP' => array(
 				'label' => __( 'Philippine Peso', 'camptix' ),
-				'format' => '&#8369; %s',
+				'format' => '₱ %s',
 			),
 			'TWD' => array(
 				'label' => __( 'New Taiwan Dollar', 'camptix' ),
-				'format' => '&#78;&#84;&#36; %s',
+				'format' => 'NT$ %s',
 			),
 			'THB' => array(
 				'label' => __( 'Thai Baht', 'camptix' ),
-				'format' => '&#3647; %s',
+				'format' => '฿ %s',
 			),
 			'TRY' => array(
 				'label' => __( 'Turkish Lira', 'camptix' ),
