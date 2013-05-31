@@ -2773,6 +2773,9 @@ class CampTix_Plugin {
 
 		if ( get_option( 'camptix_doing_refunds', false ) )
 			return $this->menu_tools_refund_busy();
+
+		// @todo when fixing/refactoring this, add a check to see if any of the enabled payment modules support refunding all transactions
+			// also add a similar check for each individual transaction that gets refunded, since some transactions could be from a module that supports refunds, and some from one that doesn't
 		?>
 		<form method="post" action="<?php echo esc_url( add_query_arg( 'tix_refund_all', 1 ) ); ?>">
 			<table class="form-table">
@@ -5150,6 +5153,11 @@ class CampTix_Plugin {
 	 */
 	function is_refundable( $attendee_id ) {
 		if ( ! $this->options['refunds_enabled'] )
+			return false;
+
+		$payment_method = get_post_meta( $attendee_id, 'tix_payment_method', true );
+		$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
+		if ( ! $payment_method_obj || ! $payment_method_obj->supports_feature( 'refund_single' ) )
 			return false;
 
 		$today = date( 'Y-m-d' );

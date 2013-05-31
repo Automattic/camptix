@@ -11,6 +11,10 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	public $description = false;
 
 	public $supported_currencies = false;
+	public $supported_features = array(
+		'refund_single' => false,
+		'refund_all' => false,
+	);
 
 	function __construct() {
 		global $camptix;
@@ -38,6 +42,10 @@ class CampTix_Payment_Method extends CampTix_Addon {
 
 	function supports_currency( $currency ) {
 		return ( in_array( $currency, $this->supported_currencies ) );
+	}
+
+	function supports_feature( $feature ) {
+		return array_key_exists( $feature, $this->supported_features ) ? $this->supported_features[ $feature ] : false;
 	}
 
 	function _camptix_get_payment_method_by_id( $payment_method, $id ) {
