@@ -12,8 +12,8 @@ class CampTix_Payment_Method extends CampTix_Addon {
 
 	public $supported_currencies = false;
 	public $supported_features = array(
-		'refund_single' => false,
-		'refund_all' => false,
+		'refund-single' => false,
+		'refund-all' => false,
 	);
 
 	function __construct() {

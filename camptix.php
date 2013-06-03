@@ -5157,7 +5157,7 @@ class CampTix_Plugin {
 
 		$payment_method = get_post_meta( $attendee_id, 'tix_payment_method', true );
 		$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
-		if ( ! $payment_method_obj || ! $payment_method_obj->supports_feature( 'refund_single' ) )
+		if ( ! $payment_method_obj || ! $payment_method_obj->supports_feature( 'refund-single' ) )
 			return false;
 
 		$today = date( 'Y-m-d' );
