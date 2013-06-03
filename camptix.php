@@ -5917,17 +5917,24 @@ class CampTix_Plugin {
 	 * @return array
 	 */
 	function get_attendees_from_payment_token( $payment_token, $numberposts = -1 ) {
-		$attendees = get_posts( array(
-			'post_type'      => 'tix_attendee',
-			'numberposts'    => $numberposts,
-			'post_status'    => array( 'draft', 'pending', 'publish', 'cancel', 'refund', 'failed' ),
-			'meta_query'     => array(
-				array(
-					'key'    => 'tix_payment_token',
-					'value'  => $payment_token,
-				)
-			),
-		) );
+		$cache_key = md5( 'get_attendees_from_payment_token' . $payment_token . $numberposts );
+		$attendees = $this->tmp( $cache_key );
+
+		if ( null === $attendees ) {
+			$attendees = get_posts( array(
+				'post_type'      => 'tix_attendee',
+				'numberposts'    => $numberposts,
+				'post_status'    => array( 'draft', 'pending', 'publish', 'cancel', 'refund', 'failed' ),
+				'meta_query'     => array(
+					array(
+						'key'    => 'tix_payment_token',
+						'value'  => $payment_token,
+					)
+				),
+			) );
+
+			$this->tmp( $cache_key, $attendees );
+		}
 
 		return $attendees;
 	}
