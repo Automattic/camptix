@@ -5893,13 +5893,13 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Get's a piece of data associated with a payment token
+	 * Get's a piece of post meta data associated with a payment token
 	 *
 	 * @param string $payment_token
 	 * @param string $field The name of the post meta field, e.g., 'tix_transaction_id'
 	 * @return mixed
 	 */
-	function get_data_from_payment_token( $payment_token, $field ) {
+	function get_post_meta_from_payment_token( $payment_token, $field ) {
 	 	$attendees = $this->get_attendees_from_payment_token( $payment_token );
 		if ( isset( $attendees[0]->ID ) )
 			$data = get_post_meta( $attendees[0]->ID, $field, true );

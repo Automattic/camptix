@@ -625,7 +625,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	function payment_refund( $payment_token ) {
 		global $camptix;
 
-		$transaction_id = $camptix->get_data_from_payment_token( $payment_token, 'tix_transaction_id' );
+		$transaction_id = $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' );
 
 		// Craft and submit the request
 		$payload = array(
