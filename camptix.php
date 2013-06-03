@@ -5900,7 +5900,7 @@ class CampTix_Plugin {
 	 * @return mixed
 	 */
 	function get_post_meta_from_payment_token( $payment_token, $field ) {
-	 	$attendees = $this->get_attendees_from_payment_token( $payment_token );
+	 	$attendees = $this->get_attendees_from_payment_token( $payment_token, 1 );
 		if ( isset( $attendees[0]->ID ) )
 			$data = get_post_meta( $attendees[0]->ID, $field, true );
 		else
@@ -5913,11 +5913,13 @@ class CampTix_Plugin {
 	 * Retrieves the attendee associated with a given the payment token
 	 *
 	 * @param string $payment_token
+	 * @param int $numberposts The number of attendees to return. Defaults to all.
 	 * @return array
 	 */
-	function get_attendees_from_payment_token( $payment_token ) {
+	function get_attendees_from_payment_token( $payment_token, $numberposts = -1 ) {
 		$attendees = get_posts( array(
 			'post_type'      => 'tix_attendee',
+			'numberposts'    => $numberposts,
 			'post_status'    => array( 'draft', 'pending', 'publish', 'cancel', 'refund', 'failed' ),
 			'meta_query'     => array(
 				array(
