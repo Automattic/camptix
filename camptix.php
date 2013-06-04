@@ -5913,17 +5913,17 @@ class CampTix_Plugin {
 	 * Retrieves the attendee associated with a given the payment token
 	 *
 	 * @param string $payment_token
-	 * @param int $numberposts The number of attendees to return. Defaults to all.
+	 * @param int $posts_per_page The number of attendees to return. Defaults to all.
 	 * @return array
 	 */
-	function get_attendees_from_payment_token( $payment_token, $numberposts = -1 ) {
-		$cache_key = md5( 'get_attendees_from_payment_token' . $payment_token . $numberposts );
+	function get_attendees_from_payment_token( $payment_token, $posts_per_page = -1 ) {
+		$cache_key = md5( 'get_attendees_from_payment_token' . $payment_token . $posts_per_page );
 		$attendees = $this->tmp( $cache_key );
 
 		if ( null === $attendees ) {
 			$attendees = get_posts( array(
 				'post_type'      => 'tix_attendee',
-				'numberposts'    => $numberposts,
+				'posts_per_page' => $posts_per_page,
 				'post_status'    => array( 'draft', 'pending', 'publish', 'cancel', 'refund', 'failed' ),
 				'meta_query'     => array(
 					array(
