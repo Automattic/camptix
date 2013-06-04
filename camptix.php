@@ -1450,7 +1450,7 @@ class CampTix_Plugin {
 	}
 
 	function menu_setup_section_email_templates() {
-		echo '<p>' . __( 'Customize your confirmation e-mail templates.', 'camptix' ) . '</p>';
+		echo '<p>' . __( 'Customize your confirmation e-mail templates. You can use the following shortcodes inside the message: [event_name], [ticket_url], and [receipt].', 'camptix' ) . '</p>';
 	}
 
 	function menu_setup_section_general() {
