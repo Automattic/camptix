@@ -18,6 +18,10 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	public $description = 'PayPal Express Checkout';
 	public $supported_currencies = array( 'AUD', 'CAD', 'EUR', 'GBP', 'JPY', 'USD', 'NZD', 'CHF', 'HKD', 'SGD', 'SEK', 
 		'DKK', 'PLN', 'NOK', 'HUF', 'CZK', 'ILS', 'MXN', 'BRL', 'MYR', 'PHP', 'TWD', 'THB', 'TRY');
+	public $supported_features = array(
+		'refund-single' => true,
+		'refund-all' => false,
+	);
 
 	/**
 	 * We can have an array to store our options.
@@ -599,11 +603,11 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		$i = 0;
 		foreach ( $order['items'] as $item ) {
-			$payload['L_PAYMENTREQUEST_0_NAME' . $i] = substr( strip_tags( $event_name . ': ' . $item['name'] ), 0, 127 );
-			$payload['L_PAYMENTREQUEST_0_DESC' . $i] = substr( strip_tags( $item['description'] ), 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_NAME' . $i]   = substr( strip_tags( $event_name . ': ' . $item['name'] ), 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_DESC' . $i]   = substr( strip_tags( $item['description'] ), 0, 127 );
 			$payload['L_PAYMENTREQUEST_0_NUMBER' . $i] = $item['id'];
-			$payload['L_PAYMENTREQUEST_0_AMT' . $i] = $item['price'];
-			$payload['L_PAYMENTREQUEST_0_QTY' . $i] = $item['quantity'];
+			$payload['L_PAYMENTREQUEST_0_AMT' . $i]    = $item['price'];
+			$payload['L_PAYMENTREQUEST_0_QTY' . $i]    = $item['quantity'];
 			$i++;
 		}
 
@@ -618,8 +622,10 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	/**
 	 * Submits a refund request to PayPal and returns the result
 	 */
-	function payment_refund( $payment_token, $transaction_id ) {
+	function payment_refund( $payment_token ) {
 		global $camptix;
+
+		$transaction_id = $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' );
 
 		// Craft and submit the request
 		$payload = array(
@@ -642,9 +648,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		}
 
 		$refund_data = array(
-			'transaction_id'      			=> $transaction_id,
-			'refund_transaction_id'			=> isset( $response['REFUNDTRANSACTIONID'] ) ? $response['REFUNDTRANSACTIONID'] : false,
-			'refund_transaction_details' 	=> array(
+			'transaction_id'             => $transaction_id,
+			'refund_transaction_id'      => isset( $response['REFUNDTRANSACTIONID'] ) ? $response['REFUNDTRANSACTIONID'] : false,
+			'refund_transaction_details' => array(
 				'raw' => $response,
 			),
 		);
@@ -681,11 +687,6 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		$url = $options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr';
 		$payload = 'cmd=_notify-validate&' . http_build_query( $payload );
 		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => apply_filters( 'camptix_paypal_timeout', 20 ) ) );
-	}
-
-	function get_order_currency_code( $attendee_id ) {
-		$transaction_details = get_post_meta( $attendee_id, 'tix_transaction_details', true );
-		return $transaction_details['raw']['PAYMENTINFO_0_CURRENCYCODE'];
 	}
 }
 

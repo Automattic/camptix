@@ -48,7 +48,7 @@ class CampTix_Plugin {
 	const PAYMENT_STATUS_FAILED = 4;
 	const PAYMENT_STATUS_TIMEOUT = 5;
 	const PAYMENT_STATUS_REFUNDED = 6;
-	CONST PAYMENT_STATUS_REFUND_FAILED = 7;
+	const PAYMENT_STATUS_REFUND_FAILED = 7;
 
 	/**
 	 * Fired as soon as this file is loaded, don't do anything
@@ -2773,6 +2773,9 @@ class CampTix_Plugin {
 
 		if ( get_option( 'camptix_doing_refunds', false ) )
 			return $this->menu_tools_refund_busy();
+
+		// @todo when fixing/refactoring this, add a check to see if any of the enabled payment modules support refunding all transactions
+			// also add a similar check for each individual transaction that gets refunded, since some transactions could be from a module that supports refunds, and some from one that doesn't
 		?>
 		<form method="post" action="<?php echo esc_url( add_query_arg( 'tix_refund_all', 1 ) ); ?>">
 			<table class="form-table">
@@ -5005,13 +5008,12 @@ class CampTix_Plugin {
 		foreach ( $attendees as $attendee ) {
 			$txn_id = get_post_meta( $attendee->ID, 'tix_transaction_id', true );
 			if ( $txn_id ) {
-				$transactions[ $txn_id ] 					= get_post_meta( $attendee->ID, 'tix_transaction_details', true );
-				$transactions[ $txn_id ]['transaction_id']	= $txn_id;
-				$transactions[ $txn_id ]['payment_amount']	= get_post_meta( $attendee->ID, 'tix_order_total', true );
-				$transactions[ $txn_id ]['receipt_email']	= get_post_meta( $attendee->ID, 'tix_receipt_email', true );
-				$transactions[ $txn_id ]['payment_method']	= get_post_meta( $attendee->ID, 'tix_payment_method', true );
-				$transactions[ $txn_id ]['payment_token']	= get_post_meta( $attendee->ID, 'tix_payment_token', true );
-				$transactions[ $txn_id ]['currency_code']	= $this->get_order_currency_code( $attendee->ID, $transactions[ $txn_id ]['payment_method'] );
+				$transactions[ $txn_id ]                   = get_post_meta( $attendee->ID, 'tix_transaction_details', true );
+				$transactions[ $txn_id ]['transaction_id'] = $txn_id;
+				$transactions[ $txn_id ]['payment_amount'] = get_post_meta( $attendee->ID, 'tix_order_total', true );
+				$transactions[ $txn_id ]['receipt_email']  = get_post_meta( $attendee->ID, 'tix_receipt_email', true );
+				$transactions[ $txn_id ]['payment_method'] = get_post_meta( $attendee->ID, 'tix_payment_method', true );
+				$transactions[ $txn_id ]['payment_token']  = get_post_meta( $attendee->ID, 'tix_payment_token', true );
 			}
 			$ticket_id = get_post_meta( $attendee->ID, 'tix_ticket_id', true );
 
@@ -5028,7 +5030,7 @@ class CampTix_Plugin {
 		}
 
 		$transaction = array_shift( $transactions );
-		if ( ! $transaction['receipt_email'] || ! $transaction['transaction_id'] || ! $transaction['payment_amount'] || ! $transaction['currency_code'] ) {
+		if ( ! $transaction['receipt_email'] || ! $transaction['transaction_id'] || ! $transaction['payment_amount'] ) {
 			$this->error_flags['cannot_refund'] = true;
 			$this->redirect_with_error_flags();
 			die();
@@ -5058,7 +5060,7 @@ class CampTix_Plugin {
 				 */
 
 				// Attempt to process the refund transaction
-				$result = $payment_method_obj->payment_refund( $transaction['payment_token'], $transaction['transaction_id'] );
+				$result = $payment_method_obj->payment_refund( $transaction['payment_token'] );
 				if ( CampTix_Plugin::PAYMENT_STATUS_REFUNDED == $result ) {
 					foreach ( $attendees as $attendee ) {
 						update_post_meta( $attendee->ID, 'tix_refund_reason', $reason );
@@ -5094,7 +5096,7 @@ class CampTix_Plugin {
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Original Payment', 'camptix' ); ?></td>
-							<td class="tix-right"><?php printf( "%s %s", $transaction['currency_code'], $transaction['payment_amount'] ); ?></td>
+							<td class="tix-right"><?php printf( "%s %s", $this->options['currency'], $transaction['payment_amount'] ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Purchased Tickets', 'camptix' ); ?></td>
@@ -5106,7 +5108,7 @@ class CampTix_Plugin {
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Refund Amount', 'camptix' ); ?></td>
-							<td class="tix-right"><?php printf( "%s %s", $transaction['currency_code'], $transaction['payment_amount'] ); ?></td>
+							<td class="tix-right"><?php printf( "%s %s", $this->options['currency'], $transaction['payment_amount'] ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Refund Reason', 'camptix' ); ?></td>
@@ -5127,29 +5129,6 @@ class CampTix_Plugin {
 		$contents = ob_get_contents();
 		ob_end_clean();
 		return $contents;
-	}
-
-	/**
-	 * Retrieves the currency code associated with the attendee's order
-	 * In the past, the currency code wasn't saved in the database by the payment methods and was only accessible through the raw payment gateway response.
-	 * This method attempts to retrieve the code from the database, but falls back to using the raw response if necessary.
-	 */
-	function get_order_currency_code( $attendee_id, $payment_method )
-	{
-		$currency_code = get_post_meta( $attendee_id, 'tix_currency_code', true );
-
-		if ( ! $currency_code ) {
-			$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
-			if ( $payment_method_obj ) {
-				$currency_code = $payment_method_obj->get_order_currency_code( $attendee_id );
-			}
-		}
-
-		if ( ! $currency_code ) {
-			$currency_code = '';
-		}
-
-		return $currency_code;
 	}
 
 	function form_refund_success() {
@@ -5174,6 +5153,11 @@ class CampTix_Plugin {
 	 */
 	function is_refundable( $attendee_id ) {
 		if ( ! $this->options['refunds_enabled'] )
+			return false;
+
+		$payment_method = get_post_meta( $attendee_id, 'tix_payment_method', true );
+		$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
+		if ( ! $payment_method_obj || ! $payment_method_obj->supports_feature( 'refund-single' ) )
 			return false;
 
 		$today = date( 'Y-m-d' );
@@ -5675,7 +5659,6 @@ class CampTix_Plugin {
 				update_post_meta( $post_id, 'tix_payment_token', $payment_token );
 				update_post_meta( $post_id, 'tix_edit_token', $edit_token );
 				update_post_meta( $post_id, 'tix_payment_method', $payment_method );
-				update_post_meta( $post_id, 'tix_currency_code', $this->options['currency'] );
 				update_post_meta( $post_id, 'tix_order', $this->order );
 
 				update_post_meta( $post_id, 'tix_timestamp', time() );
@@ -5907,6 +5890,52 @@ class CampTix_Plugin {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get's a piece of post meta data associated with a payment token
+	 *
+	 * @param string $payment_token
+	 * @param string $field The name of the post meta field, e.g., 'tix_transaction_id'
+	 * @return mixed
+	 */
+	function get_post_meta_from_payment_token( $payment_token, $field ) {
+	 	$attendees = $this->get_attendees_from_payment_token( $payment_token );
+		if ( isset( $attendees[0]->ID ) )
+			$data = get_post_meta( $attendees[0]->ID, $field, true );
+		else
+			$data = false;
+
+		return $data;
+	}
+
+	/**
+	 * Retrieves the attendee associated with a given the payment token
+	 *
+	 * @param string $payment_token
+	 * @return array
+	 */
+	function get_attendees_from_payment_token( $payment_token ) {
+		$cache_key = md5( 'get_attendees_from_payment_token' . $payment_token );
+		$attendees = $this->tmp( $cache_key );
+
+		if ( null === $attendees ) {
+			$attendees = get_posts( array(
+				'post_type'      => 'tix_attendee',
+				'posts_per_page' => -1,
+				'post_status'    => array( 'draft', 'pending', 'publish', 'cancel', 'refund', 'failed' ),
+				'meta_query'     => array(
+					array(
+						'key'    => 'tix_payment_token',
+						'value'  => $payment_token,
+					)
+				),
+			) );
+
+			$this->tmp( $cache_key, $attendees );
+		}
+
+		return $attendees;
 	}
 
 	/**

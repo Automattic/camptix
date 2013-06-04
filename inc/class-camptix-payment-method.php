@@ -11,6 +11,10 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	public $description = false;
 
 	public $supported_currencies = false;
+	public $supported_features = array(
+		'refund-single' => false,
+		'refund-all' => false,
+	);
 
 	function __construct() {
 		global $camptix;
@@ -38,6 +42,10 @@ class CampTix_Payment_Method extends CampTix_Addon {
 
 	function supports_currency( $currency ) {
 		return ( in_array( $currency, $this->supported_currencies ) );
+	}
+
+	function supports_feature( $feature ) {
+		return array_key_exists( $feature, $this->supported_features ) ? $this->supported_features[ $feature ] : false;
 	}
 
 	function _camptix_get_payment_method_by_id( $payment_method, $id ) {
@@ -84,9 +92,9 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		die( __FUNCTION__ . ' not implemented' );
 	}
 
-	function payment_refund( $payment_token, $transaction_id ) {
+	function payment_refund( $payment_token ) {
 		global $camptix;
-		$refund_data = array( 'transaction_id' => $transaction_id );
+		$refund_data = array();
 		$camptix->log( __FUNCTION__ . ' not implemented in payment module.', 0, null, 'refund' );
 
 		return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED, $refund_data );
@@ -153,13 +161,6 @@ class CampTix_Payment_Method extends CampTix_Addon {
 			return array();
 
 		return (array) get_post_meta( $attendees[0]->ID, 'tix_order', true );
-	}
-
-	function get_order_currency_code( $attendee_id ) {
-		global $camptix;
-		$camptix->log( __FUNCTION__ . ' not implemented in payment module.', 0, null );
-
-		return '';
 	}
 
 	/**
