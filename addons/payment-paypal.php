@@ -464,6 +464,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 			$payload = array(
 				'METHOD' => 'DoExpressCheckoutPayment',
+				'PAYMENTREQUEST_0_PAYMENTACTION' => 'Sale',
 				'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly', // @todo allow echecks with an option
 				'TOKEN' => $paypal_token,
 				'PAYERID' => $payer_id,
