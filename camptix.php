@@ -320,8 +320,16 @@ class CampTix_Plugin {
 		add_shortcode( 'last_name', array( $this, 'notify_shortcode_last_name' ) );
 		add_shortcode( 'email', array( $this, 'notify_shortcode_email' ) );
 
+		add_shortcode( 'event_name', array( $this, 'email_template_shortcode_event_name' ) );
 		add_shortcode( 'ticket_url', array( $this, 'email_template_shortcode_ticket_url' ) );
 		add_shortcode( 'receipt', array( $this, 'email_template_shortcode_receipt' ) );
+	}
+
+	/**
+	 * Returns the event name.
+	 */
+	function email_template_shortcode_event_name( $atts ) {
+		return $this->options['event_name'];
 	}
 
 	/**
@@ -1068,7 +1076,11 @@ class CampTix_Plugin {
 			'email_template_single_purchase' => __( "Hi there!\n\nYou have purchased the following ticket:\n\n[receipt]\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
 			'email_template_multiple_purchase' => __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
 			'email_template_multiple_purchase_receipt' => __( "Hi there!\n\nYou have purchased the following tickets:\n\n[receipt]\n\nYou can edit the information for all the purchased tickets at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
-		) );
+			'email_template_pending_succeeded' => __( "Hey there!\n\nYour payment for [event_name] has been completed, looking forward to seeing you at the event! You can access and change your tickets information by visiting the following link:\n\n[ticket_url]\n\nLet us know if you need any help!", 'camptix' ),
+			'email_template_pending_failed' => __( "Hey there!\n\nWe're so sorry, but it looks like your payment for [event_name] has failed! Please check your payment transactions for more details. If you still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n[ticket_url]\n\nLet us know if you need any help!", 'camptix' ),
+			'email_template_single_refund' => __( "Hey there!\n\nYour refund for [event_name] has been completed. If you change your mind and still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n[ticket_url]\n\nLet us know if you need any help!", 'camptix' ),
+			'email_template_multiple_refund' => __( "Hey there!\n\nYour ticket for [event_name] has been refunded. If you change your mind and still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n[ticket_url]\n\nLet us know if you need any help!", 'camptix' ),
+	) );
 	}
 
 	/**
@@ -1399,6 +1411,10 @@ class CampTix_Plugin {
 				$this->add_settings_field_helper( 'email_template_single_purchase', __( 'Single purchase', 'camptix' ), 'field_textarea' );
 				$this->add_settings_field_helper( 'email_template_multiple_purchase', __( 'Multiple purchase', 'camptix' ), 'field_textarea' );
 				$this->add_settings_field_helper( 'email_template_multiple_purchase_receipt', __( 'Multiple purchase (receipt)', 'camptix' ), 'field_textarea' );
+				$this->add_settings_field_helper( 'email_template_pending_succeeded', __( 'Pending Payment Succeeded', 'camptix' ), 'field_textarea' );
+				$this->add_settings_field_helper( 'email_template_pending_failed', __( 'Pending Payment Failed', 'camptix' ), 'field_textarea' );
+				$this->add_settings_field_helper( 'email_template_single_refund', __( 'Single Refund', 'camptix' ), 'field_textarea' );
+				$this->add_settings_field_helper( 'email_template_multiple_refund', __( 'Multiple Refund', 'camptix' ), 'field_textarea' );
 
 				// Add a reset templates button
 				add_action( 'camptix_setup_buttons', array( $this, 'setup_buttons_reset_templates' ) );
@@ -1434,7 +1450,7 @@ class CampTix_Plugin {
 	}
 
 	function menu_setup_section_email_templates() {
-		echo '<p>' . __( 'Customize your confirmation e-mail templates.', 'camptix' ) . '</p>';
+		echo '<p>' . __( 'Customize your confirmation e-mail templates. You can use the following shortcodes inside the message: [event_name], [ticket_url], and [receipt].', 'camptix' ) . '</p>';
 	}
 
 	function menu_setup_section_general() {
@@ -1503,6 +1519,10 @@ class CampTix_Plugin {
 			'single_purchase',
 			'multiple_purchase',
 			'multiple_purchase_receipt',
+			'pending_succeeded',
+			'pending_failed',
+			'single_refund',
+			'multiple_refund',
 		);
 
 		foreach ( $email_templates as $template )
@@ -6202,12 +6222,14 @@ class CampTix_Plugin {
 		 * Don't send one to the attendee who placed the order, though, because they'll get a separate notification
 		 */
 		if ( count( $attendees ) > 1 && 'publish' == $from_status && 'refund' == $to_status ) {
+			$this->tmp( 'ticket_url', $this->get_tickets_url() );
+
 			foreach ( $attendees as $attendee ) {
 				$attendee_email = get_post_meta( $attendee->ID, 'tix_email', true );
 
 				if ( $attendee_email != $receipt_email ) {
 					$subject = sprintf( __( "Your Refund for %s", 'camptix' ), $this->options['event_name'] );
-					$content = sprintf( __( "Hey there!\n\nYour ticket for %s has been refunded. If you change your mind and still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $this->get_tickets_url() );
+					$content = do_shortcode( $this->options['email_template_multiple_refund'] );
 
 					$this->log( sprintf( 'Sending refund e-mail notification to %s.', $attendee_email ), $attendees[0]->ID );
 					$this->wp_mail( $attendee_email, $subject, $content );
@@ -6264,28 +6286,29 @@ class CampTix_Plugin {
 
 		/**
 		 * This is mainly for notifications that would set the status after an IPN.
-		 * @todo E-mail Templates
 		 */
 		if ( $from_status == 'pending' && $to_status == 'publish' ) {
-			$edit_link = $this->get_access_tickets_link( $access_token );
+			$this->tmp( 'ticket_url', $this->get_access_tickets_link( $access_token ) );
 			$subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['event_name'] );
-			$content = sprintf( __( "Hey there!\n\nYour payment for %s has been completed, looking forward to seeing you at the event! You can access and change your tickets information by visiting the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $edit_link );
+			$content = do_shortcode( $this->options['email_template_pending_succeeded'] );
 
 			$this->log( sprintf( 'Sending completed e-mail notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 
 		if ( $from_status == 'pending' && $to_status == 'failed' ) {
+			$this->tmp( 'ticket_url', $this->get_tickets_url() );
 			$subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['event_name'] );
-			$content = sprintf( __( "Hey there!\n\nWe're so sorry, but it looks like your payment for %s has failed! Please check your payment transactions for more details. If you still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $this->get_tickets_url() );
+			$content = do_shortcode( $this->options['email_template_pending_failed'] );
 
 			$this->log( sprintf( 'Sending failed e-mail notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 
 		if ( $from_status == 'publish' && $to_status == 'refund' ) {
+			$this->tmp( 'ticket_url', $this->get_tickets_url() );
 			$subject = sprintf( __( "Your Refund for %s", 'camptix' ), $this->options['event_name'] );
-			$content = sprintf( __( "Hey there!\n\nYour refund for %s has been completed. If you change your mind and still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n%s\n\nLet us know if you need any help!", 'camptix' ), $this->options['event_name'], $this->get_tickets_url() );
+			$content = do_shortcode( $this->options['email_template_single_refund'] );
 
 			$this->log( sprintf( 'Sending refund e-mail notification to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
