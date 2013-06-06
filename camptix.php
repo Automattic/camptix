@@ -2794,8 +2794,9 @@ class CampTix_Plugin {
 		if ( get_option( 'camptix_doing_refunds', false ) )
 			return $this->menu_tools_refund_busy();
 
-		// @todo when fixing/refactoring this, add a check to see if any of the enabled payment modules support refunding all transactions
-			// also add a similar check for each individual transaction that gets refunded, since some transactions could be from a module that supports refunds, and some from one that doesn't
+		if ( ! $this->payment_modules_support_refund_all() )
+			return $this->menu_tools_refund_unavailable();
+
 		?>
 		<form method="post" action="<?php echo esc_url( add_query_arg( 'tix_refund_all', 1 ) ); ?>">
 			<table class="form-table">
@@ -2897,6 +2898,36 @@ class CampTix_Plugin {
 		$found_posts = $query->found_posts;
 		?>
 		<p><?php printf( __( 'A refund job is in progress, with %d attendees left in the queue. Next run in %d seconds.', 'camptix' ), $found_posts, wp_next_scheduled( 'tix_scheduled_every_ten_minutes' ) - time() ); ?></p>
+		<?php
+	}
+
+	/*
+	 * Returns true if at least one of the enabled payment modules supports refunding all tickets
+	 */
+	function payment_modules_support_refund_all() {
+		$supported = false;
+		$payment_methods = $this->get_enabled_payment_methods();
+
+		if ( $payment_methods ) {
+			foreach ( $payment_methods as $key => $name ) {
+				$method = $this->get_payment_method_by_id( $key );
+
+				if ( $method && $method->supports_feature( 'refund-all' ) ) {		// test off and on. not working right now
+					$supported = true;
+					break;
+				}
+			}
+		}
+
+		return $supported;
+	}
+
+	/**
+	 * Runs on Refund tab if none of the current payment modules support refunding all tickets
+	 */
+	function menu_tools_refund_unavailable() {
+		?>
+		<p><?php echo __( 'None of the enabled payment modules support refunding all tickets.', 'camptix' ); ?></p>
 		<?php
 	}
 
