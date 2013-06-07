@@ -2829,6 +2829,23 @@ class CampTix_Plugin {
 		if ( ! current_user_can( $this->caps['manage_tools'] ) || 'refund' != $this->get_tools_section() )
 			return;
 
+		// Display results of completed refund-all job
+		$total_results = get_option( 'camptix_refund_all_results' );
+		if ( isset( $total_results['status'] ) && 'completed' == $total_results['status'] ) {
+			add_settings_error(
+				'camptix',
+				'none',
+				sprintf(
+					__( 'CampTix has finished attempting to refund all transactions. The results were:<br /><br /> &bull;Succeeded: %s<br /> &bull;Failed: %s', 'camptix' ),
+					$total_results['succeeded'],
+					$total_results['failed']
+				),
+				'updated'
+			);	// not using proper <p> and <ul> markup because settings_errors() forces the entire message inside a <p>, which would be invalid
+			delete_option( 'camptix_refund_all_results' );
+		}
+
+		// Process form submission
 		if ( ! isset( $_POST['tix_refund_all_submit'] ) )
 			return;
 
@@ -2852,6 +2869,7 @@ class CampTix_Plugin {
 		$current_user = wp_get_current_user();
 		$this->log( sprintf( 'Setting all transactions to refund, thanks %s.', $current_user->user_login ), 0, null, 'refund' );
 		update_option( 'camptix_doing_refunds', true );
+		update_option( 'camptix_refund_all_results', array( 'status' => 'pending', 'succeeded' => 0, 'failed' => 0 ) );
 
 		$count = 0;
 		$paged = 1;
@@ -2943,6 +2961,7 @@ class CampTix_Plugin {
 		if ( ! get_option( 'camptix_doing_refunds', false ) )
 			return;
 
+		$total_results = get_option( 'camptix_refund_all_results' );
 		$attendees = get_posts( array(
 			'post_type' => 'tix_attendee',
 			'posts_per_page' => 50,
@@ -2960,6 +2979,7 @@ class CampTix_Plugin {
 
 		if ( ! $attendees ) {
 			$this->log( 'Refund all job complete.', 0, null, 'refund' );
+			$total_results['status'] = 'completed';
 			delete_option( 'camptix_doing_refunds' );
 		}
 
@@ -2997,15 +3017,15 @@ class CampTix_Plugin {
 				// Bail if a payment method does not exist.
 				if ( ! $payment_method_obj ) {
 					$this->log( "Couldn't instantiate payment module for attendee during refund-all batch.", $attendee->ID, null, 'refund' );
+					$total_results['failed']++;
 					continue;
 				}
-
-				//@todo send a msg to user to let them know results of it. count errors and show. if errors, let them know some weren't refunded
 
 				// Attempt to process the refund transaction
 				$payment_token = get_post_meta( $attendee->ID, 'tix_payment_token', true );
 				if ( ! $payment_token ) {
 					$this->log( "Invalid payment token for attendee during refund-all batch.", $attendee->ID, $payment_token, 'refund' );
+					$total_results['failed']++;
 					continue;
 				}
 
@@ -3017,6 +3037,7 @@ class CampTix_Plugin {
 					wp_update_post( $attendee );
 					update_post_meta( $attendee->ID, 'tix_refund_transaction_id', $result['refund_transaction_id'] );
 					update_post_meta( $attendee->ID, 'tix_refund_transaction_details', $result['refund_transaction_details'] );
+					$total_results['succeeded']++;
 
 					// Remove refund flag and set status to refunded for related attendees.
 					while ( $rel_attendees = get_posts( $rel_attendees_query ) ) {
@@ -3032,6 +3053,7 @@ class CampTix_Plugin {
 					}
 				} else {
 					$this->log( sprintf( 'Could not refund %s.', $transaction_id ), $attendee->ID, $result, 'refund' );
+					$total_results['failed']++;
 
 					// Let other attendees know they can not be refunded too.
 					while ( $rel_attendees = get_posts( $rel_attendees_query ) ) {
@@ -3044,8 +3066,11 @@ class CampTix_Plugin {
 				}
 			} else {
 				$this->log( 'No transaction id for this attendee, not refunding.', $attendee->ID, null, 'refund' );
+				$total_results['failed']++;
 			}
 		}
+
+		update_option( 'camptix_refund_all_results', $total_results );
 	}
 
 	/**
