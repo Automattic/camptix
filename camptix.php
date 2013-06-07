@@ -168,7 +168,7 @@ class CampTix_Plugin {
 		add_filter( 'cron_schedules', array( $this, 'cron_schedules' ) );
 
 		add_action( 'tix_scheduled_every_ten_minutes', array( $this, 'send_emails_batch' ) );
-		// add_action( 'tix_scheduled_every_ten_minutes', array( $this, 'process_refund_all' ) );
+		add_action( 'tix_scheduled_every_ten_minutes', array( $this, 'process_refund_all' ) );
 
 		add_action( 'tix_scheduled_daily', array( $this, 'review_timeout_payments' ) );
 
@@ -2899,6 +2899,8 @@ class CampTix_Plugin {
 		?>
 		<p><?php printf( __( 'A refund job is in progress, with %d attendees left in the queue. Next run in %d seconds.', 'camptix' ), $found_posts, wp_next_scheduled( 'tix_scheduled_every_ten_minutes' ) - time() ); ?></p>
 		<?php
+		// @todo sometimes the time returned is a negative value, then fixes next load
+		// @todo still says refund job in progress every with 0 attendees left. then clears next run. probably b/c last batch doesn't check to see if it's the last one
 	}
 
 	/*
@@ -2965,12 +2967,9 @@ class CampTix_Plugin {
 			// If another cron instance has this, or same txn has been refunded.
 			if ( ! get_post_meta( $attendee->ID, 'tix_pending_refund', true ) )
 				continue;
-
 			delete_post_meta( $attendee->ID, 'tix_pending_refund' );
 			$transaction_id = get_post_meta( $attendee->ID, 'tix_transaction_id', true );
-
 			if ( $transaction_id && ! empty( $transaction_id ) && trim( $transaction_id ) ) {
-
 				// Related attendees have the same transaction id, we'll use this query to find them.
 				$rel_attendees_query = array(
 					'post_type' => 'tix_attendee',
@@ -2993,16 +2992,25 @@ class CampTix_Plugin {
 					),
 				);
 
-				$payment_method_obj = $this->get_payment_method_by_id( $transaction['payment_method'] );
-
+				$payment_method = get_post_meta( $attendee->ID, 'tix_payment_method', true );
+				$payment_method_obj = $this->get_payment_method_by_id( $payment_method );
 				// Bail if a payment method does not exist.
 				if ( ! $payment_method_obj ) {
-					$this->log( "Couldn't instantiate payment module for attendee during refund all.", $attendee->ID, null, 'refund' );
+					$this->log( "Couldn't instantiate payment module for attendee during refund-all batch.", $attendee->ID, null, 'refund' );
 					continue;
 				}
 
+				// @todo maybe bug w/ related attendees bits
+				//@todo send a msg to user to let them know results of it. count errors and show. if errors, let them know some weren't refunded
+
 				// Attempt to process the refund transaction
-				$result = $payment_method_obj->send_refund_request( $transaction['payment_token'] );
+				$payment_token = get_post_meta( $attendee->ID, 'tix_payment_token', true );
+				if ( ! $payment_token ) {
+					$this->log( "Invalid payment token for attendee during refund-all batch.", $attendee->ID, $payment_token, 'refund' );
+					continue;
+				}
+
+				$result = $payment_method_obj->send_refund_request( $payment_token );
 
 				if ( CampTix_Plugin::PAYMENT_STATUS_REFUNDED == $result['status'] ) {
 					$this->log( sprintf( 'Refunded transaction %s.', $transaction_id ), $attendee->ID, $result, 'refund' );

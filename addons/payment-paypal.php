@@ -674,8 +674,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'TRANSACTIONID' => $transaction_id,
 			'REFUNDTYPE' => 'Full',
 		);
-		$response = wp_parse_args( wp_remote_retrieve_body( $this->paypal_request( $payload ) ) );
-		$result['refund_transaction_id'] = 'x';	// @todo. may not have one if it fails
+		$response = wp_parse_args( wp_remote_retrieve_body( $this->request( $payload ) ) );
+		$result['refund_transaction_id'] = isset( $response['REFUNDTRANSACTIONID'] ) ? $response['REFUNDTRANSACTIONID'] : false;
 		$result['refund_transaction_details'] = $response;
 
 		if ( isset( $response['ACK'], $response['REFUNDTRANSACTIONID'] ) && $response['ACK'] == 'Success' ) {
