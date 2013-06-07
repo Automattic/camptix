@@ -629,7 +629,6 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		$result = $this->send_refund_request( $payment_token );
 
 		if ( CampTix_Plugin::PAYMENT_STATUS_REFUNDED != $result['status'] ) {
-			$this->log( 'Error during RefundTransaction.', null, $result );	// @todo move this to calling function in camptix, can't rely on 3rd party payment modules to do reliable logging
 			$error_code = isset( $result['refund_transaction_details']['L_ERRORCODE0'] ) ? $result['refund_transaction_details']['L_ERRORCODE0'] : 0;
 			$error_message = isset( $result['refund_transaction_details']['L_LONGMESSAGE0'] ) ? $result['refund_transaction_details']['L_LONGMESSAGE0'] : '';
 

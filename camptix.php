@@ -3000,7 +3000,6 @@ class CampTix_Plugin {
 					continue;
 				}
 
-				// @todo maybe bug w/ related attendees bits
 				//@todo send a msg to user to let them know results of it. count errors and show. if errors, let them know some weren't refunded
 
 				// Attempt to process the refund transaction
@@ -5124,6 +5123,7 @@ class CampTix_Plugin {
 
 				// Attempt to process the refund transaction
 				$result = $payment_method_obj->payment_refund( $transaction['payment_token'] );
+				$this->log( 'Individual refund request result.', $attendee->ID, $result, 'refund' );
 				if ( CampTix_Plugin::PAYMENT_STATUS_REFUNDED == $result ) {
 					foreach ( $attendees as $attendee ) {
 						update_post_meta( $attendee->ID, 'tix_refund_reason', $reason );
