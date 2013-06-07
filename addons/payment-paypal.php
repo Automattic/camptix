@@ -621,44 +621,31 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Submits a user-initiated refund request to PayPal and returns the result
+	 * Submits a single, user-initiated refund request to PayPal and returns the result
 	 */
 	function payment_refund( $payment_token ) {
 		global $camptix;
 
-		$transaction_id = $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' );
+		$result = $this->send_refund_request( $payment_token );
 
-		// @todo refactor to use send_refund_request() in order to keep things DRY
-
-		// Craft and submit the request
-		$payload = array(
-			'METHOD'        => 'RefundTransaction',
-			'TRANSACTIONID' => $transaction_id,
-			'REFUNDTYPE'    => 'Full',
-		);
-
-		$request  = $this->request( $payload );
-		$response = wp_parse_args( wp_remote_retrieve_body( $request ) );
-
-		// Process PayPal's response
-		if ( ! isset( $response['ACK'] ) || 'Success' != $response['ACK'] ) {
-			$this->log( 'Error during RefundTransaction.', null, $response );
-			$error_code = isset( $response['L_ERRORCODE0'] ) ? $response['L_ERRORCODE0'] : 0;
-			$error_message = isset( $response['L_LONGMESSAGE0'] ) ? $response['L_LONGMESSAGE0'] : '';
+		if ( CampTix_Plugin::PAYMENT_STATUS_REFUNDED != $result['status'] ) {
+			$this->log( 'Error during RefundTransaction.', null, $result );	// @todo move this to calling function in camptix, can't rely on 3rd party payment modules to do reliable logging
+			$error_code = isset( $result['refund_transaction_details']['L_ERRORCODE0'] ) ? $result['refund_transaction_details']['L_ERRORCODE0'] : 0;
+			$error_message = isset( $result['refund_transaction_details']['L_LONGMESSAGE0'] ) ? $result['refund_transaction_details']['L_LONGMESSAGE0'] : '';
 
 			if ( ! empty( $error_message ) )
 				$camptix->error( sprintf( __( 'PayPal error: %s (%d)', 'camptix' ), $error_message, $error_code ) );
 		}
 
 		$refund_data = array(
-			'transaction_id'             => $transaction_id,
-			'refund_transaction_id'      => isset( $response['REFUNDTRANSACTIONID'] ) ? $response['REFUNDTRANSACTIONID'] : false,
+			'transaction_id'             => $result['transaction_id'],
+			'refund_transaction_id'      => isset( $result['refund_transaction_details']['REFUNDTRANSACTIONID'] ) ? $result['refund_transaction_details']['REFUNDTRANSACTIONID'] : false,
 			'refund_transaction_details' => array(
-				'raw' => $response,
+				'raw' => $result['refund_transaction_details'],
 			),
 		);
 
-		return $this->payment_result( $payment_token, $this->get_status_from_string( $response['REFUNDSTATUS'] ), $refund_data );
+		return $this->payment_result( $payment_token, $result['status'] , $refund_data );
 	}
 
 	/*
@@ -666,23 +653,23 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 */
 	function send_refund_request( $payment_token ) {
 		global $camptix;
-		$result = array( 'token' => $payment_token );
-		$transaction_id = $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' );
+		$result = array(
+			'token' => $payment_token,
+			'transaction_id' => $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' )
+		);
 
+		// Craft and submit the request
 		$payload = array(
 			'METHOD' => 'RefundTransaction',
-			'TRANSACTIONID' => $transaction_id,
+			'TRANSACTIONID' => $result['transaction_id'],
 			'REFUNDTYPE' => 'Full',
 		);
 		$response = wp_parse_args( wp_remote_retrieve_body( $this->request( $payload ) ) );
+
+		// Process PayPal's response
 		$result['refund_transaction_id'] = isset( $response['REFUNDTRANSACTIONID'] ) ? $response['REFUNDTRANSACTIONID'] : false;
 		$result['refund_transaction_details'] = $response;
-
-		if ( isset( $response['ACK'], $response['REFUNDTRANSACTIONID'] ) && $response['ACK'] == 'Success' ) {
-			$result['status'] = CampTix_Plugin::PAYMENT_STATUS_REFUNDED;
-		} else {
-			$result['status'] = CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED;
-		}
+		$result['status'] = $this->get_status_from_string( $response['REFUNDSTATUS'] );
 
 		return $result;
 	}
