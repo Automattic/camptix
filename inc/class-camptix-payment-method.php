@@ -100,6 +100,19 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED, $refund_data );
 	}
 
+	function send_refund_request( $payment_token ) {
+		global $camptix;
+		$result = array(
+			'token' => $payment_token,
+			'status' => CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED,
+			'refund_transaction_id' => null,
+			'refund_transaction_details' => array()
+		);
+
+		$camptix->log( __FUNCTION__ . ' not implemented in payment module.', 0, null, 'refund' );
+		return $result;
+	}
+
 	function payment_settings_fields() {
 		return;
 	}
