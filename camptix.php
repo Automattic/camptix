@@ -2933,10 +2933,8 @@ class CampTix_Plugin {
 
 	/**
 	 * Runs by WP_Cron, refunds attendees set to refund.
-	 * @todo do :)
 	 */
 	function process_refund_all() {
-		die( 'needs implementation' );
 		if ( $this->options['archived'] )
 			return;
 
@@ -2995,37 +2993,43 @@ class CampTix_Plugin {
 					),
 				);
 
-				$payload = array(
-					'METHOD' => 'RefundTransaction',
-					'TRANSACTIONID' => $transaction_id,
-					'REFUNDTYPE' => 'Full',
-				);
+				$payment_method_obj = $this->get_payment_method_by_id( $transaction['payment_method'] );
 
-				// Tell PayPal to refund our transaction.
-				$txn = wp_parse_args( wp_remote_retrieve_body( $this->paypal_request( $payload ) ) );
-				if ( isset( $txn['ACK'], $txn['REFUNDTRANSACTIONID'] ) && $txn['ACK'] == 'Success' ) {
-					$this->log( sprintf( 'Refunded transaction %s.', $transaction_id ), $attendee->ID, $txn, 'refund' );
+				// Bail if a payment method does not exist.
+				if ( ! $payment_method_obj ) {
+					$this->log( "Couldn't instantiate payment module for attendee during refund all.", $attendee->ID, null, 'refund' );
+					continue;
+				}
+
+				// Attempt to process the refund transaction
+				$result = $payment_method_obj->send_refund_request( $transaction['payment_token'] );
+
+				if ( CampTix_Plugin::PAYMENT_STATUS_REFUNDED == $result['status'] ) {
+					$this->log( sprintf( 'Refunded transaction %s.', $transaction_id ), $attendee->ID, $result, 'refund' );
 					$attendee->post_status = 'refund';
 					wp_update_post( $attendee );
+					update_post_meta( $attendee->ID, 'tix_refund_transaction_id', $result['refund_transaction_id'] );
+					update_post_meta( $attendee->ID, 'tix_refund_transaction_details', $result['refund_transaction_details'] );
 
 					// Remove refund flag and set status to refunded for related attendees.
 					while ( $rel_attendees = get_posts( $rel_attendees_query ) ) {
 						foreach ( $rel_attendees as $rel_attendee ) {
-							$this->log( sprintf( 'Refunded transaction %s.', $transaction_id ), $rel_attendee->ID, $txn, 'refund' );
+							$this->log( sprintf( 'Refunded transaction %s.', $transaction_id ), $rel_attendee->ID, $result, 'refund' );
 							delete_post_meta( $rel_attendee->ID, 'tix_pending_refund' );
 							$rel_attendee->post_status = 'refund';
 							wp_update_post( $rel_attendee );
+							update_post_meta( $attendee->ID, 'tix_refund_transaction_id', $result['refund_transaction_id'] );
+							update_post_meta( $attendee->ID, 'tix_refund_transaction_details', $result['refund_transaction_details'] );
 							clean_post_cache( $rel_attendee->ID );
 						}
 					}
-
 				} else {
-					$this->log( sprintf( 'Could not refund %s.', $transaction_id ), $attendee->ID, $txn, 'refund' );
+					$this->log( sprintf( 'Could not refund %s.', $transaction_id ), $attendee->ID, $result, 'refund' );
 
 					// Let other attendees know they can not be refunded too.
 					while ( $rel_attendees = get_posts( $rel_attendees_query ) ) {
 						foreach ( $rel_attendees as $rel_attendee ) {
-							$this->log( sprintf( 'Could not refund %s.', $transaction_id ), $rel_attendee->ID, $txn, 'refund' );
+							$this->log( sprintf( 'Could not refund %s.', $transaction_id ), $rel_attendee->ID, $result, 'refund' );
 							delete_post_meta( $rel_attendee->ID, 'tix_pending_refund' );
 							clean_post_cache( $rel_attendee->ID );
 						}

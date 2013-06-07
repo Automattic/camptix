@@ -20,7 +20,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		'DKK', 'PLN', 'NOK', 'HUF', 'CZK', 'ILS', 'MXN', 'BRL', 'MYR', 'PHP', 'TWD', 'THB', 'TRY');
 	public $supported_features = array(
 		'refund-single' => true,
-		'refund-all' => false,
+		'refund-all' => true,
 	);
 
 	/**
@@ -621,12 +621,14 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Submits a refund request to PayPal and returns the result
+	 * Submits a user-initiated refund request to PayPal and returns the result
 	 */
 	function payment_refund( $payment_token ) {
 		global $camptix;
 
 		$transaction_id = $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' );
+
+		// @todo refactor to use send_refund_request() in order to keep things DRY
 
 		// Craft and submit the request
 		$payload = array(
@@ -657,6 +659,32 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		);
 
 		return $this->payment_result( $payment_token, $this->get_status_from_string( $response['REFUNDSTATUS'] ), $refund_data );
+	}
+
+	/*
+	 * Sends a request to PayPal to refund a transaction
+	 */
+	function send_refund_request( $payment_token ) {
+		global $camptix;
+		$result = array( 'token' => $payment_token );
+		$transaction_id = $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' );
+
+		$payload = array(
+			'METHOD' => 'RefundTransaction',
+			'TRANSACTIONID' => $transaction_id,
+			'REFUNDTYPE' => 'Full',
+		);
+		$response = wp_parse_args( wp_remote_retrieve_body( $this->paypal_request( $payload ) ) );
+		$result['refund_transaction_id'] = 'x';	// @todo. may not have one if it fails
+		$result['refund_transaction_details'] = $response;
+
+		if ( isset( $response['ACK'], $response['REFUNDTRANSACTIONID'] ) && $response['ACK'] == 'Success' ) {
+			$result['status'] = CampTix_Plugin::PAYMENT_STATUS_REFUNDED;
+		} else {
+			$result['status'] = CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED;
+		}
+
+		return $result;
 	}
 
 	/**
