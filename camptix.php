@@ -97,6 +97,7 @@ class CampTix_Plugin {
 			'manage_tools'     => 'manage_options',
 			'manage_options'   => 'manage_options',
 			'delete_attendees' => 'manage_options',
+			'refund_all'       => 'manage_options',
 		) );
 
 		// Explicitly disable all beta features if beta features is off.
@@ -1434,9 +1435,12 @@ class CampTix_Plugin {
 					__( "This will allows your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
 				);
 
-				$this->add_settings_field_helper( 'refund_all_enabled', __( 'Enable Refund All', 'camptix' ), 'field_yesno', false,
-					__( "Allows to refund all purchased tickets by an admin via the Tools menu.", 'camptix' )
-				);
+				if ( current_user_can( $this->caps['refund_all'] ) ) {
+					$this->add_settings_field_helper( 'refund_all_enabled', __( 'Enable Refund All', 'camptix' ), 'field_yesno', false,
+						__( "Allows to refund all purchased tickets by an admin via the Tools menu.", 'camptix' )
+					);
+				}
+
 				$this->add_settings_field_helper( 'archived', __( 'Archived Event', 'camptix' ), 'field_yesno', false,
 					__( "Archived events are read-only.", 'camptix' )
 				);
@@ -1934,7 +1938,7 @@ class CampTix_Plugin {
 			'notify' => __( 'Notify', 'camptix' ),
 		);
 
-		if ( current_user_can( $this->caps['manage_options'] ) && ! $this->options['archived'] && $this->options['refund_all_enabled'] )
+		if ( current_user_can( $this->caps['refund_all'] ) && ! $this->options['archived'] && $this->options['refund_all_enabled'] )
 			$sections['refund'] = __( 'Refund', 'camptix' );
 
 		foreach ( $sections as $section_key => $section_caption ) {
@@ -2788,7 +2792,7 @@ class CampTix_Plugin {
 	}
 
 	function menu_tools_refund() {
-		if ( ! $this->options['refund_all_enabled'] )
+		if ( ! current_user_can( $this->caps['refund_all'] ) || ! $this->options['refund_all_enabled'] )
 			return;
 
 		if ( get_option( 'camptix_doing_refunds', false ) )
@@ -2826,7 +2830,7 @@ class CampTix_Plugin {
 	 * Runs before the page markup is printed so can add settings errors.
 	 */
 	function menu_tools_refund_admin_init() {
-		if ( ! current_user_can( $this->caps['manage_tools'] ) || 'refund' != $this->get_tools_section() )
+		if ( ! current_user_can( $this->caps['refund_all'] ) || 'refund' != $this->get_tools_section() )
 			return;
 
 		// Display results of completed refund-all job
