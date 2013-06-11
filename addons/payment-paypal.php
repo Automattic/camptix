@@ -638,7 +638,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		$refund_data = array(
 			'transaction_id'             => $result['transaction_id'],
-			'refund_transaction_id'      => isset( $result['refund_transaction_details']['REFUNDTRANSACTIONID'] ) ? $result['refund_transaction_details']['REFUNDTRANSACTIONID'] : false,
+			'refund_transaction_id'      => $result['refund_transaction_id'],
 			'refund_transaction_details' => array(
 				'raw' => $result['refund_transaction_details'],
 			),
@@ -663,12 +663,32 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'TRANSACTIONID' => $result['transaction_id'],
 			'REFUNDTYPE' => 'Full',
 		);
-		$response = wp_parse_args( wp_remote_retrieve_body( $this->request( $payload ) ) );
+		$response = $this->request( $payload );
 
 		// Process PayPal's response
-		$result['refund_transaction_id'] = isset( $response['REFUNDTRANSACTIONID'] ) ? $response['REFUNDTRANSACTIONID'] : false;
-		$result['refund_transaction_details'] = $response;
-		$result['status'] = $this->get_status_from_string( $response['REFUNDSTATUS'] );
+		if ( is_wp_error( $response ) ) {
+			// HTTP request failed, so mimic the response structure to provide a consistent response format
+			$response = array(
+				'ACK' => 'Failure',
+				'L_ERRORCODE0' => 0,
+				'L_LONGMESSAGE0' => __( 'Request did not complete successfully', 'camptix' ),	// don't reveal the raw error message to the user in case it contains sensitive network/server/application-layer data. It will be logged instead later on.
+				'raw' => $response,
+			);
+		} else {
+			$response = wp_parse_args( wp_remote_retrieve_body( $response ) );
+		}
+
+		if ( isset( $response['ACK'], $response['REFUNDTRANSACTIONID'] ) && 'Success' == $response['ACK'] ) {
+			$result['refund_transaction_id'] = $response['REFUNDTRANSACTIONID'];
+			$result['refund_transaction_details'] = $response;
+			$result['status'] = $this->get_status_from_string( $response['REFUNDSTATUS'] );
+		} else {
+			$result['refund_transaction_id'] = false;
+			$result['refund_transaction_details'] = $response;
+			$result['status'] = CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED;
+
+			$this->log( 'Error during RefundTransaction.', null, $response );
+		}
 
 		return $result;
 	}
