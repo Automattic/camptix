@@ -487,7 +487,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			$request = $this->request( $payload );
 			$txn = wp_parse_args( wp_remote_retrieve_body( $request ) );
 
-			if ( isset( $txn['ACK'], $txn['PAYMENTINFO_0_PAYMENTSTATUS'] ) && $txn['ACK'] == 'Success' ) {
+			if ( isset( $txn['ACK'], $txn['PAYMENTINFO_0_PAYMENTSTATUS'] ) && in_array( $txn['ACK'], array( 'Success', 'SuccessWithWarning' ) ) ) {
 				$txn_id = $txn['PAYMENTINFO_0_TRANSACTIONID'];
 				$payment_status = $txn['PAYMENTINFO_0_PAYMENTSTATUS'];
 
