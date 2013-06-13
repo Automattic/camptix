@@ -505,6 +505,10 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 					),
 				);
 
+				if ( isset( $txn['L_ERRORCODE0'] ) && '11607' == $txn['L_ERRORCODE0'] ) {
+					$this->log( 'Duplicate request warning from PayPal.', null, $txn );
+				}
+
 				return $this->payment_result( $payment_token, $this->get_status_from_string( $payment_status ), $payment_data );
 
 			} else {
@@ -709,7 +713,14 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'VERSION' => '88.0', // https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_PreviousAPIVersionsNVP
 		), (array) $payload );
 
-		return wp_remote_post( $url, array( 'body' => $payload, 'timeout' => apply_filters( 'camptix_paypal_timeout', 20 ) ) );
+		$response = wp_remote_post( $url, array( 'body' => $payload, 'timeout' => apply_filters( 'camptix_paypal_timeout', 20 ) ) );
+
+		$status = wp_parse_args( wp_remote_retrieve_body( $response ) );
+		if ( isset( $status['ACK'] ) && 'SuccessWithWarning' == $status['ACK'] ) {
+			$this->log( 'Warning during PayPal request', null, $response );
+		}
+
+		return $response;
 	}
 
 	/**
