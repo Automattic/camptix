@@ -2268,8 +2268,18 @@ class CampTix_Plugin {
 	}
 
 	function menu_tools_revenue() {
-		global $post;
+		$results = $this->generate_revenue_report_data();
 
+		if ( $results['totals']->revenue != $results['actual_total'] ) {
+			printf( '<div class="updated settings-error below-h2"><p>%s</p></div>', sprintf( __( '<strong>Woah!</strong> The revenue total does not match with the transactions total. The actual total is: <strong>%s</strong>. Something somewhere has gone wrong, please report this.', 'camptix' ), $this->append_currency( $results['actual_total'] ) ) );
+		}
+
+		$this->table( $results['rows'], 'widefat tix-revenue-summary' );
+		printf( '<p><span class="description">' . __( 'Revenue report generated in %s seconds.', 'camptix' ) . '</span></p>', $results['run_time'] );
+	}
+
+	function generate_revenue_report_data() {
+		global $post;
 		$start_time = microtime( true );
 
 		$tickets = array();
@@ -2394,20 +2404,23 @@ class CampTix_Plugin {
 			__( 'Discounted', 'camptix' ) => $this->append_currency( $totals->discounted ),
 			__( 'Revenue', 'camptix' ) => $this->append_currency( $totals->revenue ),
 		);
-
-		if ( $totals->revenue != $actual_total ) {
-			printf( '<div class="updated settings-error below-h2"><p>%s</p></div>', sprintf( __( '<strong>Woah!</strong> The revenue total does not match with the transactions total. The actual total is: <strong>%s</strong>. Something somewhere has gone wrong, please report this.', 'camptix' ), $this->append_currency( $actual_total ) ) );
-		}
-
-		$this->table( $rows, 'widefat tix-revenue-summary' );
-		printf( '<p><span class="description">' . __( 'Revenue report generated in %s seconds.', 'camptix' ) . '</span></p>', number_format( microtime( true ) - $start_time, 3 ) );
-
+		
 		// Update stats
 		$this->update_stats( 'sold', $totals->sold );
 		$this->update_stats( 'remaining', $totals->remaining );
 		$this->update_stats( 'subtotal', $totals->sub_total );
 		$this->update_stats( 'discounted', $totals->discounted );
 		$this->update_stats( 'revenue', $totals->revenue );
+
+		$results = array(
+			'totals' => $totals,
+			'actual_total' => $actual_total,
+			'rows' => $rows,
+			'run_time' => number_format( microtime( true ) - $start_time, 3 ),
+		);
+
+		$this->log( sprintf( 'Revenue report data generated in %s seconds', $results['run_time'] ) );
+		return $results;
 	}
 
 	/**
