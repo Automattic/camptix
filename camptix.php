@@ -4629,7 +4629,7 @@ class CampTix_Plugin {
 								<td class="tix-column-price"><?php echo $this->append_currency( $price  * intval( $count ) ); ?></td>
 							</tr>
 						<?php endforeach; ?>
-						<tr>
+						<tr class="tix-row-total">
 							<td colspan="3" style="text-align: right">
 								<?php if ( $this->coupon ) : ?>
 									<?php
