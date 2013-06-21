@@ -1106,7 +1106,7 @@ class CampTix_Plugin {
 		}
 
 		// Let's see if we need to run an upgrade scenario.
-		if ( $options['version'] < $this->version ) {
+		if ( apply_filters( 'camptix_enable_automatic_upgrades', true ) && $options['version'] < $this->version ) {
 
 			// Lock to prevent concurrent upgrades.
 			$doing_upgrade = get_option( 'camptix_doing_upgrade', false );
