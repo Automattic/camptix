@@ -4452,7 +4452,7 @@ class CampTix_Plugin {
 								$price = $ticket->tix_discounted_price;
 							}
 						?>
-						<tr>
+						<tr class="tix-ticket-<?php echo absint( $ticket->ID ); ?>">
 							<td class="tix-column-description">
 								<strong class="tix-ticket-title"><?php echo $ticket->post_title; ?></strong>
 								<?php if ( $ticket->post_excerpt ) : ?>
