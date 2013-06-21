@@ -1117,19 +1117,25 @@ class CampTix_Plugin {
 	 * Controls the application logic of running an upgrade
 	 */
 	function upgrade( $db_version ) {
-		// Lock to prevent concurrent upgrades.
+		$status = false;
 		$doing_upgrade = get_option( 'camptix_doing_upgrade', false );
 
-		if ( ! $doing_upgrade ) {
+		if ( $doing_upgrade ) {
+			$this->log( 'Upgrade already in progress, aborting concurrent attempt.', 0, null, 'upgrade' );
+		} else {
+			// Lock to prevent concurrent upgrades.
 			update_option( 'camptix_doing_upgrade', true );
 
 			$new_version = $this->run_upgrade_parts( $db_version );
 			$options = array_merge( $this->get_default_options(), get_option( 'camptix_options', array() ) );
 			$options['version'] = $new_version;
 			update_option( 'camptix_options', $options );
+			$status = true;
 
 			delete_option( 'camptix_doing_upgrade' );
 		}
+
+		return $status;
 	}
 
 	/**
