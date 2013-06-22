@@ -60,6 +60,10 @@ class CampTix_Plugin {
 		require( dirname( __FILE__ ) . '/inc/class-camptix-addon.php' );
 		require( dirname( __FILE__ ) . '/inc/class-camptix-payment-method.php' );
 
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			require_once( dirname( __FILE__ ) . '/inc/class-wp-cli-commands.php' );
+		}
+
 		// Addons
 		add_action( 'init', array( $this, 'load_addons' ), 8 );
 		add_action( 'camptix_load_addons', array( $this, 'load_default_addons' ) );
@@ -1106,31 +1110,42 @@ class CampTix_Plugin {
 		}
 
 		// Let's see if we need to run an upgrade scenario.
-		if ( $options['version'] < $this->version ) {
-
-			// Lock to prevent concurrent upgrades.
-			$doing_upgrade = get_option( 'camptix_doing_upgrade', false );
-
-			if ( ! $doing_upgrade ) {
-				update_option( 'camptix_doing_upgrade', true );
-				$new_version = $this->upgrade( $options['version'] );
-				delete_option( 'camptix_doing_upgrade' );
-
-				// Read options again in case of update options.
-				$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
-				$options['version'] = $new_version;
-				update_option( 'camptix_options', $options );
-			}
-
+		if ( apply_filters( 'camptix_enable_automatic_upgrades', true ) && $options['version'] < $this->version ) {
+			$this->upgrade( $options['version'] );
 		}
 
 		return $options;
 	}
 
-	/**
-	 * Runs when get_option decides that the current version is out of date.
+	/*
+	 * Controls the application logic of running an upgrade
 	 */
-	function upgrade( $from ) {
+	function upgrade( $db_version ) {
+		$status = false;
+		$doing_upgrade = get_option( 'camptix_doing_upgrade', false );
+
+		if ( $doing_upgrade ) {
+			$this->log( 'Upgrade already in progress, aborting concurrent attempt.', 0, null, 'upgrade' );
+		} else {
+			// Lock to prevent concurrent upgrades.
+			update_option( 'camptix_doing_upgrade', true );
+
+			$new_version = $this->run_upgrade_parts( $db_version );
+			$options = array_merge( $this->get_default_options(), get_option( 'camptix_options', array() ) );
+			$options['version'] = $new_version;
+			update_option( 'camptix_options', $options );
+			$status = true;
+
+			delete_option( 'camptix_doing_upgrade' );
+		}
+
+		return $status;
+	}
+
+	/**
+	 * Processes the business logic of an upgrade
+	 */
+	protected function run_upgrade_parts( $from ) {
 		set_time_limit( 60*60 ); // Give it an hour to update.
 		$this->log( 'Running upgrade script.', 0, null, 'upgrade' );
 
