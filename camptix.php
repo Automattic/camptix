@@ -60,6 +60,10 @@ class CampTix_Plugin {
 		require( dirname( __FILE__ ) . '/inc/class-camptix-addon.php' );
 		require( dirname( __FILE__ ) . '/inc/class-camptix-payment-method.php' );
 
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			require_once( dirname( __FILE__ ) . '/inc/class-wp-cli-commands.php' );
+		}
+
 		// Addons
 		add_action( 'init', array( $this, 'load_addons' ), 8 );
 		add_action( 'camptix_load_addons', array( $this, 'load_default_addons' ) );
