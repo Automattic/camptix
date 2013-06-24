@@ -4440,7 +4440,9 @@ class CampTix_Plugin {
 					<tr>
 						<th class="tix-column-description"><?php _e( 'Description', 'camptix' ); ?></th>
 						<th class="tix-column-price"><?php _e( 'Price', 'camptix' ); ?></th>
-						<th class="tix-column-remaining"><?php _e( 'Remaining', 'camptix' ); ?></th>
+						<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
+							<th class="tix-column-remaining"><?php _e( 'Remaining', 'camptix' ); ?></th>
+						<?php endif; ?>
 						<th class="tix-column-quantity"><?php _e( 'Quantity', 'camptix' ); ?></th>
 					</tr>
 				</thead>
@@ -4484,7 +4486,9 @@ class CampTix_Plugin {
 									Free
 								<?php endif; ?>
 							</td>
-							<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo $ticket->tix_remaining; ?></td>
+							<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
+								<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo $ticket->tix_remaining; ?></td>
+							<?php endif; ?>
 							<td class="tix-column-quantity" style="vertical-align: middle;">
 								<select name="tix_tickets_selected[<?php echo $ticket->ID; ?>]">
 									<?php foreach ( range( 0, $max ) as $value ) : ?>
