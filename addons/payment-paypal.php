@@ -287,7 +287,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			$transaction_id = $payload['parent_txn_id'];
 
 		if ( empty( $transaction_id ) ) {
-			$this->log( __( 'Received old-style IPN request with an empty transaction id.', 'camptix' ), null, $payload );
+			$this->log( 'Received old-style IPN request with an empty transaction id.', null, $payload );
 			return;
 		}
 
@@ -307,14 +307,14 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		) );
 
 		if ( ! $attendees ) {
-			$this->log( __( 'Received old-style IPN request. Could not match to attendee by transaction id.', 'camptix' ), null, $payload );
+			$this->log( 'Received old-style IPN request. Could not match to attendee by transaction id.', null, $payload );
 			return;
 		}
 
 		$payment_token = get_post_meta( $attendees[0]->ID, 'tix_payment_token', true );
 
 		if ( ! $payment_token ) {
-			$this->log( __( 'Received old-style IPN request. Could find a payment token by transaction id.', 'camptix' ), null, $payload );
+			$this->log( 'Received old-style IPN request. Could find a payment token by transaction id.', null, $payload );
 			return;
 		}
 
