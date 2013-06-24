@@ -5424,7 +5424,7 @@ class CampTix_Plugin {
 		if ( isset( $this->reservation ) && $this->reservation )
 			$via_reservation = $this->reservation['token'];
 
-		if ( $this->get_remaining_tickets( $post_id, $via_reservation ) < 1 ) return false;
+		if ( apply_filters( 'camptix_hide_empty_tickets', true ) && $this->get_remaining_tickets( $post_id, $via_reservation ) < 1 ) return false;
 
 		$start = get_post_meta( $post_id, 'tix_start', true );
 		$end = get_post_meta( $post_id, 'tix_end', true );
