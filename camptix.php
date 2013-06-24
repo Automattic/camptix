@@ -4495,7 +4495,7 @@ class CampTix_Plugin {
 						</tr>
 					<?php endforeach; ?>
 						<?php if ( $this->have_coupons() ) : ?>
-						<tr>
+						<tr class="tix-row-coupon">
 							<td colspan="4" style="text-align: right;">
 								<?php if ( $this->coupon ) : ?>
 									<input type="hidden" name="tix_coupon" value="<?php echo esc_attr( $this->coupon->post_title ); ?>" />
