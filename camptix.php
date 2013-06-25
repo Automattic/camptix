@@ -76,14 +76,6 @@ class CampTix_Plugin {
 		load_plugin_textdomain( 'camptix', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 	}
 
-	// The tix_action is a user-facing query var, let's enable it.
-	function query_vars( $query_vars ) {
-		$query_vars = array_merge( $query_vars, array(
-			'tix_action',
-		) );
-		return $query_vars;
-	}
-
 	/**
 	 * Fired during init, doh!
 	 */
@@ -117,9 +109,6 @@ class CampTix_Plugin {
 
 		// Our main shortcode
 		add_shortcode( 'camptix', array( $this, 'shortcode_callback' ) );
-
-		// Additional query vars.
-		add_filter( 'query_vars', array( $this, 'query_vars' ) );
 
 		// Hack to avoid object caching, see revenue report.
 		add_filter( 'get_post_metadata', array( $this, 'get_post_metadata' ), 10, 4 );
@@ -4319,29 +4308,30 @@ class CampTix_Plugin {
 		if ( isset( $this->error_flags['no_payment_methods'] ) )
 			return $this->shortcode_contents = $this->form_start();
 
-		if ( 'attendee_info' == get_query_var( 'tix_action' ) && isset( $_POST['tix_coupon_submit'], $_POST['tix_coupon'] ) && ! empty( $_POST['tix_coupon'] ) )
+		if ( isset( $_GET['tix_action'] ) && ! empty( $_GET['tix_action'] ) ) {
+			if ( 'attendee_info' == $_GET['tix_action'] && isset( $_POST['tix_coupon_submit'], $_POST['tix_coupon'] ) && ! empty( $_POST['tix_coupon'] ) )
+				return $this->shortcode_contents = $this->form_start();
+
+			if ( 'attendee_info' == $_GET['tix_action'] && isset( $this->error_flags['no_tickets_selected'] ) )
+				return $this->shortcode_contents = $this->form_start();
+
+			if ( 'attendee_info' == $_GET['tix_action'] )
+				return $this->shortcode_contents = $this->form_attendee_info();
+
+			if ( 'checkout' == $_GET['tix_action'] )
+				return $this->shortcode_contents = $this->form_checkout();
+
+			if ( 'access_tickets' == $_GET['tix_action'] )
+				return $this->shortcode_contents = $this->form_access_tickets();
+
+			if ( 'edit_attendee' == $_GET['tix_action'] )
+				return $this->shortcode_contents = $this->form_edit_attendee();
+
+			if ( 'refund_request' == $_GET['tix_action'] && $this->options['refunds_enabled'] )
+				return $this->shortcode_contents = $this->form_refund_request();
+		} else {
 			return $this->shortcode_contents = $this->form_start();
-
-		if ( 'attendee_info' == get_query_var( 'tix_action' ) && isset( $this->error_flags['no_tickets_selected'] ) )
-			return $this->shortcode_contents = $this->form_start();
-
-		if ( 'attendee_info' == get_query_var( 'tix_action' ) )
-			return $this->shortcode_contents = $this->form_attendee_info();
-
-		if ( 'checkout' == get_query_var( 'tix_action' ) )
-			return $this->shortcode_contents = $this->form_checkout();
-
-		if ( 'access_tickets' == get_query_var( 'tix_action' ) )
-			return $this->shortcode_contents = $this->form_access_tickets();
-
-		if ( 'edit_attendee' == get_query_var( 'tix_action' ) )
-			return $this->shortcode_contents = $this->form_edit_attendee();
-
-		if ( 'refund_request' == get_query_var( 'tix_action' ) && $this->options['refunds_enabled'] )
-			return $this->shortcode_contents = $this->form_refund_request();
-
-		if ( ! get_query_var( 'tix_action' ) )
-			return $this->shortcode_contents = $this->form_start();
+		}
 
 		return $this->shortcode_contents = 'Hmmm.';
 	}
@@ -4381,10 +4371,10 @@ class CampTix_Plugin {
 			$this->info( __( 'You are using a reservation, cool!', 'camptix' ) );
 
 		if ( ! isset( $_POST['tix_coupon_submit'], $_POST['tix_coupon'] ) || empty( $_POST['tix_coupon'] ) )
-			if ( isset( $this->error_flags['no_tickets_selected'] ) && 'attendee_info' == get_query_var( 'tix_action' )  )
+			if ( isset( $this->error_flags['no_tickets_selected'] ) && isset( $_GET['tix_action'] ) && 'attendee_info' == $_GET['tix_action'] )
 				$this->error( __( 'Please select at least one ticket.', 'camptix' ) );
 
-		if ( 'checkout' == get_query_var( 'tix_action' ) && isset( $this->error_flags['no_tickets_selected'] ) )
+		if ( isset( $_GET['tix_action'] ) && 'checkout' == $_GET['tix_action'] && isset( $this->error_flags['no_tickets_selected'] ) )
 			$this->error( __( 'It looks like somebody took that last ticket before you, sorry! You try a different ticket.', 'camptix' ) );
 
 		if ( isset( $this->error_flags['no_payment_methods'] ) ) {
@@ -4559,19 +4549,19 @@ class CampTix_Plugin {
 		// Clean things up before and after the shortcode.
 		$post->post_content = $this->shortcode_str;
 
-		if ( isset( $this->error_flags['no_tickets_selected'] ) && 'checkout' == get_query_var( 'tix_action' ) )
+		if ( isset( $this->error_flags['no_tickets_selected'], $_GET['tix_action'] ) && 'checkout' == $_GET['tix_action'] )
 			return $this->form_start();
 
-		if ( isset( $this->error_flags['tickets_excess'] ) )
-			if ( 'attendee_info' == get_query_var( 'tix_action' ) )
+		if ( isset( $this->error_flags['tickets_excess'], $_GET['action'] ) )
+			if ( 'attendee_info' == $_GET['tix_action'] )
 				$this->notice( __( 'It looks like you have chosen more tickets than we have left! We have stripped the extra ones.', 'camptix' ) );
-			elseif ( 'checkout' == get_query_var( 'tix_action' ) )
+			elseif ( 'checkout' == $_GET['tix_action'] )
 				$this->error( __( 'It looks like somebody purchased a ticket before you could finish your purchase. Please review your order and try again.', 'camptix' ) );
 
-		if ( isset( $this->error_flags['coupon_excess'] ) )
-			if ( 'attendee_info' == get_query_var( 'tix_action' ) )
+		if ( isset( $this->error_flags['coupon_excess'], $_GET['tix_action'] ) )
+			if ( 'attendee_info' == $_GET['tix_action'] )
 				$this->notice( __( 'You have exceeded the coupon limits, so we have stripped down the extra tickets.', 'camptix' ) );
-			elseif ( 'checkout' == get_query_var( 'tix_action' ) )
+			elseif ( 'checkout' == $_GET['tix_action'] )
 				$this->error( __( 'It looks like somebody used the same coupon before you could finish your purchase. Please review your order and try again.', 'camptix' ) );
 
 		if ( isset( $this->error_flags['required_fields'] ) )
@@ -6004,9 +5994,9 @@ class CampTix_Plugin {
 
 		if ( ! empty( $this->error_flags ) ) {
 
-			if ( 'attendee_info' == get_query_var( 'tix_action' ) ) {
+			if ( isset( $_GET['tix_action'] ) && 'attendee_info' == $_GET['tix_action'] ) {
 				// print_r($this->error_flags);
-			} elseif( 'checkout' == get_query_var( 'tix_action' ) ) {
+			} elseif( isset( $_GET['tix_action'] ) && 'checkout' == $_GET['tix_action'] ) {
 				// print_r($this->error_flags);
 			} else {
 				$this->redirect_with_error_flags();
@@ -6217,7 +6207,7 @@ class CampTix_Plugin {
 					$error_code = $data['error_code'];
 
 				// If payment errors were immediate (right on the checkout page), return.
-				if ( 'checkout' == get_query_var( 'tix_action' ) ) {
+				if ( isset( $_GET['tix_action'] ) && 'checkout' == $_GET['tix_action'] ) {
 					$this->error_flag( 'payment_failed' );
 					// $this->error_data['boogie'] = 'woogie'; // @todo Add error data and parse it
 					return $result;

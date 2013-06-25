@@ -202,14 +202,16 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		if ( ! isset( $_REQUEST['tix_payment_method'] ) || 'paypal' != $_REQUEST['tix_payment_method'] )
 			return;
 
-		if ( 'payment_cancel' == get_query_var( 'tix_action' ) )
-			$this->payment_cancel();
+		if ( isset( $_GET['tix_action'] ) ) {
+			if ( 'payment_cancel' == $_GET['tix_action'] )
+				$this->payment_cancel();
 
-		if ( 'payment_return' == get_query_var( 'tix_action' ) )
-			$this->payment_return();
+			if ( 'payment_return' == $_GET['tix_action'] )
+				$this->payment_return();
 
-		if ( 'payment_notify' == get_query_var( 'tix_action' ) )
-			$this->payment_notify();
+			if ( 'payment_notify' == $_GET['tix_action'] )
+				$this->payment_notify();
+		}
 	}
 
 	/**
