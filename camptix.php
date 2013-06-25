@@ -4603,7 +4603,7 @@ class CampTix_Plugin {
 					<input type="hidden" name="tix_tickets_selected[<?php echo intval( $ticket_id ); ?>]" value="<?php echo intval( $count ); ?>" />
 				<?php endforeach; ?>
 
-				<h2><?php _e( 'Order Summary', 'camptix' ); ?></h2>
+				<h2><?php echo apply_filters( 'camptix_register_order_summary_header', __( 'Order Summary', 'camptix' ) ); ?></h2>
 				<table class="tix_tickets_table tix-order-summary">
 					<thead>
 						<tr>
@@ -4658,7 +4658,7 @@ class CampTix_Plugin {
 					</tbody>
 				</table>
 
-				<h2 id="tix-registration-information"><?php _e( 'Registration Information', 'camptix' ); ?></h2>
+				<h2 id="tix-registration-information"><?php echo apply_filters( 'camptix_register_registration_info_header', __( 'Registration Information', 'camptix' ) ); ?></h2>
 				<?php foreach ( $this->tickets_selected as $ticket_id => $count ) : ?>
 					<?php foreach ( range( 1, $count ) as $looping_count_times ) : ?>
 
