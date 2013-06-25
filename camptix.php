@@ -4418,27 +4418,27 @@ class CampTix_Plugin {
 		<div id="tix">
 			<?php do_action( 'camptix_notices' ); ?>
 			<?php if ( $available_tickets ) : ?>
-			<form action="<?php echo esc_url( add_query_arg( 'tix_action', 'attendee_info', $this->get_tickets_url() ) ); ?>#tix" method="POST">
+				<form action="<?php echo esc_url( add_query_arg( 'tix_action', 'attendee_info', $this->get_tickets_url() ) ); ?>#tix" method="POST">
 
-			<?php if ( isset( $this->reservation ) && $this->reservation ) : ?>
-				<input type="hidden" name="tix_reservation_id" value="<?php echo esc_attr( $this->reservation['id'] ); ?>" />
-				<input type="hidden" name="tix_reservation_token" value="<?php echo esc_attr( $this->reservation['token'] ); ?>" />
-			<?php endif; ?>
+				<?php if ( isset( $this->reservation ) && $this->reservation ) : ?>
+					<input type="hidden" name="tix_reservation_id" value="<?php echo esc_attr( $this->reservation['id'] ); ?>" />
+					<input type="hidden" name="tix_reservation_token" value="<?php echo esc_attr( $this->reservation['token'] ); ?>" />
+				<?php endif; ?>
 
-			<table class="tix_tickets_table">
-				<thead>
-					<tr>
-						<th class="tix-column-description"><?php _e( 'Description', 'camptix' ); ?></th>
-						<th class="tix-column-price"><?php _e( 'Price', 'camptix' ); ?></th>
-						<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
-							<th class="tix-column-remaining"><?php _e( 'Remaining', 'camptix' ); ?></th>
-						<?php endif; ?>
-						<th class="tix-column-quantity"><?php _e( 'Quantity', 'camptix' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ( $this->tickets as $ticket ) : ?>
-						<?php
+				<table class="tix_tickets_table">
+					<thead>
+						<tr>
+							<th class="tix-column-description"><?php _e( 'Description', 'camptix' ); ?></th>
+							<th class="tix-column-price"><?php _e( 'Price', 'camptix' ); ?></th>
+							<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
+								<th class="tix-column-remaining"><?php _e( 'Remaining', 'camptix' ); ?></th>
+							<?php endif; ?>
+							<th class="tix-column-quantity"><?php _e( 'Quantity', 'camptix' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $this->tickets as $ticket ) : ?>
+							<?php
 							if ( ! $this->is_ticket_valid_for_purchase( $ticket->ID ) )
 								continue;
 
@@ -4458,42 +4458,42 @@ class CampTix_Plugin {
 
 								$price = $ticket->tix_discounted_price;
 							}
-						?>
-						<tr class="tix-ticket-<?php echo absint( $ticket->ID ); ?>">
-							<td class="tix-column-description">
-								<strong class="tix-ticket-title"><?php echo $ticket->post_title; ?></strong>
-								<?php if ( $ticket->post_excerpt ) : ?>
-								<br /><span class="tix-ticket-excerpt"><?php echo $ticket->post_excerpt; ?></span>
+							?>
+							<tr class="tix-ticket-<?php echo absint( $ticket->ID ); ?>">
+								<td class="tix-column-description">
+									<strong class="tix-ticket-title"><?php echo $ticket->post_title; ?></strong>
+									<?php if ( $ticket->post_excerpt ) : ?>
+										<br /><span class="tix-ticket-excerpt"><?php echo $ticket->post_excerpt; ?></span>
+									<?php endif; ?>
+									<?php if ( $ticket->tix_coupon_applied ) : ?>
+										<br /><small class="tix-discount"><?php echo esc_html( $ticket->tix_discounted_text ); ?></small>
+									<?php endif; ?>
+								</td>
+								<td class="tix-column-price" style="vertical-align: middle;">
+									<?php if ( $price > 0 ) : ?>
+										<?php echo $this->append_currency( $price ); ?>
+									<?php else : ?>
+										Free
+									<?php endif; ?>
+								</td>
+								<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
+									<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo $ticket->tix_remaining; ?></td>
 								<?php endif; ?>
-								<?php if ( $ticket->tix_coupon_applied ) : ?>
-								<br /><small class="tix-discount"><?php echo esc_html( $ticket->tix_discounted_text ); ?></small>
-								<?php endif; ?>
-							</td>
-							<td class="tix-column-price" style="vertical-align: middle;">
-								<?php if ( $price > 0 ) : ?>
-								<?php echo $this->append_currency( $price ); ?>
-								<?php else : ?>
-									Free
-								<?php endif; ?>
-							</td>
-							<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
-								<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo $ticket->tix_remaining; ?></td>
-							<?php endif; ?>
-							<td class="tix-column-quantity" style="vertical-align: middle;">
-								<select name="tix_tickets_selected[<?php echo $ticket->ID; ?>]">
-									<?php foreach ( range( 0, $max ) as $value ) : ?>
-									<option <?php selected( $selected, $value ); ?> value="<?php echo esc_attr( $value ); ?>"><?php echo esc_html( $value ); ?></option>
-									<?php endforeach; ?>
-								</select>
-							</td>
-						</tr>
-					<?php endforeach; ?>
+								<td class="tix-column-quantity" style="vertical-align: middle;">
+									<select name="tix_tickets_selected[<?php echo $ticket->ID; ?>]">
+										<?php foreach ( range( 0, $max ) as $value ) : ?>
+											<option <?php selected( $selected, $value ); ?> value="<?php echo esc_attr( $value ); ?>"><?php echo esc_html( $value ); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</td>
+							</tr>
+						<?php endforeach; ?>
 						<?php if ( $this->have_coupons() ) : ?>
-						<tr class="tix-row-coupon">
-							<td colspan="4" style="text-align: right;">
-								<?php if ( $this->coupon ) : ?>
-									<input type="hidden" name="tix_coupon" value="<?php echo esc_attr( $this->coupon->post_title ); ?>" />
-									<?php
+							<tr class="tix-row-coupon">
+								<td colspan="4" style="text-align: right;">
+									<?php if ( $this->coupon ) : ?>
+										<input type="hidden" name="tix_coupon" value="<?php echo esc_attr( $this->coupon->post_title ); ?>" />
+										<?php
 										$discount_price = (float) $this->coupon->tix_discount_price;
 										$discount_percent = (float) $this->coupon->tix_discount_percent;
 										if ( $discount_price > 0 ) {
@@ -4501,36 +4501,36 @@ class CampTix_Plugin {
 										} elseif ( $discount_percent > 0 ) {
 											$discount_text = $discount_percent . '%';
 										}
-									?>
-									<?php printf( __( 'Coupon Applied: <strong>%s</strong>, %s discount', 'camptix' ), esc_html( $this->coupon->post_title ), $discount_text ); ?>
-								<?php else : ?>
-								<a href="#" id="tix-coupon-link"><?php _e( 'Click here to enter a coupon code', 'camptix' ); ?></a>
-								<div id="tix-coupon-container" style="display: none;">
-									<input type="text" id="tix-coupon-input" name="tix_coupon" value="" />
-									<input type="submit" name="tix_coupon_submit" value="<?php esc_attr_e( 'Apply Coupon', 'camptix' ); ?>" />
-								</div>
-								<script>
-									// Hide the link and show the coupon form on click.
-									var link_el = document.getElementById( 'tix-coupon-link' );
-									link_el.onclick = function() {
-										this.style.display = 'none';
-										document.getElementById( 'tix-coupon-container' ).style.display = 'block';
-										document.getElementById( 'tix-coupon-input' ).focus();
-										return false;
-									};
-								</script>
-								<?php endif; // doing coupon && valid ?>
-							</td>
-						</tr>
+										?>
+										<?php printf( __( 'Coupon Applied: <strong>%s</strong>, %s discount', 'camptix' ), esc_html( $this->coupon->post_title ), $discount_text ); ?>
+									<?php else : ?>
+										<a href="#" id="tix-coupon-link"><?php _e( 'Click here to enter a coupon code', 'camptix' ); ?></a>
+										<div id="tix-coupon-container" style="display: none;">
+											<input type="text" id="tix-coupon-input" name="tix_coupon" value="" />
+											<input type="submit" name="tix_coupon_submit" value="<?php esc_attr_e( 'Apply Coupon', 'camptix' ); ?>" />
+										</div>
+										<script>
+											// Hide the link and show the coupon form on click.
+											var link_el = document.getElementById( 'tix-coupon-link' );
+											link_el.onclick = function() {
+												this.style.display = 'none';
+												document.getElementById( 'tix-coupon-container' ).style.display = 'block';
+												document.getElementById( 'tix-coupon-input' ).focus();
+												return false;
+											};
+										</script>
+									<?php endif; // doing coupon && valid ?>
+								</td>
+							</tr>
 						<?php endif; ?>
-				</tbody>
-			</table>
+					</tbody>
+				</table>
 
-			<p>
-				<input type="submit" value="<?php esc_attr_e( 'Register &rarr;', 'camptix' ); ?>" style="float: right; cursor: pointer;" />
-				<br class="tix-clear" />
-			</p>
-			</form>
+				<p>
+					<input type="submit" value="<?php esc_attr_e( 'Register &rarr;', 'camptix' ); ?>" style="float: right; cursor: pointer;" />
+					<br class="tix-clear" />
+				</p>
+				</form>
 			<?php endif; ?>
 		</div><!-- #tix -->
 		<?php
