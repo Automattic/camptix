@@ -4477,7 +4477,7 @@ class CampTix_Plugin {
 									<?php endif; ?>
 								</td>
 								<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
-									<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo $ticket->tix_remaining; ?></td>
+									<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo apply_filters( 'camptix_form_start_tix_remaining', $ticket->tix_remaining, $ticket ); ?></td>
 								<?php endif; ?>
 								<td class="tix-column-quantity" style="vertical-align: middle;">
 									<select name="tix_tickets_selected[<?php echo $ticket->ID; ?>]">
