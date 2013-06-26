@@ -6584,11 +6584,11 @@ class CampTix_Plugin {
 
 		if ( is_email( get_option( 'admin_email' ) ) && is_array( $headers ) )
 			$headers[] = sprintf( 'From: %s <%s>', $this->options['event_name'], get_option( 'admin_email' ) );
+		$message_data = array( 'to' => $to, 'subject' => $subject, 'message' => $message, 'headers' => $headers );
 
-		$this->log( sprintf( 'Sent e-mail to %s.', $to ), null, array( 'subject' => $subject, 'message' => $message ), 'email' );
 		$results = wp_mail( $to, $subject, $message, $headers, $attachments );
-
-		// @todo add log if mail fails
+		$log_message = $results ? sprintf( 'Sent e-mail to %s.', $to ) : sprintf( 'E-mail to %s failed to send.', $to );
+		$this->log( $log_message, null, $message_data, 'email' );
 
 		do_action( 'camptix_wp_mail_finish' );
 		return $results;
