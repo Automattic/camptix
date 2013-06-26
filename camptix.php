@@ -6580,11 +6580,18 @@ class CampTix_Plugin {
 	}
 
 	function wp_mail( $to, $subject, $message, $headers = array(), $attachments = '' ) {
+		do_action( 'camptix_wp_mail_start' );
+
 		if ( is_email( get_option( 'admin_email' ) ) && is_array( $headers ) )
 			$headers[] = sprintf( 'From: %s <%s>', $this->options['event_name'], get_option( 'admin_email' ) );
 
 		$this->log( sprintf( 'Sent e-mail to %s.', $to ), null, array( 'subject' => $subject, 'message' => $message ), 'email' );
-		return wp_mail( $to, $subject, $message, $headers, $attachments );
+		$results = wp_mail( $to, $subject, $message, $headers, $attachments );
+
+		// @todo add log if mail fails
+
+		do_action( 'camptix_wp_mail_finish' );
+		return $results;
 	}
 
 	/**
