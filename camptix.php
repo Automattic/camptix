@@ -3175,6 +3175,11 @@ class CampTix_Plugin {
 						<span><a href="<?php echo esc_url( $edit_link ); ?>"><?php _e( 'Edit Attendee Info', 'camptix' ); ?></a></span>
 					</div>
 
+					<div class="misc-pub-section">
+						<input id="tix_privacy_<?php esc_attr( $post->ID ); ?>" name="tix_privacy" type="checkbox" <?php checked( get_post_meta( $post->ID, 'tix_privacy', true ), 'private' ); ?> />
+						<label for="tix_privacy_<?php esc_attr( $post->ID ); ?>"><?php _e( 'Hide from public attendees list', 'camptix' ); ?></label>
+					</div>
+
 				</div><!-- #misc-publishing-actions -->
 				<div class="clear"></div>
 			</div><!-- #minor-publishing -->
@@ -4005,6 +4010,12 @@ class CampTix_Plugin {
 		if ( wp_is_post_revision( $post_id ) || 'tix_attendee' != get_post_type( $post_id ) )
 			return;
 
+		if ( isset( $_POST['tix_privacy'] ) && 'on' == $_POST['tix_privacy'] ) {
+			update_post_meta( $post_id, 'tix_privacy', 'private' );
+		} else {
+			delete_post_meta( $post_id, 'tix_privacy' );
+		}
+
 		$search_meta_fields = array(
 			'tix_first_name',
 			'tix_last_name',
@@ -4019,6 +4030,7 @@ class CampTix_Plugin {
 			'tix_edit_token',
 			'tix_payment_token',
 			'tix_payment_method',
+			'tix_privacy',
 		);
 		$data = array( 'timestamp' => time() );
 
