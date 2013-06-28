@@ -5231,7 +5231,7 @@ class CampTix_Plugin {
 
 					</tbody>
 				</table>
-				<p class="tix-description"><?php _e( 'Refunds can take up to several days to process. All purchased tickets will be cancelled. Partial refunds and refunds to a different account than the original purchaser, are unavailable. You have to agree to these terms before requesting a refund.', 'camptix' ); ?></p>
+				<p class="tix-description"><?php _e( 'Refunds can take up to several days to process. All of the tickets you purchased in the original transaction will be cancelled. We are not able to provide partial refunds and/or refunds to a different account than the original purchaser. You must agree to these terms before requesting a refund.', 'camptix' ); ?></p>
 				<p class="tix-submit">
 					<label><input type="checkbox" name="tix_refund_request_confirmed" value="1"> <?php _e( 'I agree to the above terms', 'camptix' ); ?></label>
 					<input type="submit" value="<?php esc_attr_e( 'Send Request', 'camptix' ); ?>" />
