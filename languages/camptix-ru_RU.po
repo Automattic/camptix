@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CampTix Event Ticketing\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/camptix\n"
-"POT-Creation-Date: 2013-07-02 10:35+0400\n"
-"PO-Revision-Date: 2013-07-02 10:36+0400\n"
+"POT-Creation-Date: 2013-07-02 11:06+0400\n"
+"PO-Revision-Date: 2013-07-02 11:07+0400\n"
 "Last-Translator: Konstantin Kovshenin <kovshenin@gmail.com>\n"
 "Language-Team: WordCamp.org <kovshenin@gmail.com>\n"
 "Language: Russian\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Generator: Poedit 1.5.4\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Poedit-KeywordsList: __;_e;esc_html_e;esc_attr_e;_n;_x;_nx;_ex\n"
+"X-Poedit-KeywordsList: __;_e;esc_html_e;esc_attr_e;_n;_x:1,2c;_nx;_ex\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: ..\n"
@@ -290,19 +290,39 @@ msgstr ""
 msgid "E-mails (debug)"
 msgstr ""
 
-#: ../camptix.php:1008 ../camptix.php:1056
+#: ../camptix.php:1008
+msgctxt "post"
 msgid "Cancelled"
-msgstr "Отменено"
+msgstr "Отменённый"
 
-#: ../camptix.php:1017 ../camptix.php:1053
+#: ../camptix.php:1017
+msgctxt "post"
 msgid "Failed"
-msgstr "Недуачные"
+msgstr "Неудавшийся"
 
-#: ../camptix.php:1026 ../camptix.php:1050
+#: ../camptix.php:1026
+msgctxt "post"
+msgid "Timeout"
+msgstr "Истёкший"
+
+#: ../camptix.php:1035
+msgctxt "post"
+msgid "Refunded"
+msgstr "Возмещённый"
+
+#: ../camptix.php:1050
 msgid "Timeout"
 msgstr "Время истекло"
 
-#: ../camptix.php:1035 ../camptix.php:1059
+#: ../camptix.php:1053
+msgid "Failed"
+msgstr "Недуачные"
+
+#: ../camptix.php:1056
+msgid "Cancelled"
+msgstr "Отменено"
+
+#: ../camptix.php:1059
 msgid "Refunded"
 msgstr "Возмещено"
 
@@ -1572,12 +1592,17 @@ msgstr "Ошибка суммы!"
 msgid "The selected currency is not supported by this payment method."
 msgstr "Выбранная валюта не поддерживается данным способом платежа."
 
-#: ../addons/payment-paypal.php:594 ../addons/payment-paypal.php:642
+#: ../addons/payment-paypal.php:576
+msgctxt "PayPal locale code, leave default to guess"
+msgid "default"
+msgstr "ru_RU"
+
+#: ../addons/payment-paypal.php:599 ../addons/payment-paypal.php:647
 #, php-format
 msgid "PayPal error: %s (%d)"
 msgstr "Ошибка PayPal: %s (%d)"
 
-#: ../addons/payment-paypal.php:680
+#: ../addons/payment-paypal.php:685
 msgid "Request did not complete successfully"
 msgstr "Ошибка запроса"
 
@@ -1642,20 +1667,12 @@ msgstr ""
 msgid "%s is not supported by this payment method."
 msgstr ""
 
-#~ msgctxt "post"
-#~ msgid "Cancelled"
-#~ msgstr "Отменённый"
-
 #~ msgctxt "camptix"
 #~ msgid "Cancelled <span class=\"count\">(%s)</span>"
 #~ msgid_plural "Cancelled <span class=\"count\">(%s)</span>"
 #~ msgstr[0] "Отменено <span class=\"count\">(%s)</span>"
 #~ msgstr[1] "Отменено <span class=\"count\">(%s)</span>"
 #~ msgstr[2] "Отменено <span class=\"count\">(%s)</span>"
-
-#~ msgctxt "post"
-#~ msgid "Failed"
-#~ msgstr "Неудавшийся"
 
 #~ msgctxt "camptix"
 #~ msgid "Failed <span class=\"count\">(%s)</span>"
@@ -1664,20 +1681,12 @@ msgstr ""
 #~ msgstr[1] "Неудачные <span class=\"count\">(%s)</span>"
 #~ msgstr[2] "Неудачные <span class=\"count\">(%s)</span>"
 
-#~ msgctxt "post"
-#~ msgid "Timeout"
-#~ msgstr "Истёкший"
-
 #~ msgctxt "camptix"
 #~ msgid "Timeout <span class=\"count\">(%s)</span>"
 #~ msgid_plural "Timeout <span class=\"count\">(%s)</span>"
 #~ msgstr[0] "Время истекло <span class=\"count\">(%s)</span>"
 #~ msgstr[1] "Время истекло <span class=\"count\">(%s)</span>"
 #~ msgstr[2] "Время истекло <span class=\"count\">(%s)</span>"
-
-#~ msgctxt "post"
-#~ msgid "Refunded"
-#~ msgstr "Возмещённый"
 
 #~ msgctxt "camptix"
 #~ msgid "Refunded <span class=\"count\">(%s)</span>"
