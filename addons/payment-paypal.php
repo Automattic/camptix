@@ -572,6 +572,11 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'SOLUTIONTYPE' => 'Sole',
 		);
 
+		// See https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/
+		$locale_code = _x( 'default', 'PayPal locale code, leave default to guess', 'camptix' );
+		if ( ! empty( $locale_code ) && 'default' != $locale_code )
+			$payload['LOCALECODE'] = $locale_code;
+
 		// Replace creds from a predefined account if any.
 		$options = array_merge( $this->options, $this->get_predefined_account( $this->options['api_predef'] ) );
 
