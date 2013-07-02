@@ -22,7 +22,7 @@ class CampTix_Plugin {
 	public $beta_features_enabled;
 	public $version = 20121227;
 	public $css_version = 20121227;
-	public $js_version = 20130109;
+	public $js_version = 20130701;
 	public $caps;
 
 	public $addons = array();
@@ -437,8 +437,13 @@ class CampTix_Plugin {
 	 * Get a CSS file, @todo make it removable through an option.
 	 */
 	function enqueue_scripts() {
+
 		wp_register_style( 'camptix', plugins_url( 'camptix.css', __FILE__ ), array(), $this->css_version );
-		wp_register_script( 'camptix', plugins_url( 'camptix.js', __FILE__ ), array( 'jquery' ), $this->css_version );
+		wp_register_script( 'camptix', plugins_url( 'camptix.js', __FILE__ ), array( 'jquery' ), $this->js_version );
+
+		wp_localize_script( 'camptix', 'camptix_l10n', array(
+			'enterEmail' => __( 'Please enter the e-mail addresses in the forms above.', 'camptix' ),
+		) );
 
 		// Let's play by the rules and print this in the <head> section.
 		wp_enqueue_style( 'camptix' );

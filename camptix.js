@@ -29,7 +29,7 @@
 			}
 
 			if ( html.length < 1 )
-				html = '<label>Please enter the e-mail addresses in the forms above.</label>';
+				html = '<label>' + camptix_l10n.enterEmail + '</label>';
 
 			if ( html == $('#tix-receipt-emails-list').html() )
 				return;
