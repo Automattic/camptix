@@ -356,7 +356,7 @@ window.camptix = window.camptix || { models: {}, views: {} };
 			firstDay: 1
 		});
 
-		// Show or hide the refunds date field in Setup > Beta.
+		// Show or hide the refunds date field in Setup > General.
 		$('#tix-refunds-enabled-radios input').change(function() {
 			if ( $(this).val() > 0 )
 				$('#tix-refunds-date').show();

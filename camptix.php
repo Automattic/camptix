@@ -1402,6 +1402,11 @@ class CampTix_Plugin {
 				add_settings_section( 'general', __( 'General Configuration', 'camptix' ), array( $this, 'menu_setup_section_general' ), 'camptix_options' );
 				$this->add_settings_field_helper( 'event_name', __( 'Event Name', 'camptix' ), 'field_text' );
 				$this->add_settings_field_helper( 'currency', __( 'Currency', 'camptix' ), 'field_currency' );
+
+				$this->add_settings_field_helper( 'refunds_enabled', __( 'Enable Refunds', 'camptix' ), 'field_enable_refunds', false,
+					__( "This will allows your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
+				);
+
 				break;
 			case 'payment':
 				foreach ( $this->get_available_payment_methods() as $key => $payment_method ) {
@@ -1438,10 +1443,6 @@ class CampTix_Plugin {
 
 				$this->add_settings_field_helper( 'reservations_enabled', __( 'Enable Reservations', 'camptix' ), 'field_yesno', false,
 					__( "Reservations is a way to make sure that a certain group of people, can always purchase their tickets, even if you sell out fast.", 'camptix' )
-				);
-
-				$this->add_settings_field_helper( 'refunds_enabled', __( 'Enable Refunds', 'camptix' ), 'field_enable_refunds', false,
-					__( "This will allows your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
 				);
 
 				if ( current_user_can( $this->caps['refund_all'] ) ) {
@@ -1498,13 +1499,17 @@ class CampTix_Plugin {
 	function validate_options( $input ) {
 		$output = $this->options;
 
+		// General
 		if ( isset( $input['event_name'] ) )
 			$output['event_name'] = sanitize_text_field( strip_tags( $input['event_name'] ) );
 
 		if ( isset( $input['currency'] ) && array_key_exists( $input['currency'], $this->get_currencies() ) )
 			$output['currency'] = $input['currency'];
 
-		$yesno_fields = array();
+		if ( isset( $input['refunds_date_end'], $input['refunds_enabled'] ) && (bool) $input['refunds_enabled'] && strtotime( $input['refunds_date_end'] ) )
+			$output['refunds_date_end'] = $input['refunds_date_end'];
+
+		$yesno_fields = array( 'refunds_enabled' );
 
 		// Beta features checkboxes
 		if ( $this->beta_features_enabled )
@@ -1513,9 +1518,6 @@ class CampTix_Plugin {
 		foreach ( $yesno_fields as $field )
 			if ( isset( $input[ $field ] ) )
 				$output[ $field ] = (bool) $input[ $field ];
-
-		if ( isset( $input['refunds_date_end'], $input['refunds_enabled'] ) && (bool) $input['refunds_enabled'] && strtotime( $input['refunds_date_end'] ) )
-			$output['refunds_date_end'] = $input['refunds_date_end'];
 
 		if ( isset( $input['version'] ) )
 			$output['version'] = $input['version'];
@@ -1562,7 +1564,6 @@ class CampTix_Plugin {
 	function get_beta_features() {
 		return array(
 			'reservations_enabled',
-			'refunds_enabled',
 			'refund_all_enabled',
 			'archived',
 		);
@@ -2958,7 +2959,7 @@ class CampTix_Plugin {
 			foreach ( $payment_methods as $key => $name ) {
 				$method = $this->get_payment_method_by_id( $key );
 
-				if ( $method && $method->supports_feature( 'refund-all' ) ) {		// test off and on. not working right now
+				if ( $method && $method->supports_feature( 'refund-all' ) ) {
 					$supported = true;
 					break;
 				}
