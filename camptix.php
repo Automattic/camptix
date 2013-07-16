@@ -1064,6 +1064,7 @@ class CampTix_Plugin {
 	function get_default_options() {
 		return apply_filters( 'camptix_default_options', array(
 			'currency' => 'USD',
+			'name_display' => 'normal',
 			'event_name' => get_bloginfo( 'name' ),
 			'version' => 0,
 			'reservations_enabled' => false,
@@ -1407,6 +1408,9 @@ class CampTix_Plugin {
 					__( "This will allows your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
 				);
 
+
+				$this->add_settings_field_helper( 'name_display', __( 'Attendee Name Format', 'camptix' ), 'field_name_display' );
+
 				break;
 			case 'payment':
 				foreach ( $this->get_available_payment_methods() as $key => $payment_method ) {
@@ -1510,6 +1514,9 @@ class CampTix_Plugin {
 			$output['refunds_date_end'] = $input['refunds_date_end'];
 
 		$yesno_fields = array( 'refunds_enabled' );
+
+		if ( isset( $input['name_display'] ) && array_key_exists( $input['name_display'], $this->name_display_formats() ) )
+			$output['name_display'] = $input['name_display'];
 
 		// Beta features checkboxes
 		if ( $this->beta_features_enabled )
@@ -1643,6 +1650,61 @@ class CampTix_Plugin {
 		</select>
 		<p class="description"><?php _e( 'Make sure you select a currency that is supported by all the payment methods you plan to use.', 'camptix' ); ?></p>
 		<?php
+	}
+
+	/**
+	 * The name display layout field for the Settings API.
+	 */
+	function field_name_display( $args ) {
+		?>
+		<select name="<?php echo esc_attr( $args['name'] ); ?>">
+			<?php foreach ( $this->name_display_formats() as $key => $format ) : ?>
+				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $args['value'] ); ?>><?php
+					echo esc_html( $format['label'] );
+				?></option>
+			<?php endforeach; ?>
+		</select>
+		<?php
+	}
+
+	/**
+	 * Get the available name display styles.
+	 */
+	function name_display_formats() {
+		return array(
+			'normal' => array(
+				'label' => __('First Last', 'camptix' ),
+				'format' => '%first% %last%',
+				'name_reversed' => false
+			),
+			'reversewestern' => array(
+				'label' => __('Last, First', 'camptix' ),
+				'format' => '%last%, %first%',
+				'name_reversed' => true
+			),
+			'reverse' => array(
+				'label' => __('Last First', 'camptix' ),
+				'format' => '%last% %first%',
+				'name_reversed' => true
+			)
+		);
+	}
+
+	function is_name_reversed_for_format($format) {
+		$formats = $this->name_display_formats();
+		return $formats[$format]['name_reversed'];
+	}
+
+	function format_name($first, $last) {
+		$formats = $this->name_display_formats();
+		$interpolation = apply_filters( 'camptix_name_display_format', $formats[$this->options['name_display']]['format'] );
+		return str_replace(array(
+			'%last%',
+			'%first%'
+		), array(
+			$last,
+			$first
+		), $interpolation);
 	}
 
 	/**
@@ -2414,7 +2476,7 @@ class CampTix_Plugin {
 			__( 'Discounted', 'camptix' ) => $this->append_currency( $totals->discounted ),
 			__( 'Revenue', 'camptix' ) => $this->append_currency( $totals->revenue ),
 		);
-		
+
 		// Update stats
 		$this->update_stats( 'sold', $totals->sold );
 		$this->update_stats( 'remaining', $totals->remaining );
@@ -4064,7 +4126,7 @@ class CampTix_Plugin {
 		wp_update_post( array(
 			'ID' => $post_id,
 			'post_content' => maybe_serialize( $data ),
-			'post_title' => "$first_name $last_name",
+			'post_title' => $this->format_name($first_name, $last_name),
 		) );
 
 		// There might be others in need of processing.
@@ -4703,16 +4765,25 @@ class CampTix_Plugin {
 										<?php echo $i; ?>. <?php echo $ticket->post_title; ?>
 									</th>
 								</tr>
+								<?php if ( $this->is_name_reversed_for_format( $this->options['name_display'] ) ) : ?>
+									<tr class="tix-row-last-name">
+										<td class="tix-required tix-left"><?php _e( 'Last Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
+										<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['last_name'] ) ? $this->form_data['tix_attendee_info'][$i]['last_name'] : ''; ?>
+										<td class="tix-right"><input name="tix_attendee_info[<?php echo $i; ?>][last_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
+									</tr>
+								<?php endif; ?>
 								<tr class="tix-row-first-name">
 									<td class="tix-required tix-left"><?php _e( 'First Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['first_name'] ) ? $this->form_data['tix_attendee_info'][$i]['first_name'] : ''; ?>
 									<td class="tix-right"><input name="tix_attendee_info[<?php echo $i; ?>][first_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
 								</tr>
-								<tr class="tix-row-last-name">
-									<td class="tix-required tix-left"><?php _e( 'Last Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
-									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['last_name'] ) ? $this->form_data['tix_attendee_info'][$i]['last_name'] : ''; ?>
-									<td class="tix-right"><input name="tix_attendee_info[<?php echo $i; ?>][last_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
-								</tr>
+								<?php if ( !$this->is_name_reversed_for_format( $this->options['name_display'] ) ) : ?>
+									<tr class="tix-row-last-name">
+										<td class="tix-required tix-left"><?php _e( 'Last Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
+										<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['last_name'] ) ? $this->form_data['tix_attendee_info'][$i]['last_name'] : ''; ?>
+										<td class="tix-right"><input name="tix_attendee_info[<?php echo $i; ?>][last_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
+									</tr>
+								<?php endif; ?>
 								<tr class="tix-row-email">
 									<td class="tix-required tix-left"><?php _e( 'E-mail', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['email'] ) ? $this->form_data['tix_attendee_info'][$i]['email'] : ''; ?>
@@ -4896,7 +4967,7 @@ class CampTix_Plugin {
 					?>
 					<tr>
 						<td>
-							<strong><?php echo esc_html( sprintf( "%s %s", $first_name, $last_name ) ); ?></strong><br />
+							<strong><?php echo esc_html( $this->format_name( $this->options['name_display'], $first_name, $last_name ) ); ?></strong><br />
 							<?php echo $this->get_ticket_title( intval( get_post_meta( $attendee->ID, 'tix_ticket_id', true ) ) ); ?>
 						</td>
 						<td>
@@ -5788,7 +5859,7 @@ class CampTix_Plugin {
 
 		foreach ( $attendees as $attendee ) {
 			$post_id = wp_insert_post( array(
-				'post_title' => $attendee->first_name . " " . $attendee->last_name,
+				'post_title' => $this->format_name($attendee->first_name, $attendee->last_name),
 				'post_type' => 'tix_attendee',
 				'post_status' => 'draft',
 			) );

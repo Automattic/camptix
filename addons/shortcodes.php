@@ -155,7 +155,14 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 							$last = get_post_meta( $attendee_id, 'tix_last_name', true );
 
 							echo get_avatar( get_post_meta( $attendee_id, 'tix_email', true ) );
-							printf( '<div class="tix-field tix-attendee-name"><span class="tix-first">%s</span> <span class="tix-last">%s</span></div>', esc_html( $first ), esc_html( $last ) );
+
+							add_filter( 'camptix_name_display_format', array($this, 'override_name_display_format') );
+
+							$formatted_name = $GLOBALS['camptix']->format_name(esc_html($first), esc_html($last));
+
+							remove_filter( 'camptix_name_display_format', array($this, 'override_name_display_format') );
+
+							printf( '<div class="tix-field tix-attendee-name">%s</div>', $formatted_name);
 							do_action( 'camptix_attendees_shortcode_item', $attendee_id );
 							echo '</li>';
 
@@ -179,6 +186,20 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		ob_end_clean();
 		set_transient( $transient_key, array( 'content' => $content, 'time' => time() ), $cache_time );
 		return $content;
+	}
+
+	/**
+	 * Overrides the name display format to wrap them with spans.
+	 */
+
+	function override_name_display_format($format) {
+		return str_replace(array(
+			'%first%',
+			'%last%'
+		), array(
+			'<span class="tix-first">%first%</span>',
+			'<span class="tix-last">%last%</span>'
+		), $format);
 	}
 
 	/**
