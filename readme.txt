@@ -1,9 +1,10 @@
 === CampTix Event Ticketing ===
-Contributors: automattic, kovshenin, andreamiddleton
+Contributors: automattic, kovshenin, andreamiddleton, iandunn
 Tags: ticketing, event ticketing
 Requires at least: 3.5
-Tested up to: 3.5.1
-Stable tag: 1.3.1
+Tested up to: 3.6
+Stable tag: 1.4
+Donate link: http://wordpressfoundation.org/donate/
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +20,7 @@ CampTix is an easy to use and flexible event ticketing plugin created by WordCam
 * Export attendees data into CSV or XML
 * Public attendees list
 * Revenue reports and summaries
+* Refund purchased tickets
 * and much more!
 
 Feel free to post your feature requests, issues and pull requests to [CampTix on GitHub](https://github.com/automattic/camptix "CampTix on GitHub").
@@ -44,6 +46,18 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.4 =
+* Attendees can automatically refund their tickets
+* More e-mail templates are customizable
+* Added translations for Swedish (Jonathan De Jong), German (Raphael Michel), Japanese (Naoko Takano), Russian (Konstantin Kovshenin), and Portuguese (Rafael Funchal)
+* New actions and filters for customization
+* Fixed a bug where the [camptix] shortcode would break when used on the homepage
+* Reintroduced the Refund All Tickets feature
+* Handles duplicate requests from PayPal more gracefully, so attendees aren't set to a failed status
+* Added a checkbox to toggle the Attendee privacy feature
+* Added an upgrade command for WP-CLI
+* [Full changelog](https://github.com/Automattic/camptix/compare/826cc2b...a53af6d)
 
 = 1.3.1 =
 * Better escaping and sanitization
