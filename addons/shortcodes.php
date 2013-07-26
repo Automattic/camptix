@@ -392,8 +392,14 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		</div>
 		<?php
 
-		if ( isset( $atts['logged_out_message_after'] ) )
-			echo wpautop( $atts['logged_out_message_after'] );
+		if ( isset( $atts['logged_out_message_after'] ) ) {
+			// support calling a callback function, for situations where advanced HTML, scripting, etc is desired
+			if ( $atts['logged_out_message_after'] == 'callback' ) {
+				do_action( 'camptix_logged_out_message_after' );
+			} else {
+				echo wpautop( $atts['logged_out_message_after'] );
+			}
+		}
 
 		$content = ob_get_contents();
 		ob_end_clean();
