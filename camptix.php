@@ -5963,7 +5963,7 @@ class CampTix_Plugin {
 
 			if ( $ticket->tix_remaining < 1 ) {
 				$this->error_flag( 'tickets_excess' );
-				echo 'setting tickets excess';
+				$this->log( 'Setting tickets excess', null, array( $order, $tickets ) );
 				continue;
 			}
 
