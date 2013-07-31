@@ -1773,6 +1773,35 @@ class CampTix_Plugin {
 		return $with_currency;
 	}
 
+	/*
+	 * Formats a string containing a first and/or last name, based on the specified name ordering scheme
+	 * @param string $name_string A string containing placeholders for the given and surnames. e.g., "Hello %first% %last%"
+	 * @param string given_name
+	 * @param string $surname
+	 * @return string
+	 */
+	function format_name_string( $name_string, $given_name, $surname ) {
+		switch( apply_filters( 'camptix_name_order', 'western' ) ) {
+			case 'eastern':
+				$name_string = str_replace( '%first%', $surname, $name_string );
+				$name_string = str_replace( '%last%', $given_name, $name_string );
+			break;
+
+			case 'western-reverse':
+				$name_string = str_replace( '%first%', $surname . ',', $name_string );
+				$name_string = str_replace( '%last%', $given_name, $name_string );
+			break;
+
+			case 'western':
+			default:
+				$name_string = str_replace( '%first%', $given_name, $name_string );
+				$name_string = str_replace( '%last%', $surname, $name_string );
+			break;
+		}
+
+		return $name_string;
+	}
+
 	/**
 	 * Oh the holy admin menu!
 	 */
@@ -4064,7 +4093,7 @@ class CampTix_Plugin {
 		wp_update_post( array(
 			'ID' => $post_id,
 			'post_content' => maybe_serialize( $data ),
-			'post_title' => "$first_name $last_name",
+			'post_title' => $this->format_name_string( "%first% %last%", $first_name, $last_name ),
 		) );
 
 		// There might be others in need of processing.
@@ -4896,7 +4925,7 @@ class CampTix_Plugin {
 					?>
 					<tr>
 						<td>
-							<strong><?php echo esc_html( sprintf( "%s %s", $first_name, $last_name ) ); ?></strong><br />
+							<strong><?php echo esc_html( $this->format_name_string( "%first% %last%", $first_name, $last_name ) ); ?></strong><br />
 							<?php echo $this->get_ticket_title( intval( get_post_meta( $attendee->ID, 'tix_ticket_id', true ) ) ); ?>
 						</td>
 						<td>
@@ -5788,7 +5817,7 @@ class CampTix_Plugin {
 
 		foreach ( $attendees as $attendee ) {
 			$post_id = wp_insert_post( array(
-				'post_title' => $attendee->first_name . " " . $attendee->last_name,
+				'post_title' => $this->format_name_string( "%first% %last%", $attendee->first_name, $attendee->last_name ),
 				'post_type' => 'tix_attendee',
 				'post_status' => 'draft',
 			) );
