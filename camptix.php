@@ -2236,6 +2236,9 @@ class CampTix_Plugin {
 		if ( $new == $old )
 			return;
 
+		if ( 'publish' == $new && 'tix_event' != $post->post_type && 'tix_' == substr( $post->post_type, 0, 4 ) )
+			$this->log( 'New '. $post->post_type .' created.', $post->ID, array( $post ) );
+
 		if ( $post->post_type == 'tix_attendee' ) {
 
 			$multiplier = 0;
