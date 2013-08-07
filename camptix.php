@@ -6628,8 +6628,11 @@ class CampTix_Plugin {
 
 			<tbody>
 				<?php foreach ( $rows as $row ) : ?>
-					<?php $alt = ( $alt == '' ) ? 'alternate' : ''; ?>
-					<tr class="<?php echo $alt; ?> tix-row-<?php echo sanitize_title_with_dashes( array_shift( array_values( $row ) ) ); ?>">
+					<?php
+						$alt = ( $alt == '' ) ? 'alternate' : '';
+						$values = array_values( $row );
+					?>
+					<tr class="<?php echo $alt; ?> tix-row-<?php echo sanitize_title_with_dashes( array_shift( $values ) ); ?>">
 						<?php foreach ( $row as $column => $value ) : ?>
 						<td class="tix-<?php echo sanitize_title_with_dashes( $column ); ?>"><span><?php echo $value; ?></span></td>
 						<?php endforeach; ?>
