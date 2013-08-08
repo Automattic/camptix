@@ -6713,6 +6713,7 @@ class CampTix_Plugin {
 		}
 
 		$this->addons[] = $classname;
+		return true;
 	}
 
 	/**
