@@ -6666,7 +6666,7 @@ class CampTix_Plugin {
 		do_action( 'camptix_load_addons' );
 		foreach ( $this->addons as $classname )
 			if ( class_exists( $classname ) )
-				$addons_loaded[] = new $classname;
+				$this->addons_loaded[] = new $classname;
 	}
 
 	/**
