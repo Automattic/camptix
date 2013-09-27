@@ -1456,6 +1456,8 @@ class CampTix_Plugin {
 				);
 				break;
 			default:
+				do_action( 'camptix_menu_setup_controls', $section );
+				break;
 		}
 	}
 
@@ -1557,7 +1559,7 @@ class CampTix_Plugin {
 		);
 		$this->log( 'Options updated.', 0, $log_data );
 
-		$output = apply_filters( 'camptix_validate_options', $output );
+		$output = apply_filters( 'camptix_validate_options', $output, $input );
 		return $output;
 	}
 
@@ -1919,6 +1921,8 @@ class CampTix_Plugin {
 
 		if ( $this->beta_features_enabled )
 			$sections['beta'] = __( 'Beta', 'camptix' );
+
+		$sections = apply_filters( 'camptix_setup_sections', $sections );
 
 		foreach ( $sections as $section_key => $section_caption ) {
 			$active = $current_section === $section_key ? 'nav-tab-active' : '';
