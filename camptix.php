@@ -6650,6 +6650,17 @@ class CampTix_Plugin {
 	function wp_mail( $to, $subject, $message, $headers = array(), $attachments = '' ) {
 		do_action( 'camptix_wp_mail_start' );
 
+		// Allow plugins and addons to override any outgoing CampTix e-mail.
+		if ( apply_filters( 'camptix_wp_mail_override', false, array(
+			'to' => $to,
+			'subject' => $subject,
+			'message' => $message,
+			'headers' => $headers,
+			'$attachments' => $attachments,
+		) ) ) {
+			return;
+		}
+
 		if ( is_email( get_option( 'admin_email' ) ) && is_array( $headers ) )
 			$headers[] = sprintf( 'From: %s <%s>', $this->options['event_name'], get_option( 'admin_email' ) );
 		$message_data = array( 'to' => $to, 'subject' => $subject, 'message' => $message, 'headers' => $headers );
