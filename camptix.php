@@ -5906,6 +5906,8 @@ class CampTix_Plugin {
 				return $this->form_attendee_info();
 			}
 
+			return $result;
+
 		} else { // free beer for everyone!
 			$this->payment_result( $payment_token, self::PAYMENT_STATUS_COMPLETED );
 		}
