@@ -3375,7 +3375,7 @@ class CampTix_Plugin {
 			return;
 
 		return add_query_arg( array(
-			'tix_reservation_id' => $id,
+			'tix_reservation_id' => urlencode( $id ),
 			'tix_reservation_token' => $token,
 		), $this->get_tickets_url() ) . '#tix';
 	}
@@ -3844,7 +3844,7 @@ class CampTix_Plugin {
 			$reservation_id = get_post_meta( $post->ID, 'tix_reservation_id', true );
 			$reservation_token = get_post_meta( $post->ID, 'tix_reservation_token', true );
 			$reservation_url = get_admin_url( 0, '/edit.php?post_type=tix_attendee' );
-			$reservation_url = add_query_arg( 's', 'tix_reservation_id:' . $reservation_id, $reservation_url );
+			$reservation_url = add_query_arg( 's', urlencode( 'tix_reservation_id:' . $reservation_id ), $reservation_url );
 			if ( $reservation_id && $reservation_token )
 				$rows[] = array( __( 'Reservation', 'camptix' ), sprintf( '<a href="%s">%s</a>', esc_url( $reservation_url ), esc_html( $reservation_id ) ) );
 		}
