@@ -3869,7 +3869,7 @@ class CampTix_Plugin {
 		$id = sanitize_title_with_dashes( $name );
 		$name = sanitize_text_field( $name );
 		$quantity = intval( $quantity );
-		$token = md5( 'caMptix-r353rv4t10n' . rand( 1, 9999 ) . time() . $id . $post_id );
+		$token = wp_generate_password( 16, $special_characters = false );
 		$reservation = array(
 			'id' => $id,
 			'name' => $name,
