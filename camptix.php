@@ -3865,6 +3865,31 @@ class CampTix_Plugin {
 		$this->table( $rows, 'tix-attendees-info' );
 	}
 
+	function create_reservation( $post_id, $name, $quantity ) {
+		$id = sanitize_title_with_dashes( $name );
+		$name = sanitize_text_field( $name );
+		$quantity = intval( $quantity );
+		$token = wp_generate_password( 16, $special_characters = false );
+		$reservation = array(
+			'id' => $id,
+			'name' => $name,
+			'quantity' => $quantity,
+			'token' => $token,
+			'ticket_id' => $post_id,
+		);
+
+		// Bump the ticket quantity if remaining less than we want to reserve.
+		$remaining = $this->get_remaining_tickets( $post_id );
+		if ( $remaining < $quantity ) {
+			$ticket_quantity = intval( get_post_meta( $post_id, 'tix_quantity', true ) );
+			$ticket_quantity += $quantity - $remaining;
+			update_post_meta( $post_id, 'tix_quantity', $ticket_quantity );
+		}
+
+		add_post_meta( $post_id, 'tix_reservation', $reservation );
+		$this->log( 'Created a new reservation.', $post_id, $reservation );
+	}
+
 	/**
 	 * Saves ticket post meta, runs during save_post, which runs whenever
 	 * the post type is saved, and not necessarily from the admin, which is why the nonce check.
@@ -3991,29 +4016,7 @@ class CampTix_Plugin {
 			if ( isset( $_POST['tix_reservation_name'], $_POST['tix_reservation_quantity'] )
 				&& ! empty( $_POST['tix_reservation_name'] ) && intval( $_POST['tix_reservation_quantity'] ) > 0 ) {
 
-				$reservation_id = sanitize_title_with_dashes( $_POST['tix_reservation_name'] );
-				$reservation_name = sanitize_text_field( $_POST['tix_reservation_name'] );
-				$reservation_quantity = intval( $_POST['tix_reservation_quantity'] );
-				$reservation_token = md5( 'caMptix-r353rv4t10n' . rand( 1, 9999 ) . time() . $reservation_id . $post_id );
-				$reservation = array(
-					'id' => $reservation_id,
-					'name' => $reservation_name,
-					'quantity' => $reservation_quantity,
-					'token' => $reservation_token,
-					'ticket_id' => $post_id,
-				);
-
-				// Bump the ticket quantity if remaining less than we want to reserve.
-				$remaining = $this->get_remaining_tickets( $post_id );
-				if ( $remaining < $reservation_quantity ) {
-					$ticket_quantity = intval( get_post_meta( $post_id, 'tix_quantity', true ) );
-					$ticket_quantity += $reservation_quantity - $remaining;
-					update_post_meta( $post_id, 'tix_quantity', $ticket_quantity );
-				}
-
-				// Create the reservation.
-				add_post_meta( $post_id, 'tix_reservation', $reservation );
-				$this->log( 'Created a new reservation.', $post_id, $reservation );
+				$this->create_reservation( $post_id, $_POST['tix_reservation_name'], $_POST['tix_reservation_quantity'] );
 			}
 
 			// Release a reservation.
