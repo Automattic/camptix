@@ -647,7 +647,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Manage coulumns action for coupon post type.
+	 * Manage columns action for coupon post type.
 	 */
 	function manage_columns_coupon_action( $column, $post_id ) {
 		switch ( $column ) {
@@ -4454,7 +4454,7 @@ class CampTix_Plugin {
 
 		if ( isset( $redirected_error_flags['payment_failed'] ) ) {
 			/** @todo explain error */
-			$this->error( __( 'An error has occured and your payment has failed. Please try again later.', 'camptix' ) );
+			$this->error( __( 'An error has occurred and your payment has failed. Please try again later.', 'camptix' ) );
 		}
 
 		if ( isset( $redirected_error_flags['tickets_excess'] ) )
@@ -5813,9 +5813,9 @@ class CampTix_Plugin {
 
 		$this->verify_order( $this->order );
 
-		$reservation_quantiny = 0;
+		$reservation_quantity = 0;
 		if ( isset( $this->reservation ) && $this->reservation )
-			$reservation_quantiny = $this->reservation['quantity'];
+			$reservation_quantity = $this->reservation['quantity'];
 
 		$log_data = array(
 			'post' => $_POST,
@@ -5865,10 +5865,10 @@ class CampTix_Plugin {
 				}
 
 				if ( isset( $this->reservation ) && $this->reservation && $this->reservation['ticket_id'] == $attendee->ticket_id ) {
-					if ( $reservation_quantiny > 0 ) {
+					if ( $reservation_quantity > 0 ) {
 						update_post_meta( $post_id, 'tix_reservation_id', $this->reservation['id'] );
 						update_post_meta( $post_id, 'tix_reservation_token', $this->reservation['token'] );
-						$reservation_quantiny--;
+						$reservation_quantity--;
 					}
 				}
 
@@ -6404,7 +6404,7 @@ class CampTix_Plugin {
 		}
 
 		/**
-		 * Let's now e-mail the receipt, directly after a purchas has been made.
+		 * Let's now e-mail the receipt, directly after a purchase has been made.
 		 */
 		if ( $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
 
@@ -6739,7 +6739,7 @@ class CampTix_Plugin {
 	/**
 	 * Temporary storage (non-persistent)
 	 *
-	 * Use this fuction to access the CampTix temporary storage for things like attendee_id
+	 * Use this function to access the CampTix temporary storage for things like attendee_id
 	 * for notify shortcodes, and receipt for e-mail templates, etc. You can also use it to
 	 * store your own stuff, but don't forget to cleanup when you're done.
 	 *
