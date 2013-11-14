@@ -4296,8 +4296,8 @@ class CampTix_Plugin {
 			$this->order['coupon'] = sanitize_text_field( $_REQUEST['tix_coupon'] );
 
 		if ( isset( $_REQUEST['tix_reservation_id'], $_REQUEST['tix_reservation_token'] ) ) {
-			$this->order['reservation_id'] = sanitize_text_field( $_REQUEST['tix_reservation_id'] );
-			$this->order['reservation_token'] = sanitize_text_field( $_REQUEST['tix_reservation_token'] );
+			$this->order['reservation_id'] = $_REQUEST['tix_reservation_id'];
+			$this->order['reservation_token'] = $_REQUEST['tix_reservation_token'];
 		}
 
 		// Check whether this is a valid order.
