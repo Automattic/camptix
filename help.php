@@ -94,7 +94,7 @@ function tix_contextual_help() {
 
 		if ( $screen->id == 'tix_attendee' )
 			$screen->add_help_tab( array(
-				'title' => 'Attendee Informaiton',
+				'title' => 'Attendee Information',
 				'id' => 'tix-attendee-info',
 				'content' => "
 					<h3>Attendee Information</h3>
@@ -168,7 +168,7 @@ function tix_contextual_help() {
 			'id' => 'tix-help-configuration',
 			'content' => "
 				<h3>Configuration</h3>
-				<p>The basic configuration is done in the Generat section. The event name will appear in your outgoing e-mails, payment reports, etc. The currency dropdown sets the currency for all tickets. Please note that changing the currency does not convert the existing ticket prices, i.e. 10 USD will become 10 EUR. Also note that not all payment methods support all currencies, so make sure you pick the currency supported by the payment methods you're planning to use.</p>",
+				<p>The basic configuration is done in the General section. The event name will appear in your outgoing emails, payment reports, etc. The currency drop-down sets the currency for all tickets. Please note that changing the currency does not convert the existing ticket prices, i.e. 10 USD will become 10 EUR. Also note that not all payment methods support all currencies, so make sure you pick the currency supported by the payment methods you're planning to use.</p>",
 		) );
 
 		$screen->add_help_tab( array(
