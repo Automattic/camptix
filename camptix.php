@@ -1953,6 +1953,8 @@ class CampTix_Plugin {
 					$this->menu_tools_notify();
 				elseif ( $section == 'refund' && ! $this->options['archived'] )
 					$this->menu_tools_refund();
+				else
+					do_action( 'camptix_menu_tools_' . $section );
 			?>
 		</div>
 		<?php
@@ -1974,12 +1976,12 @@ class CampTix_Plugin {
 	 */
 	function menu_tools_tabs() {
 		$current_section = $this->get_tools_section();
-		$sections = array(
+		$sections = apply_filters( 'camptix_menu_tools_tabs', array(
 			'summarize' => __( 'Summarize', 'camptix' ),
 			'revenue' => __( 'Revenue', 'camptix' ),
 			'export' => __( 'Export', 'camptix' ),
 			'notify' => __( 'Notify', 'camptix' ),
-		);
+		) );
 
 		if ( current_user_can( $this->caps['refund_all'] ) && ! $this->options['archived'] && $this->options['refund_all_enabled'] )
 			$sections['refund'] = __( 'Refund', 'camptix' );
