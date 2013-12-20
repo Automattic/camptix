@@ -480,6 +480,8 @@ class CampTix_Plugin {
 			wp_enqueue_script( 'jquery-ui-datepicker' );
 			wp_enqueue_style( 'jquery-ui', plugins_url( '/external/jquery-ui.css', __FILE__ ), array(), $this->version );
 		}
+
+		wp_enqueue_style( 'campicons', plugins_url( 'fonts/campicons.css', __FILE__ ), array(), $this->version );
 	}
 
 	/**
@@ -1839,28 +1841,11 @@ class CampTix_Plugin {
 	 * Runs during admin_head, outputs some icons CSS.
 	 */
 	function admin_head() {
-		$icons_url = plugins_url( 'images/icons.png', __FILE__ );
 		?>
 		<style>
-			#adminmenu #menu-posts-tix_ticket .wp-menu-image {
-				background-image: url('<?php echo esc_url( $icons_url ); ?>');
-				background-position: 0px 0px;
-				background-size: 196px 168px;
-			}
-			#adminmenu #menu-posts-tix_ticket:hover .wp-menu-image,
-			#adminmenu #menu-posts-tix_ticket.wp-has-current-submenu .wp-menu-image {
-				background-position: 0px -56px;
-			}
-
-			@media only screen and (-webkit-min-device-pixel-ratio: 1.5) {
-				#adminmenu #menu-posts-tix_ticket .wp-menu-image {
-					background-position: -14px 0;
-					background-size: 98px 84px;
-				}
-				#adminmenu #menu-posts-tix_ticket:hover .wp-menu-image,
-				#adminmenu #menu-posts-tix_ticket.wp-has-current-submenu .wp-menu-image {
-					background-position: -14px -56px;
-				}
+			#menu-posts-tix_ticket .wp-menu-image:before {
+				font-family: 'Campicons' !important;
+				content: '\e604' !important;
 			}
 		</style>
 		<?php
@@ -1872,7 +1857,6 @@ class CampTix_Plugin {
 	function menu_setup() {
 		?>
 		<div class="wrap">
-			<?php screen_icon(); ?>
 			<h2><?php _e( 'CampTix Setup', 'camptix' ); ?></h2>
 			<?php settings_errors(); ?>
 			<h3 class="nav-tab-wrapper"><?php $this->menu_setup_tabs(); ?></h3>
@@ -1937,7 +1921,6 @@ class CampTix_Plugin {
 	function menu_tools() {
 		?>
 		<div class="wrap">
-			<?php screen_icon( 'tools' ); ?>
 			<h2><?php _e( 'CampTix Tools', 'camptix' ); ?></h2>
 			<?php settings_errors(); ?>
 			<h3 class="nav-tab-wrapper"><?php $this->menu_tools_tabs(); ?></h3>
