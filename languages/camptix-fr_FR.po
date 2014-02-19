@@ -1272,7 +1272,7 @@ msgstr "Payer &rarr;"
 
 #: camptix.php:4271
 msgid "Claim Tickets &rarr;"
-msgstr "Récupérer les tickers &rarr;"
+msgstr "Récupérer les tickets &rarr;"
 
 #: camptix.php:4322
 msgid "Please note that the payment for this set of tickets is still pending."
