@@ -1,12 +1,12 @@
 === CampTix Event Ticketing ===
-Contributors: automattic, kovshenin, andreamiddleton, iandunn
-Tags: ticketing, event ticketing
+Contributors:      automattic, kovshenin, andreamiddleton, iandunn
+Tags:              ticketing, event ticketing
 Requires at least: 3.5
-Tested up to: 3.9-beta2
-Stable tag: 1.4.1
-Donate link: http://wordpressfoundation.org/donate/
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Tested up to:      3.9-beta2
+Stable tag:        1.4.1
+Donate link:       http://wordpressfoundation.org/donate/
+License:           GPLv2 or later
+License URI:       http://www.gnu.org/licenses/gpl-2.0.html
 
 Simple and Flexible ticketing brought to you by WordCamp.org
 

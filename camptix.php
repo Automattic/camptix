@@ -1,12 +1,12 @@
 <?php
 /*
  * Plugin Name: CampTix Event Ticketing
- * Plugin URI: http://wordcamp.org
+ * Plugin URI:  http://wordcamp.org
  * Description: Simple and flexible event ticketing for WordPress.
- * Version: 1.4.1
- * Author: Automattic
- * Author URI: http://wordcamp.org
- * License: GPLv2
+ * Version:     1.4.1
+ * Author:      Automattic
+ * Author URI:  http://wordcamp.org
+ * License:     GPLv2
  */
 
 class CampTix_Plugin {
