@@ -420,7 +420,7 @@ class CampTix_Plugin {
 	 * Runs during camptix_summarize_by_field, fetches answers from
 	 * attendee objects and increments summary.
 	 */
-	function camptix_summarize_by_field_extras( $summarize_by, $summary, $attendee ) {
+	function camptix_summarize_by_field_extras( $summarize_by, &$summary, $attendee ) {
 		if ( 'tix_q_' != substr( $summarize_by, 0, 6 ) )
 			return;
 
