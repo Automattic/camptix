@@ -20,9 +20,9 @@ class CampTix_Plugin {
 
 	public $debug;
 	public $beta_features_enabled;
-	public $version = 20130719;
-	public $css_version = 20121227;
-	public $js_version = 20131011;
+	public $version     = 20140325;
+	public $css_version = 20140325;
+	public $js_version  = 20140325;
 	public $caps;
 
 	public $addons = array();
