@@ -2,8 +2,8 @@
 Contributors: automattic, kovshenin, andreamiddleton, iandunn
 Tags: ticketing, event ticketing
 Requires at least: 3.5
-Tested up to: 3.6
-Stable tag: 1.4
+Tested up to: 3.9-beta2
+Stable tag: 1.4.1
 Donate link: http://wordpressfoundation.org/donate/
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -46,6 +46,15 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.4.1 =
+* Updated PayPal module to use HTTP 1.1 now that PayPal requires it. Fixes "A payment error has occurred" errors.
+* Added support for Eastern name ordering.
+* Updated Japanese and French translations.
+* Add Slovak translation.
+* Fixes E_STRICT notices in PHP 5.4.
+* Adds [camptix_stats] shortcode.
+* [Full changelog](https://github.com/Automattic/camptix/compare/6c2ff5413d6294b0fca6abc0ebd9124a6b9399f8...e71760abbfb025f4184e329e4c029c694a4d3a01)
 
 = 1.4 =
 * Attendees can automatically refund their tickets
