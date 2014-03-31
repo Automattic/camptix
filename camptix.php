@@ -1659,11 +1659,11 @@ class CampTix_Plugin {
 		return apply_filters( 'camptix_currencies', array(
 			'AUD' => array(
 				'label' => __( 'Australian Dollar', 'camptix' ),
-				'format' => '$ %s',
+				'locale' => 'en_AU.UTF-8',
 			),
 			'CAD' => array(
 				'label' => __( 'Canadian Dollar', 'camptix' ),
-				'format' => '$ %s',
+				'locale' => 'en_CA.UTF-8',
 			),
 			'EUR' => array(
 				'label' => __( 'Euro', 'camptix' ),
@@ -1671,27 +1671,27 @@ class CampTix_Plugin {
 			),
 			'GBP' => array(
 				'label' => __( 'Pound Sterling', 'camptix' ),
-				'format' => '£ %s',
+				'locale' => 'en_GB.UTF-8',
 			),
 			'JPY' => array(
 				'label' => __( 'Japanese Yen', 'camptix' ),
-				'format' => '¥ %s',
+				'locale' => 'ja_JP.UTF-8',
 			),
 			'USD' => array(
 				'label' => __( 'U.S. Dollar', 'camptix' ),
-				'format' => '$ %s',
+				'locale' => 'en_US.UTF-8',
 			),
 			'NZD' => array(
 				'label' => __( 'N.Z. Dollar', 'camptix' ),
-				'format' => '$ %s',
+				'locale' => 'en_NZ.UTF-8',
 			),
 			'CHF' => array(
 				'label' => __( 'Swiss Franc', 'camptix' ),
-				'format' => '%s Fr',
+				'locale' => 'fr_CH.UTF-8',
 			),
 			'HKD' => array(
 				'label' => __( 'Hong Kong Dollar', 'camptix' ),
-				'format' => '$ %s',
+				'locale' => 'zh_HK.UTF-8',
 			),
 			'SGD' => array(
 				'label' => __( 'Singapore Dollar', 'camptix' ),
@@ -1699,31 +1699,31 @@ class CampTix_Plugin {
 			),
 			'SEK' => array(
 				'label' => __( 'Swedish Krona', 'camptix' ),
-				'format' => '%s kr',
+				'locale' => 'sv_SE.UTF-8',
 			),
 			'DKK' => array(
 				'label' => __( 'Danish Krone', 'camptix' ),
-				'format' => '%s kr',
+				'locale' => 'da_DK.UTF-8',
 			),
 			'PLN' => array(
 				'label' => __( 'Polish Zloty', 'camptix' ),
-				'format' => '%s Zł',
+				'locale' => 'pl_PL.UTF-8',
 			),
 			'NOK' => array(
 				'label' => __( 'Norwegian Krone', 'camptix' ),
-				'format' => '%s kr',
+				'locale' => 'no_NO.UTF-8',
 			),
 			'HUF' => array(
 				'label' => __( 'Hungarian Forint', 'camptix' ),
-				'format' => '%s FT',
+				'locale' => 'hu_HU.UTF-8',
 			),
 			'CZK' => array(
 				'label' => __( 'Czech Koruna', 'camptix' ),
-				'format' => '%s Kč',
+				'locale' => 'hcs_CZ.UTF-8',
 			),
 			'ILS' => array(
 				'label' => __( 'Israeli New Sheqel', 'camptix' ),
-				'format' => '₪ %s',
+				'locale' => 'he_IL.UTF-8',
 			),
 			'MXN' => array(
 				'label' => __( 'Mexican Peso', 'camptix' ),
@@ -1731,7 +1731,7 @@ class CampTix_Plugin {
 			),
 			'BRL' => array(
 				'label' => __( 'Brazilian Real', 'camptix' ),
-				'format' => 'R$ %s',
+				'locale' => 'pt_BR.UTF-8',
 			),
 			'MYR' => array(
 				'label' => __( 'Malaysian Ringgit', 'camptix' ),
@@ -1743,7 +1743,7 @@ class CampTix_Plugin {
 			),
 			'TWD' => array(
 				'label' => __( 'New Taiwan Dollar', 'camptix' ),
-				'format' => 'NT$ %s',
+				'locale' => 'zh_TW.UTF-8',
 			),
 			'THB' => array(
 				'label' => __( 'Thai Baht', 'camptix' ),
@@ -1751,7 +1751,7 @@ class CampTix_Plugin {
 			),
 			'TRY' => array(
 				'label' => __( 'Turkish Lira', 'camptix' ),
-				'format' => 'TRY %s', // Unicode is &#8378; but this doesn't seem to be widely supported yet (introduced Sep 2012)
+				'locale' => 'tr_TR.UTF-8',
 			),
 		) );
 	}
@@ -1764,13 +1764,18 @@ class CampTix_Plugin {
 	function append_currency( $price, $nbsp = true, $currency_key = false ) {
 		$currencies = $this->get_currencies();
 		$currency = $currencies[ $this->options['currency'] ];
+		$locale = $currency['locale'];
 		if ( $currency_key )
 			$currency = $currencies[ $currency_key ];
 
 		if ( ! $currency )
-			$currency = array( 'label' => __( 'U.S. Dollar', 'camptix' ), 'format' => '$ %s' );
+			$currency = array( 'label' => __( 'U.S. Dollar', 'camptix' ), 'locale' => 'en_US.UTF-8' );
+				
+		setlocale(LC_MONETARY, $currency['locale'] );
+		$with_currency = money_format( '%n', $price );
 
-		$with_currency = sprintf( $currency['format'], number_format( (float) $price, 2 ) );
+		if ( $currency['format'] ) 
+			$with_currency = sprintf( $currency['format'], number_format( (float) $price, 2 ) );
 		if ( $nbsp )
 			$with_currency = str_replace( ' ', '&nbsp;', $with_currency );
 
