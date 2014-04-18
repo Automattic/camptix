@@ -2,7 +2,7 @@
 Contributors:      automattic, kovshenin, andreamiddleton, iandunn
 Tags:              ticketing, event ticketing
 Requires at least: 3.5
-Tested up to:      3.9-beta2
+Tested up to:      3.9
 Stable tag:        1.4.1
 Donate link:       http://wordpressfoundation.org/donate/
 License:           GPLv2 or later
