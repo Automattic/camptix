@@ -1872,7 +1872,7 @@ class CampTix_Plugin {
 			</form>
 			<?php if ( $this->debug ) : ?>
 			<pre><?php
-				print_r( $this->options );
+				echo wp_kses( print_r( $this->options, true ), wp_kses_allowed_html( 'post' ) );
 				printf( __( 'Current time on server: %s', 'camptix' ) . PHP_EOL, date( 'r' ) );
 				print_r( get_option( 'camptix_stats' ) );
 			?></pre>
@@ -2751,7 +2751,7 @@ class CampTix_Plugin {
 								) );
 							?>
 							<?php while ( $tickets_query->have_posts() ) : $tickets_query->the_post(); ?>
-							<label><input type="checkbox" <?php checked( array_key_exists( get_the_ID(), $form_data['tickets'] ) ); ?> name="tix_notify_tickets[<?php the_ID(); ?>]" value="1" /> <?php the_title(); ?></label><br />
+							<label><input type="checkbox" <?php checked( array_key_exists( get_the_ID(), $form_data['tickets'] ) ); ?> name="tix_notify_tickets[<?php the_ID(); ?>]" value="1" /> <?php echo sanitize_text_field( get_the_title() ); ?></label><br />
 							<?php endwhile; ?>
 						</td>
 					</tr>
@@ -3738,7 +3738,7 @@ class CampTix_Plugin {
 					) );
 				?>
 				<?php while ( $q->have_posts() ) : $q->the_post(); ?>
-				<label><input <?php checked( in_array( $post->ID, $applies_to ) ); ?> type="checkbox" class="tix-applies-to-checkbox" name="tix_applies_to[]" value="<?php the_ID(); ?>" /> <?php the_title(); ?></label>
+				<label><input <?php checked( in_array( $post->ID, $applies_to ) ); ?> type="checkbox" class="tix-applies-to-checkbox" name="tix_applies_to[]" value="<?php the_ID(); ?>" /> <?php echo sanitize_text_field( get_the_title() ); ?></label>
 				<?php endwhile; ?>
 				<input type="hidden" name="tix_applies_to_submit" value="1" />
 			</div>
