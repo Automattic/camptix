@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: CampTix Event Ticketing 1.3.1\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/camptix\n"
 "POT-Creation-Date: 2013-07-19 15:43:30+00:00\n"
-"PO-Revision-Date: 2014-04-28 22:50+0900\n"
+"PO-Revision-Date: 2014-04-29 16:17+0900\n"
 "Last-Translator: nukaga <nukagajunko@gmail.com>\n"
 "Language-Team: JAPANESE <wpja.team@gmail.com>\n"
 "Language: Japanese\n"
@@ -1508,7 +1508,7 @@ msgstr "クーポンを適用"
 
 #: camptix.php:4559
 msgid "Register &rarr;"
-msgstr "チケットを購入 &rarr;"
+msgstr "登録 &rarr;"
 
 #: camptix.php:4586
 msgid ""
