@@ -6356,13 +6356,14 @@ class CampTix_Plugin {
 				$this->tmp( 'ticket_url', $edit_link );
 
 				$content = do_shortcode( $this->options['email_template_multiple_purchase'] );
+				if ($content != "") {
+					$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
 
-				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
+					$this->log( sprintf( 'Sent ticket e-mail to %s and receipt to %s.', $attendee_email, $receipt_email ), $attendee->ID );
+					$this->wp_mail( $attendee_email, $subject, $content );
 
-				$this->log( sprintf( 'Sent ticket e-mail to %s and receipt to %s.', $attendee_email, $receipt_email ), $attendee->ID );
-				$this->wp_mail( $attendee_email, $subject, $content );
-
-				do_action( 'camptix_ticket_emailed', $attendee->ID );
+					do_action( 'camptix_ticket_emailed', $attendee->ID );
+				}
 			}
 		}
 
