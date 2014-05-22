@@ -4,7 +4,7 @@
  * Hopefully runs during wp_footer.
  */
 (function($){
-	var tix = $( '#tix' )
+	var tix = $( '#tix' );
 	$( tix ).addClass( 'tix-js' );
 
 	if ( $( tix ).hasClass( 'tix-has-dynamic-receipts' ) ) {
@@ -39,7 +39,7 @@
 			previously_checked = $('[name="tix_receipt_email_js"]:checked').val();
 			if ( previously_checked == undefined || previously_checked.length < 1 )
 				$('#tix-receipt-emails-list input:first').attr('checked','checked');
-		}
+		};
 
 		$('.tix-field-email').change(refresh_receipt_emails);
 		$('.tix-field-email').keyup(refresh_receipt_emails);

@@ -17,7 +17,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		add_action( 'save_post', array( $this, 'save_post' ) );
 		add_action( 'shutdown', array( $this, 'shutdown' ) );
 		add_shortcode( 'camptix_attendees', array( $this, 'shortcode_attendees' ) );
-
+		add_shortcode( 'camptix_stats', array( $this, 'shortcode_stats' ) );
 		add_shortcode( 'camptix_private', array( $this, 'shortcode_private' ) );
 		add_action( 'template_redirect', array( $this, 'shortcode_private_template_redirect' ) );
 	}
@@ -185,6 +185,15 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		ob_end_clean();
 		set_transient( $transient_key, array( 'content' => $content, 'time' => time() ), $cache_time );
 		return $content;
+	}
+
+	/**
+	 * Callback for the [camptix_attendees] shortcode.
+	 */
+	function shortcode_stats( $atts ) {
+		global $camptix;
+		
+		return isset( $atts['stat'] ) ? $camptix->get_stats( $atts['stat'] ) : '';
 	}
 
 	/**

@@ -186,7 +186,7 @@ window.camptix = window.camptix || { models: {}, views: {} };
 				var value = this.$type.val();
 				var $row = this.$( '.tix-add-question-values-row' );
 
-				if ( value.match( /radio|checkbox|select/ ) )
+				if ( value && value.match( /radio|checkbox|select/ ) )
 					$row.show();
 				else
 					$row.hide();
@@ -332,7 +332,7 @@ window.camptix = window.camptix || { models: {}, views: {} };
 				var items = $( '.tix-ui-sortable .tix-item-sortable' );
 				for ( var i = 0; i < items.length; i++ ) {
 					var cid = $( items[i] ).data( 'tix-cid' );
-					var model = camptix.questions.getByCid( cid );
+					var model = camptix.questions.get( cid );
 					model.set( 'order', i + 1 );
 				}
 			} );
