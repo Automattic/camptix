@@ -3216,6 +3216,8 @@ class CampTix_Plugin {
 					<div class="misc-pub-section">
 						<input id="tix_privacy_<?php esc_attr( $post->ID ); ?>" name="tix_privacy" type="checkbox" <?php checked( get_post_meta( $post->ID, 'tix_privacy', true ), 'private' ); ?> />
 						<label for="tix_privacy_<?php esc_attr( $post->ID ); ?>"><?php _e( 'Hide from public attendees list', 'camptix' ); ?></label>
+
+						<?php do_action( 'camptix_attendee_submitdiv_misc', $post ); ?>
 					</div>
 
 				</div><!-- #misc-publishing-actions -->
