@@ -6565,7 +6565,7 @@ class CampTix_Plugin {
 				if ( in_array( $message, $printed ) ) continue;
 
 				$printed[] = $message;
-				echo '<p class="tix-error">' . esc_html( $message ) . '</p>';
+				echo '<p class="tix-error">' . wp_kses( $message, wp_kses_allowed_html( 'data' ) ) . '</p>';
 			}
 			echo '</div><!-- #tix-errors -->';
 		}
@@ -6576,7 +6576,7 @@ class CampTix_Plugin {
 				if ( in_array( $message, $printed ) ) continue;
 
 				$printed[] = $message;
-				echo '<p class="tix-notice">' . esc_html( $message ) . '</p>';
+				echo '<p class="tix-notice">' . wp_kses( $message, wp_kses_allowed_html( 'data' ) ) . '</p>';
 			}
 			echo '</div><!-- #tix-notices -->';
 		}
@@ -6587,7 +6587,7 @@ class CampTix_Plugin {
 				if ( in_array( $message, $printed ) ) continue;
 
 				$printed[] = $message;
-				echo '<p class="tix-info">' . esc_html( $message ) . '</p>';
+				echo '<p class="tix-info">' . wp_kses( $message, wp_kses_allowed_html( 'data' ) ) . '</p>';
 			}
 			echo '</div><!-- #tix-infos -->';
 		}
