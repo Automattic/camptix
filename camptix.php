@@ -6719,6 +6719,7 @@ class CampTix_Plugin {
 
 			// 'logging-file'  => $this->get_default_addon_path( 'logging-file.php' ),
 			// 'logging-json'  => $this->get_default_addon_path( 'logging-file-json.php' ),
+			// 'require-login' => $this->get_default_addon_path( 'require-login.php' ),
 		) );
 
 		foreach ( $default_addons as $filename )
