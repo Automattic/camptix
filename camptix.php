@@ -4188,7 +4188,7 @@ class CampTix_Plugin {
 
 		// Allow third-party forms to initiate a ticket purchase.
 		if ( isset( $_POST['tix_single_ticket_purchase'] ) ) {
-			$_POST['tix_tickets_selected'] = array( $_POST['tix_single_ticket_purchase'] => 1 );
+			$_REQUEST['tix_tickets_selected'] = array( $_POST['tix_single_ticket_purchase'] => 1 );
 		}
 
 		if ( isset( $_POST ) && ! empty( $_POST ) )
@@ -4270,15 +4270,17 @@ class CampTix_Plugin {
 		unset( $tickets, $ticket );
 
 		// Populate selected tickets from $_POST!
-		if ( isset( $_POST['tix_tickets_selected'] ) )
-			foreach ( $_POST['tix_tickets_selected'] as $ticket_id => $count )
+		if ( isset( $_REQUEST['tix_tickets_selected'] ) ) {
+			foreach ( $_REQUEST['tix_tickets_selected'] as $ticket_id => $count ) {
 				if ( isset( $this->tickets[ $ticket_id ] ) && $count > 0 )
 					$this->tickets_selected[ $ticket_id ] = intval( $count );
+			}
+		}
 
 		// Make an order.
 		$this->order = array( 'items' => array(), 'total' => 0 );
-		if ( isset( $_POST['tix_tickets_selected'] ) ) {
-			foreach ( $_POST['tix_tickets_selected'] as $ticket_id => $count ) {
+		if ( isset( $_REQUEST['tix_tickets_selected'] ) ) {
+			foreach ( $_REQUEST['tix_tickets_selected'] as $ticket_id => $count ) {
 				$ticket = $this->tickets[ $ticket_id ];
 				$item = array(
 					'id' => $ticket->ID,
@@ -4361,7 +4363,7 @@ class CampTix_Plugin {
 				$this->log( 'Something is terribly wrong, extra > 0 after stripping extra coupons', 0, null, 'critical' );
 		}
 
-		if ( isset( $_POST['tix_tickets_selected'] ) ) {
+		if ( isset( $_REQUEST['tix_tickets_selected'] ) ) {
 			$this->error_flags['no_tickets_selected'] = true;
 			foreach ( $this->tickets_selected as $ticket_id => $count )
 				if ( $count > 0 ) unset( $this->error_flags['no_tickets_selected'] );
