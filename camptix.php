@@ -3793,7 +3793,6 @@ class CampTix_Plugin {
 		$access_token = get_post_meta( $post->ID, 'tix_access_token', true );
 		$edit_token = get_post_meta( $post->ID, 'tix_edit_token', true );
 		$rows = array();
-		$roows = array();
 
 		// General
 		$rows[] = array( __( 'General', 'camptix' ), '' );
