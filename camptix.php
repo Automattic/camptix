@@ -6559,13 +6559,18 @@ class CampTix_Plugin {
 	function do_notices() {
 
 		$printed = array();
+		$allowed_html = array_merge(
+			array( 'p' => array() ),
+			wp_kses_allowed_html( 'data' )
+		);
+
 		if ( count( $this->errors ) > 0 ) {
 			echo '<div id="tix-errors">';
 			foreach ( $this->errors as $message ) {
 				if ( in_array( $message, $printed ) ) continue;
 
 				$printed[] = $message;
-				echo '<p class="tix-error">' . wp_kses( $message, wp_kses_allowed_html( 'data' ) ) . '</p>';
+				echo '<div class="tix-error">' . wp_kses( $message, $allowed_html ) . '</div>';    // todo allow <p>
 			}
 			echo '</div><!-- #tix-errors -->';
 		}
@@ -6576,7 +6581,7 @@ class CampTix_Plugin {
 				if ( in_array( $message, $printed ) ) continue;
 
 				$printed[] = $message;
-				echo '<p class="tix-notice">' . wp_kses( $message, wp_kses_allowed_html( 'data' ) ) . '</p>';
+				echo '<div class="tix-notice">' . wp_kses( $message, $allowed_html ) . '</div>';
 			}
 			echo '</div><!-- #tix-notices -->';
 		}
@@ -6587,7 +6592,7 @@ class CampTix_Plugin {
 				if ( in_array( $message, $printed ) ) continue;
 
 				$printed[] = $message;
-				echo '<p class="tix-info">' . wp_kses( $message, wp_kses_allowed_html( 'data' ) ) . '</p>';
+				echo '<div class="tix-info">' . wp_kses( $message, $allowed_html ) . '</div>';
 			}
 			echo '</div><!-- #tix-infos -->';
 		}

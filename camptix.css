@@ -10,6 +10,19 @@
 	border-radius: 3px;
 }
 
+	.tix-error p,
+	.tix-notice p,
+	.tix-info p {
+		margin: 0 0 1em 0;
+		padding: 0;
+	}
+
+	.tix-error p:last-child,
+	.tix-notice p:last-child,
+	.tix-info p:last-child {
+		margin-bottom: 0;
+	}
+
 .tix-error {
 	background: #FFEBE8;
 	border: solid 1px #C00;
