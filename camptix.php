@@ -4500,7 +4500,9 @@ class CampTix_Plugin {
 							<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
 								<th class="tix-column-remaining"><?php _e( 'Remaining', 'camptix' ); ?></th>
 							<?php endif; ?>
-							<th class="tix-column-quantity"><?php _e( 'Quantity', 'camptix' ); ?></th>
+							<th class="<?php echo implode( ' ', apply_filters( 'camptix_quantity_row_classes', array( 'tix-column-quantity' ) ) ); ?>">
+								<?php _e( 'Quantity', 'camptix' ); ?>
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -4546,7 +4548,7 @@ class CampTix_Plugin {
 								<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
 									<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo apply_filters( 'camptix_form_start_tix_remaining', $ticket->tix_remaining, $ticket ); ?></td>
 								<?php endif; ?>
-								<td class="tix-column-quantity" style="vertical-align: middle;">
+								<td class="<?php echo implode( ' ', apply_filters( 'camptix_quantity_row_classes', array( 'tix-column-quantity' ) ) ); ?>" style="vertical-align: middle;">
 									<select name="tix_tickets_selected[<?php echo $ticket->ID; ?>]">
 										<?php foreach ( range( 0, $max ) as $value ) : ?>
 											<option <?php selected( $selected, $value ); ?> value="<?php echo esc_attr( $value ); ?>"><?php echo esc_html( $value ); ?></option>
@@ -4571,7 +4573,9 @@ class CampTix_Plugin {
 										?>
 										<?php printf( __( 'Coupon Applied: <strong>%s</strong>, %s discount', 'camptix' ), esc_html( $this->coupon->post_title ), $discount_text ); ?>
 									<?php else : ?>
-										<a href="#" id="tix-coupon-link"><?php _e( 'Click here to enter a coupon code', 'camptix' ); ?></a>
+										<a href="#" id="tix-coupon-link" class="<?php echo implode( ' ', apply_filters( 'camptix_coupon_link_classes', array() ) ); ?>">
+											<?php _e( 'Click here to enter a coupon code', 'camptix' ); ?>
+										</a>
 										<div id="tix-coupon-container" style="display: none;">
 											<input type="text" id="tix-coupon-input" name="tix_coupon" value="" />
 											<input type="submit" name="tix_coupon_submit" value="<?php esc_attr_e( 'Apply Coupon', 'camptix' ); ?>" />
@@ -4594,7 +4598,7 @@ class CampTix_Plugin {
 				</table>
 
 				<p>
-					<input type="submit" value="<?php esc_attr_e( 'Register &rarr;', 'camptix' ); ?>" style="float: right; cursor: pointer;" />
+					<input type="submit" value="<?php esc_attr_e( 'Register &rarr;', 'camptix' ); ?>" style="float: right; cursor: pointer;" class="<?php echo implode( ' ', apply_filters( 'camptix_register_button_classes', array() ) ); ?>" />
 					<br class="tix-clear" />
 				</p>
 				</form>
