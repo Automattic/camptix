@@ -46,10 +46,11 @@ class CampTix_Require_Login extends CampTix_Addon {
 		global $camptix;
 		
 		if ( ! is_user_logged_in() ) {
-			$camptix->notice( sprintf(
-				__( 'Please <a href="%s">login</a> to purchase your tickets.', 'camptix' ),
-				wp_login_url( add_query_arg( $_REQUEST, $camptix->get_tickets_url() ) )
-			) );
+			$camptix->notice( apply_filters( 'camptix_require_login_please_login_message', sprintf(
+				__( 'Please <a href="%s">log in</a> or <a href="%s">create an account</a> to purchase your tickets.', 'camptix' ),
+				wp_login_url( add_query_arg( $_REQUEST, $camptix->get_tickets_url() ) ),
+				wp_registration_url()
+			) ) );
 		}
 	}
 
