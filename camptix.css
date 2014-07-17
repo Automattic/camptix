@@ -156,8 +156,9 @@ body.admin-bar #tix {
 }
 
 #tix.tix-js .tix-hide-if-js,
-#tix .tix-show-if-js {
-	display: none;
+#tix .tix-show-if-js,
+.tix-hidden {
+	display: none !important;
 }
 #tix.tix-js .tix-show-if-js,
 #tix .tix-hide-if-js {

@@ -10,6 +10,9 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 */
 	public function camptix_init() {
 		add_action( 'template_redirect',                              array( $this, 'block_unauthenticated_actions' ), 7 );    // before CampTix_Plugin->template_redirect()
+		add_filter( 'camptix_register_button_classes',                array( $this, 'hide_register_form_elements' ) );
+		add_filter( 'camptix_coupon_link_classes',                    array( $this, 'hide_register_form_elements' ) );
+		add_filter( 'camptix_quantity_row_classes',                   array( $this, 'hide_register_form_elements' ) );
 		add_action( 'camptix_notices',                                array( $this, 'ticket_form_message' ), 8 );
 		add_action( 'camptix_attendee_form_additional_info',          array( $this, 'render_attendee_form_username_row' ), 10, 3 );
 		add_filter( 'camptix_form_register_complete_attendee_object', array( $this, 'add_username_to_attendee_object' ), 10, 2 );
@@ -39,12 +42,26 @@ class CampTix_Require_Login extends CampTix_Addon {
 	}
 
 	/**
+	 * Hide the interactive elements of the Tickets registration form if the user isn't logged in.
+	 *
+	 * @param $classes
+	 * @return array
+	 */
+	public function hide_register_form_elements( $classes ) {
+		if ( ! is_user_logged_in() ) {
+			$classes[] = 'tix-hidden';
+		}
+
+		return $classes;
+	}
+
+	/**
 	 * Warn users that they will need to login to purchase a ticket
 	 */
 	public function ticket_form_message() {
 		/** @var $camptix CampTix_Plugin */
 		global $camptix;
-		
+
 		if ( ! is_user_logged_in() ) {
 			$camptix->notice( apply_filters( 'camptix_require_login_please_login_message', sprintf(
 				__( 'Please <a href="%s">log in</a> or <a href="%s">create an account</a> to purchase your tickets.', 'camptix' ),
