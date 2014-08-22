@@ -2,6 +2,8 @@
 
 /**
  * Require attendees to login to the website before purchasing tickets.
+ *
+ * todo add a detailed explanation of the goals, workflow, etc
  */
 class CampTix_Require_Login extends CampTix_Addon {
 	const UNCONFIRMED_USERNAME = '[[ unconfirmed ]]';
@@ -11,16 +13,22 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 */
 	public function camptix_init() {
 		add_action( 'template_redirect',                              array( $this, 'block_unauthenticated_actions' ), 7 );    // before CampTix_Plugin->template_redirect()
+
+		// Registration Information front-end screen
 		add_filter( 'camptix_register_button_classes',                array( $this, 'hide_register_form_elements' ) );
 		add_filter( 'camptix_coupon_link_classes',                    array( $this, 'hide_register_form_elements' ) );
 		add_filter( 'camptix_quantity_row_classes',                   array( $this, 'hide_register_form_elements' ) );
 		add_action( 'camptix_notices',                                array( $this, 'ticket_form_message' ), 8 );
 		add_filter( 'camptix_form_register_complete_attendee_object', array( $this, 'add_username_to_attendee_object' ), 10, 3 );
 		add_action( 'camptix_checkout_update_post_meta',              array( $this, 'save_checkout_username_meta' ), 10, 2 );
+
+		// wp-admin
 		add_filter( 'camptix_attendee_report_column_value_username',  array( $this, 'get_attendee_username_meta' ), 10, 2 );
 		add_filter( 'camptix_save_attendee_post_add_search_meta',     array( $this, 'get_attendee_search_meta' ) );
 		add_filter( 'camptix_attendee_report_extra_columns',          array( $this, 'get_attendee_report_extra_columns' ) );
 		add_filter( 'camptix_metabox_attendee_info_additional_rows',  array( $this, 'get_attendee_metabox_rows' ), 10, 2 );
+
+		// Attendee Information front-end screen
 		add_action( 'camptix_form_edit_attendee_custom_error_flags',  array( $this, 'require_unique_usernames' ) );
 		add_action( 'camptix_form_start_errors',                      array( $this, 'add_form_start_error_messages' ) );
 		add_action( 'camptix_form_edit_attendee_update_post_meta',    array( $this, 'update_attendee_post_meta' ), 10, 2 );
