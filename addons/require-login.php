@@ -4,6 +4,7 @@
  * Require attendees to login to the website before purchasing tickets.
  */
 class CampTix_Require_Login extends CampTix_Addon {
+	const UNCONFIRMED_USERNAME = '[[ unconfirmed ]]';
 
 	/**
 	 * Register hook callbacks
@@ -14,15 +15,15 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_filter( 'camptix_coupon_link_classes',                    array( $this, 'hide_register_form_elements' ) );
 		add_filter( 'camptix_quantity_row_classes',                   array( $this, 'hide_register_form_elements' ) );
 		add_action( 'camptix_notices',                                array( $this, 'ticket_form_message' ), 8 );
-		add_action( 'camptix_attendee_form_additional_info',          array( $this, 'render_attendee_form_username_row' ), 10, 3 );
-		add_filter( 'camptix_form_register_complete_attendee_object', array( $this, 'add_username_to_attendee_object' ), 10, 2 );
+		add_filter( 'camptix_form_register_complete_attendee_object', array( $this, 'add_username_to_attendee_object' ), 10, 3 );
 		add_action( 'camptix_checkout_update_post_meta',              array( $this, 'save_checkout_username_meta' ), 10, 2 );
 		add_filter( 'camptix_attendee_report_column_value_username',  array( $this, 'get_attendee_username_meta' ), 10, 2 );
 		add_filter( 'camptix_save_attendee_post_add_search_meta',     array( $this, 'get_attendee_search_meta' ) );
 		add_filter( 'camptix_attendee_report_extra_columns',          array( $this, 'get_attendee_report_extra_columns' ) );
 		add_filter( 'camptix_metabox_attendee_info_additional_rows',  array( $this, 'get_attendee_metabox_rows' ), 10, 2 );
+		add_action( 'camptix_form_edit_attendee_custom_error_flags',  array( $this, 'require_unique_usernames' ) );
+		add_action( 'camptix_form_start_errors',                      array( $this, 'add_form_start_error_messages' ) );
 		add_action( 'camptix_form_edit_attendee_update_post_meta',    array( $this, 'update_attendee_post_meta' ), 10, 2 );
-		add_action( 'camptix_form_edit_attendee_additional_info',     array( $this, 'render_edit_attendee_username_row' ) );
 	}
 
 	/**
@@ -72,55 +73,23 @@ class CampTix_Require_Login extends CampTix_Addon {
 	}
 
 	/**
-	 * Render the table row in the Registration form for collecting usernames.
-	 *
-	 * @param array $form_data
-	 * @param int $current_iteration
-	 * @param int $total_count
-	 */
-	public function render_attendee_form_username_row( $form_data, $current_iteration, $total_count ) {
-		if ( isset( $form_data['tix_attendee_info'][ $current_iteration ]['username'] ) ) {
-			$username = $form_data['tix_attendee_info'][ $current_iteration ]['username'];
-		} else if ( 1 == $current_iteration ) {
-			$current_user = wp_get_current_user();
-			$username     = $current_user->user_login;
-		} else {
-			$username = '';
-		}
-		
-		?>
-		
-		<tr class="tix-row-username">
-			<td class="tix-required tix-left">
-				<label for="tix_attendee_info_<?php echo esc_attr( $current_iteration ); ?>_username">
-					<?php echo esc_html( apply_filters( 'camptix_require_login_username_label', __( 'Username', 'camptix' ) ) ); ?>
-				</label>
-				<span class="tix-required-star">*</span>
-			</td>
-			
-			<td class="tix-right">
-				<input id="tix_attendee_info_<?php echo esc_attr( $current_iteration ); ?>_username" name="tix_attendee_info[<?php echo $current_iteration; ?>][username]" type="text" value="<?php echo esc_attr( $username ); ?>" />
-			</td>
-		</tr>
-		
-		<?php
-	}
-
-	/**
 	 * Add the value of the username to the Attendee object used during checkout
 	 *
-	 * @param object $attendee
+	 * The current logged in user's username will be assigned to the first ticket and the other tickets will have
+	 * an empty field because it will be filled in later when each individual confirms their registration.
+	 *
+	 * @param stdClass $attendee
 	 * @param array $attendee_info
-	 * @return object
+	 * @param int $attendee_order The order of the current attendee with respect to other attendees from the same transaction, starting at 1
+	 *
+	 * @return stdClass
 	 */
-	public function add_username_to_attendee_object( $attendee, $attendee_info ) {
-		/** @var $camptix CampTix_Plugin */
-		global $camptix;
-		$attendee->username = sanitize_text_field( $attendee_info['username'] );
-
-		if ( ! username_exists( $attendee->username ) ) {
-			$camptix->error_flag( 'require_login' );    // CampTix_Plugin doesn't have an error message for this, but will still redirect the user back to the form
-			$camptix->error( apply_filters( 'camptix_require_login_invalid_username_error', __( 'Please enter a valid username.', 'camptix' ) ) );
+	public function add_username_to_attendee_object( $attendee, $attendee_info, $attendee_order ) {
+		if ( 1 === $attendee_order ) {
+			$current_user       = wp_get_current_user();
+			$attendee->username = $current_user->user_login;
+		} else {
+			$attendee->username = self::UNCONFIRMED_USERNAME;
 		}
 
 		return $attendee;
@@ -130,7 +99,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 * Save the attendee's username in the database.
 	 *
 	 * @param int $post_id
-	 * @param object $attendee
+	 * @param stdClass $attendee
 	 */
 	public function save_checkout_username_meta( $post_id, $attendee ) {
 		update_post_meta( $post_id, 'tix_username', $attendee->username );
@@ -139,9 +108,9 @@ class CampTix_Require_Login extends CampTix_Addon {
 	/**
 	 * Retrieve the attendee's username from the database.
 	 *
-	 * @param $data
-	 * @param $attendee
-	 * @return mixed
+	 * @param array $data
+	 * @param WP_Post $attendee
+	 * @return string
 	 */
 	public function get_attendee_username_meta( $data, $attendee ) {
 		return get_post_meta( $attendee->ID, 'tix_username', true );
@@ -185,37 +154,96 @@ class CampTix_Require_Login extends CampTix_Addon {
 	}
 
 	/**
+	 * Ensure that each attendee is mapped to only one username.
+	 *
+	 * This prevents the buyer of a group of tickets from completing registration for the other attendees.
+	 *
+	 * @param WP_Post $attendee
+	 */
+	public function require_unique_usernames( $attendee ) {
+		/** @var $camptix CampTix_Plugin */
+		global $camptix;
+
+		$current_user = wp_get_current_user();
+		$confirmed_usernames = $this->get_confirmed_usernames(
+			get_post_meta( $attendee->ID, 'tix_ticket_id', true ),
+			get_post_meta( $attendee->ID, 'tix_payment_token', true )
+		);
+
+		if ( in_array( $current_user->user_login, $confirmed_usernames ) ) {
+			$camptix->error_flag( 'require_login_edit_attendee_duplicate_username' );
+			$camptix->redirect_with_error_flags();
+		}
+	}
+
+	/**
+	 * Get all of the usernames of confirmed attendees from group of tickets that was purchased together.
+	 *
+	 * @param int $ticket_id
+	 * @param string $payment_token
+	 *
+	 * @return array
+	 */
+	protected function get_confirmed_usernames( $ticket_id, $payment_token ) {
+		$usernames = array();
+
+		$other_attendees = get_posts( array(
+			'posts_per_page' => -1,
+			'post_type'      => 'tix_attendee',
+			'post_status'    => array( 'pending', 'publish' ),
+
+			'meta_query'   => array(
+				'relation' => 'AND',
+
+				array(
+					'key'   => 'tix_ticket_id',
+					'value' => $ticket_id,
+				),
+
+				array(
+					'key'   => 'tix_payment_token',
+					'value' => $payment_token,
+				)
+			)
+		) );
+
+		foreach ( $other_attendees as $attendee ) {
+			$username = get_post_meta( $attendee->ID, 'tix_username', true );
+
+			if ( ! empty( $username ) && self::UNCONFIRMED_USERNAME != $username ) {
+				$usernames[] = $username;
+			}
+		}
+
+		return $usernames;
+	}
+
+	/**
+	 * Define the error messages that correspond to our custom error codes.
+	 *
+	 * @param array $errors
+	 */
+	public function add_form_start_error_messages( $errors ) {
+		/** @var $camptix CampTix_Plugin */
+		global $camptix;
+
+		if ( isset( $errors['require_login_edit_attendee_duplicate_username'] ) ) {
+			$camptix->error( __( "You cannot edit the requested attendee's information because your user account has already been assigned to another ticket. Please ask the person using this ticket to sign in with their own account and fill out their information.", 'camptix' ) );
+		}
+	}
+
+	/**
 	 * Update the username when saving an Attendee post.
-	 * 
+	 *
+	 * This fires when a user is editing their individual information, so the current user
+	 * should be the person that the ticket was purchased for.
+	 *
 	 * @param array $new_ticket_info
 	 * @param WP_Post $attendee
 	 */
 	public function update_attendee_post_meta( $new_ticket_info, $attendee ) {
-		update_post_meta( $attendee->ID, 'tix_username', sanitize_text_field( $new_ticket_info['username'] ) );
-	}
-
-	/**
-	 * Render the Username row on the Attendee Information edit form
-	 *
-	 * @param $attendee
-	 */
-	public function render_edit_attendee_username_row( $attendee ) {
-		?>
-		
-		<tr>
-			<td class="tix-required tix-left">
-				<label for="tix_ticket_info_<?php echo esc_attr( $attendee->ID ); ?>_username">
-					<?php _e( 'Username', 'camptix' ); ?>
-				</label>
-				<span class="tix-required-star">*</span>
-			</td>
-
-			<td class="tix-right">
-				<input id="tix_ticket_info_<?php echo esc_attr( $attendee->ID ); ?>_username" name="tix_ticket_info[username]" type="text" value="<?php echo esc_attr( get_post_meta( $attendee->ID, 'tix_username', true ) ); ?>" />
-			</td>
-		</tr>
-		
-		<?php
+		$current_user = wp_get_current_user();
+		update_post_meta( $attendee->ID, 'tix_username', $current_user->user_login );
 	}
 } // CampTix_Require_Login 
 

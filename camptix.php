@@ -4480,6 +4480,8 @@ class CampTix_Plugin {
 		if ( isset( $redirected_error_flags['invalid_reservation'] ) )
 			$this->error( __( 'Sorry, but the reservation you are trying to use has been cancelled or has expired.', 'camptix' ) );
 
+		do_action( 'camptix_form_start_errors', $redirected_error_flags );
+
 		ob_start();
 		?>
 		<div id="tix">
@@ -5022,6 +5024,8 @@ class CampTix_Plugin {
 			$this->error_flags['invalid_edit_token'] = true;
 			$this->redirect_with_error_flags();
 		}
+
+		do_action( 'camptix_form_edit_attendee_custom_error_flags', $attendee );
 
 		if ( $attendee->post_status == 'pending' )
 			$this->notice( __( 'Please note that the payment for this ticket is still pending.', 'camptix' ) );
@@ -5802,7 +5806,7 @@ class CampTix_Plugin {
 			$attendee->email = $attendee_info['email'];
 			$attendee->answers = $answers;
 
-			$attendee = apply_filters( 'camptix_form_register_complete_attendee_object', $attendee, $attendee_info );
+			$attendee = apply_filters( 'camptix_form_register_complete_attendee_object', $attendee, $attendee_info, $i );
 
 			if ( isset( $_POST['tix_receipt_email'] ) && $_POST['tix_receipt_email'] == $i )
 				$receipt_email = $attendee->email;
@@ -6518,6 +6522,11 @@ class CampTix_Plugin {
 		die();
 	}
 
+	/*
+	 * Set an error flag
+	 *
+	 * @param string $flag
+	 */
 	function error_flag( $flag ) {
 		$this->error_flags[ $flag ] = true;
 		return;
