@@ -21,6 +21,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_action( 'camptix_notices',                                array( $this, 'ticket_form_message' ), 8 );
 		add_filter( 'camptix_form_register_complete_attendee_object', array( $this, 'add_username_to_attendee_object' ), 10, 3 );
 		add_action( 'camptix_checkout_update_post_meta',              array( $this, 'save_checkout_username_meta' ), 10, 2 );
+		add_filter( 'camptix_email_tickets_template',                 array( $this, 'use_custom_email_templates' ), 10, 2 );
 
 		// wp-admin
 		add_filter( 'camptix_attendee_report_column_value_username',  array( $this, 'get_attendee_username_meta' ), 10, 2 );
@@ -189,6 +190,30 @@ class CampTix_Require_Login extends CampTix_Addon {
 		$options['email_template_multiple_purchase_unconfirmed_attendee']          = __( "Hi there!\n\nA ticket to [event_name] has been purchased for you.\n\nTo complete your registration, please confirm your ticket by visiting the following page:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' );
 
 		return $options;
+	}
+
+	/**
+	 * Send custom e-mail templates to the purchaser and to unconfirmed attendees.
+	 *
+	 * @param string $template
+	 * @param WP_Post $attendee
+	 *
+	 * @return string
+	 */
+	public function use_custom_email_templates( $template, $attendee ) {
+		switch ( $template ) {
+			case 'email_template_multiple_purchase_receipt':
+				$template = 'email_template_multiple_purchase_receipt_unconfirmed_attendees';
+				break;
+
+			case 'email_template_multiple_purchase':
+				if ( self::UNCONFIRMED_USERNAME == get_post_meta( $attendee->ID, 'tix_username', true ) ) {
+					$template = 'email_template_multiple_purchase_unconfirmed_attendee';
+				}
+				break;
+		}
+
+		return $template;
 	}
 
 	/**
