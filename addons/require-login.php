@@ -11,7 +11,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 	/**
 	 * Register hook callbacks
 	 */
-	public function camptix_init() {
+	public function __construct() {
 		add_action( 'template_redirect',                              array( $this, 'block_unauthenticated_actions' ), 7 );    // before CampTix_Plugin->template_redirect()
 
 		// Registration Information front-end screen
