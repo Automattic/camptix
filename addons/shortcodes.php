@@ -91,7 +91,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		}
 
 		// Cache for a month if archived or less if active.
-		$cache_time = ( $camptix_options['archived'] ) ? 60 * 60 * 24 * 30 : 60 * 60;
+		$cache_time = ( $camptix_options['archived'] ) ? DAY_IN_SECONDS * 30 : HOUR_IN_SECONDS;
 		$query_args = array();
 		ob_start();
 
