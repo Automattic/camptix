@@ -123,16 +123,20 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 				<?php
 					while ( true && $printed < $posts_per_page ) {
 						$paged++;
-						$attendees = get_posts( array_merge( array(
-							'post_type' => 'tix_attendee',
-							'posts_per_page' => 200,
-							'post_status' => array( 'publish', 'pending' ),
-							'paged' => $paged,
-							'order' => $order,
-							'orderby' => $orderby,
-							'fields' => 'ids', // ! no post objects
-							'cache_results' => false,
-						), $query_args ) );
+						$attendee_args = apply_filters( 'camptix_attendees_shortcode_query_args', array_merge(
+							array(
+								'post_type'      => 'tix_attendee',
+								'posts_per_page' => 200,
+								'post_status'    => array( 'publish', 'pending' ),
+								'paged'          => $paged,
+								'order'          => $order,
+								'orderby'        => $orderby,
+								'fields'         => 'ids', // ! no post objects
+								'cache_results'  => false,
+							),
+							$query_args
+						) );
+						$attendees = get_posts( $attendee_args );
 
 						if ( ! is_array( $attendees ) || count( $attendees ) < 1 )
 							break; // life saver!
