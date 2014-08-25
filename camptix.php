@@ -1433,6 +1433,10 @@ class CampTix_Plugin {
 				$this->add_settings_field_helper( 'email_template_single_refund', __( 'Single Refund', 'camptix' ), 'field_textarea' );
 				$this->add_settings_field_helper( 'email_template_multiple_refund', __( 'Multiple Refund', 'camptix' ), 'field_textarea' );
 
+				foreach ( apply_filters( 'camptix_custom_email_templates', array() ) as $key => $template ) {
+					$this->add_settings_field_helper( $key, $template['title'], $template['callback_method'] );
+				}
+
 				// Add a reset templates button
 				add_action( 'camptix_setup_buttons', array( $this, 'setup_buttons_reset_templates' ) );
 				break;
@@ -1534,24 +1538,31 @@ class CampTix_Plugin {
 		}
 
 		// E-mail templates
-		$email_templates = array(
-			'single_purchase',
-			'multiple_purchase',
-			'multiple_purchase_receipt',
-			'pending_succeeded',
-			'pending_failed',
-			'single_refund',
-			'multiple_refund',
+		$email_templates = array_merge(
+			array(
+				'email_template_single_purchase',
+				'email_template_multiple_purchase',
+				'email_template_multiple_purchase_receipt',
+				'email_template_pending_succeeded',
+				'email_template_pending_failed',
+				'email_template_single_refund',
+				'email_template_multiple_refund',
+			),
+			array_keys( apply_filters( 'camptix_custom_email_templates', array() ) )
 		);
 
-		foreach ( $email_templates as $template )
-			if ( isset( $input[ 'email_template_' . $template ] ) )
-				$output[ 'email_template_' . $template ] = $input[ 'email_template_' . $template ];
+		foreach ( $email_templates as $template ) {
+			if ( isset( $input[ $template ] ) ) {
+				$output[ $template ] = $input[ $template ];
+			}
+		}
 
 		// If the Reset Defaults button was hit
-		if ( isset( $_POST['tix-reset-templates'] ) )
-			foreach ( $email_templates as $template )
-				unset( $output[ 'email_template_' . $template ] );
+		if ( isset( $_POST['tix-reset-templates'] ) ) {
+			foreach ( $email_templates as $template ) {
+				unset( $output[ $template ] );
+			}
+		}
 
 		$current_user = wp_get_current_user();
 		$log_data = array(
