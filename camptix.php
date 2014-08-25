@@ -6400,7 +6400,8 @@ class CampTix_Plugin {
 				$this->tmp( 'attendee_id', $attendee->ID );
 				$this->tmp( 'ticket_url', $edit_link );
 
-				$content = do_shortcode( $this->options['email_template_multiple_purchase'] );
+				$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_multiple_purchase', $attendee );
+				$content = do_shortcode( $this->options[ $email_template ] );
 
 				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
 
@@ -6423,7 +6424,8 @@ class CampTix_Plugin {
 
 				if ( $attendee_email != $receipt_email ) {
 					$subject = sprintf( __( "Your Refund for %s", 'camptix' ), $this->options['event_name'] );
-					$content = do_shortcode( $this->options['email_template_multiple_refund'] );
+					$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_multiple_refund', $attendee );
+					$content = do_shortcode( $this->options[ $email_template ] );
 
 					$this->log( sprintf( 'Sending refund e-mail notification to %s.', $attendee_email ), $attendees[0]->ID );
 					$this->wp_mail( $attendee_email, $subject, $content );
@@ -6458,7 +6460,8 @@ class CampTix_Plugin {
 
 			if ( count( $attendees ) == 1 ) {
 
-				$content = do_shortcode( $this->options['email_template_single_purchase'] );
+				$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_single_purchase', $attendees[0] );
+				$content = do_shortcode( $this->options[ $email_template ] );
 
 				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
 
@@ -6469,7 +6472,8 @@ class CampTix_Plugin {
 
 			} elseif ( count( $attendees ) > 1 ) {
 
-				$content = do_shortcode( $this->options['email_template_multiple_purchase_receipt'] );
+				$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_multiple_purchase_receipt', $attendees[0] );
+				$content = do_shortcode( $this->options[ $email_template ] );
 
 				$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['event_name'] );
 
@@ -6484,7 +6488,8 @@ class CampTix_Plugin {
 		if ( $from_status == 'pending' && $to_status == 'publish' ) {
 			$this->tmp( 'ticket_url', $this->get_access_tickets_link( $access_token ) );
 			$subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['event_name'] );
-			$content = do_shortcode( $this->options['email_template_pending_succeeded'] );
+			$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_pending_succeeded', $attendees[0] );
+			$content = do_shortcode( $this->options[ $email_template ] );
 
 			$this->log( sprintf( 'Sending completed e-mail notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
@@ -6493,7 +6498,8 @@ class CampTix_Plugin {
 		if ( $from_status == 'pending' && $to_status == 'failed' ) {
 			$this->tmp( 'ticket_url', $this->get_tickets_url() );
 			$subject = sprintf( __( "Your Payment for %s", 'camptix' ), $this->options['event_name'] );
-			$content = do_shortcode( $this->options['email_template_pending_failed'] );
+			$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_pending_failed', $attendees[0] );
+			$content = do_shortcode( $this->options[ $email_template ] );
 
 			$this->log( sprintf( 'Sending failed e-mail notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
@@ -6502,7 +6508,8 @@ class CampTix_Plugin {
 		if ( $from_status == 'publish' && $to_status == 'refund' ) {
 			$this->tmp( 'ticket_url', $this->get_tickets_url() );
 			$subject = sprintf( __( "Your Refund for %s", 'camptix' ), $this->options['event_name'] );
-			$content = do_shortcode( $this->options['email_template_single_refund'] );
+			$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_single_refund', $attendees[0] );
+			$content = do_shortcode( $this->options[ $email_template ] );
 
 			$this->log( sprintf( 'Sending refund e-mail notification to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
