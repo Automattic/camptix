@@ -164,13 +164,13 @@ class CampTix_Require_Login extends CampTix_Addon {
 	}
 
 	public function register_custom_email_templates( $templates ) {
-		$templates['email_template_multiple_purchase_confirmed_user'] = array(
-			'title'           => __( 'Multiple Purchase - Confirmed Attendee', 'camptix' ),
+		$templates['email_template_multiple_purchase_receipt_unconfirmed_attendees'] = array(
+			'title'           => __( 'Multiple Purchase (receipt with unconfirmed attendees)', 'camptix' ),
 			'callback_method' => 'field_textarea',
 		);
 
-		$templates['email_template_multiple_purchase_unconfirmed_user'] = array(
-			'title'           => __( 'Multiple Purchase - Unconfirmed Attendee', 'camptix' ),
+		$templates['email_template_multiple_purchase_unconfirmed_attendee'] = array(
+			'title'           => __( 'Multiple Purchase (to unconfirmed attendees)', 'camptix' ),
 			'callback_method' => 'field_textarea',
 		);
 
@@ -178,15 +178,15 @@ class CampTix_Require_Login extends CampTix_Addon {
 	}
 
 	/**
-	 * Add new e-mail templates
+	 * Set the default custom e-mail template content.
 	 *
 	 * @param array $options
 	 *
 	 * @return array
 	 */
 	public function custom_email_template_default_values( $options ) {
-		$options['email_template_multiple_purchase_confirmed_user']   = __( "Hi there!\n\nThank you so much for purchasing a ticket and we hope to see you at our event soon. You can edit your information at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nIf you purchased additional tickets for other attendees, they will need to confirm their attendance by visiting a link that was sent to them by e-mail.\n\nLet us know if you have any questions!", 'camptix' );
-		$options['email_template_multiple_purchase_unconfirmed_user'] = __( "Hi there!\n\nThank you so much for purchasing a ticket and we hope to see you at our event soon. To complete your registration, please confirm your ticket by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' );
+		$options['email_template_multiple_purchase_receipt_unconfirmed_attendees'] = __( "Hi there!\n\nYou have purchased the following tickets:\n\n[receipt]\n\nYou can view and edit your order at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nThe other attendees that you purchased tickets for will need to confirm their registration by visiting a link that was sent to them by e-mail.\n\nLet us know if you have any questions!", 'camptix' );
+		$options['email_template_multiple_purchase_unconfirmed_attendee']          = __( "Hi there!\n\nA ticket to [event_name] has been purchased for you.\n\nTo complete your registration, please confirm your ticket by visiting the following page:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' );
 
 		return $options;
 	}
