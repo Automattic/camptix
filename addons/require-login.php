@@ -35,6 +35,9 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_action( 'camptix_form_edit_attendee_custom_error_flags',  array( $this, 'require_unique_usernames' ) );
 		add_action( 'camptix_form_start_errors',                      array( $this, 'add_form_start_error_messages' ) );
 		add_action( 'camptix_form_edit_attendee_update_post_meta',    array( $this, 'update_attendee_post_meta' ), 10, 2 );
+
+		// Misc
+		add_filter( 'camptix_attendees_shortcode_query_args',         array( $this, 'hide_unconfirmed_attendees' ) );
 	}
 
 	/**
@@ -307,6 +310,29 @@ class CampTix_Require_Login extends CampTix_Addon {
 	public function update_attendee_post_meta( $new_ticket_info, $attendee ) {
 		$current_user = wp_get_current_user();
 		update_post_meta( $attendee->ID, 'tix_username', $current_user->user_login );
+	}
+
+	/**
+	 * Remove unconfirmed attendees from the [attendees] shortcode output.
+	 *
+	 * @param array $query_args
+	 *
+	 * @return array
+	 */
+	public function hide_unconfirmed_attendees( $query_args ) {
+		$meta_query = array(
+			'key'     => 'tix_username',
+			'value'   => self::UNCONFIRMED_USERNAME,
+			'compare' => '!='
+		);
+
+		if ( isset( $query_args['meta_query'] ) ) {
+			$query_args['meta_query'][] = $meta_query;
+		} else {
+			$query_args['meta_query'] = array( $meta_query );
+		}
+
+		return $query_args;
 	}
 } // CampTix_Require_Login 
 
