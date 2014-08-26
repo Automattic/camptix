@@ -39,6 +39,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_action( 'camptix_form_edit_attendee_custom_error_flags',  array( $this, 'require_unique_usernames' ) );
 		add_action( 'camptix_form_start_errors',                      array( $this, 'add_form_start_error_messages' ) );
 		add_action( 'camptix_form_edit_attendee_update_post_meta',    array( $this, 'update_attendee_post_meta' ), 10, 2 );
+		add_filter( 'camptix_save_attendee_information_label',        array( $this, 'rename_save_attendee_info_label' ), 10, 4 );
 
 		// Misc
 		add_filter( 'camptix_attendees_shortcode_query_args',         array( $this, 'hide_unconfirmed_attendees' ) );
@@ -410,6 +411,26 @@ class CampTix_Require_Login extends CampTix_Addon {
 	public function update_attendee_post_meta( $new_ticket_info, $attendee ) {
 		$current_user = wp_get_current_user();
 		update_post_meta( $attendee->ID, 'tix_username', $current_user->user_login );
+	}
+
+	/**
+	 * Change the 'Save Attendee Information' button to read 'Confirm Registration'.
+	 *
+	 * This helps encourage the user to verify their registration by suggestion that it's necessary.
+	 *
+	 * @param string $label
+	 * @param WP_Post $attendee
+	 * @param WP_Post $ticket
+	 * @param array $questions
+	 *
+	 * @return string
+	 */
+	public function rename_save_attendee_info_label( $label, $attendee, $ticket, $questions ) {
+		if ( self::UNCONFIRMED_USERNAME == get_post_meta( $attendee->ID, 'tix_username', true ) ) {
+			$label = __( 'Confirm Registration', 'camptix' );
+		}
+
+		return $label;
 	}
 
 	/**
