@@ -101,6 +101,19 @@ class CampTix_Require_Login extends CampTix_Addon {
 
 			$camptix->notice( $notice );
 		}
+
+		// Ask the attendee to confirm their registration
+		if ( isset( $_REQUEST['tix_action'] ) && 'edit_attendee' == $_REQUEST['tix_action'] && self::UNCONFIRMED_USERNAME == get_post_meta( $_REQUEST['tix_attendee_id'], 'tix_username', true ) ) {
+			$tickets_selected = array( get_post_meta( $_REQUEST['tix_attendee_id'], 'tix_ticket_id', true ) => 1 );  // mimic $_REQUEST['tix_tickets_selected']
+
+			if ( $this->tickets_have_questions( $tickets_selected ) ) {
+				$notice = __( 'To complete your registration, please fill out the fields below, and then click on the Confirm Registration button.', 'camptix' );
+			} else {
+				$notice = __( 'To complete your registration, please verify that all of the information below is correct, and then click on the Confirm Registration button.', 'camptix' );
+			}
+
+			$camptix->notice( $notice );
+		}
 	}
 
 	/**
