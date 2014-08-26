@@ -168,7 +168,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 			if ( $number_attendees_current_ticket > 0 ) {
 				$questions = $camptix->get_sorted_questions( $ticket_id );
 
-				if ( count( $questions ) > 1 ) {
+				if ( count( $questions ) >= 1 ) {
 					$has_questions = true;
 					break;
 				}
