@@ -6,12 +6,15 @@
  * todo add a detailed explanation of the goals, workflow, etc
  */
 class CampTix_Require_Login extends CampTix_Addon {
+	protected $is_first_registered_attendee;
 	const UNCONFIRMED_USERNAME = '[[ unconfirmed ]]';
 
 	/**
 	 * Register hook callbacks
 	 */
 	public function __construct() {
+		$this->is_first_registered_attendee = true;
+
 		add_action( 'template_redirect',                              array( $this, 'block_unauthenticated_actions' ), 7 );    // before CampTix_Plugin->template_redirect()
 
 		// Registration Information front-end screen
@@ -19,6 +22,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_filter( 'camptix_coupon_link_classes',                    array( $this, 'hide_register_form_elements' ) );
 		add_filter( 'camptix_quantity_row_classes',                   array( $this, 'hide_register_form_elements' ) );
 		add_action( 'camptix_notices',                                array( $this, 'ticket_form_message' ), 8 );
+		add_filter( 'camptix_get_sorted_questions',                   array( $this, 'filter_unconfirmed_attendees_questions' ), 10, 2 );
 		add_filter( 'camptix_form_register_complete_attendee_object', array( $this, 'add_username_to_attendee_object' ), 10, 3 );
 		add_action( 'camptix_checkout_update_post_meta',              array( $this, 'save_checkout_username_meta' ), 10, 2 );
 		add_filter( 'camptix_email_tickets_template',                 array( $this, 'use_custom_email_templates' ), 10, 2 );
@@ -71,12 +75,13 @@ class CampTix_Require_Login extends CampTix_Addon {
 	}
 
 	/**
-	 * Warn users that they will need to login to purchase a ticket
+	 * Add front-end notices.
 	 */
 	public function ticket_form_message() {
 		/** @var $camptix CampTix_Plugin */
 		global $camptix;
 
+		// Warn users that they will need to login to purchase a ticket
 		if ( ! is_user_logged_in() ) {
 			$camptix->notice( apply_filters( 'camptix_require_login_please_login_message', sprintf(
 				__( 'Please <a href="%s">log in</a> or <a href="%s">create an account</a> to purchase your tickets.', 'camptix' ),
@@ -84,6 +89,101 @@ class CampTix_Require_Login extends CampTix_Addon {
 				wp_registration_url()
 			) ) );
 		}
+
+		// Inform a user registering multiple attendees that other attendees will enter their own info
+		if ( isset( $_REQUEST['tix_action'] ) && 'attendee_info' == $_REQUEST['tix_action'] && $this->registering_multiple_attendees( $_REQUEST['tix_tickets_selected'] ) ) {
+			$notice = __( '<p>Please enter your own information for the first ticket, and then enter the names and e-mail addresses of other attendees in the subsequent ticket fields.</p>', 'camptix' );
+
+			if ( $this->tickets_have_questions( $_REQUEST['tix_tickets_selected'] ) ) {
+				$notice .= __( '<p>The other attendees will receive an e-mail asking them to confirm their registration and enter their additional information.</p>', 'camptix' );
+			}
+
+			$camptix->notice( $notice );
+		}
+	}
+
+	/**
+	 * Determine if the user is registering multiple attendees
+	 *
+	 * @param array $tickets_selected
+	 *
+	 * @return bool
+	 */
+	protected function registering_multiple_attendees( $tickets_selected ) {
+		$registering_multiple     = false;
+		$number_distinct_tickets = 0;
+
+		foreach ( $tickets_selected as $ticket_id => $number_attendees_current_ticket ) {
+			$number_attendees_current_ticket = absint( $number_attendees_current_ticket );
+
+			if ( $number_attendees_current_ticket > 0 ) {
+				$number_distinct_tickets++;
+
+				if ( $number_distinct_tickets > 1 ) {
+					$registering_multiple = true;
+					break;
+				}
+
+				if ( $number_attendees_current_ticket > 1 ) {
+					$registering_multiple = true;
+					break;
+				}
+			}
+		}
+
+		return $registering_multiple;
+	}
+
+	/**
+	 * Determine if any of the given tickets have additional questions.
+	 *
+	 * @param array $tickets_selected
+	 *
+	 * @return bool
+	 */
+	protected function tickets_have_questions( $tickets_selected ) {
+		/** @var $camptix CampTix_Plugin */
+		global $camptix;
+		$has_questions = false;
+
+		remove_filter( 'camptix_get_sorted_questions', array( $this, 'filter_unconfirmed_attendees_questions' ), 10, 2 );
+
+		foreach ( $tickets_selected as $ticket_id => $number_attendees_current_ticket ) {
+			$number_attendees_current_ticket = absint( $number_attendees_current_ticket );
+
+			if ( $number_attendees_current_ticket > 0 ) {
+				$questions = $camptix->get_sorted_questions( $ticket_id );
+
+				if ( count( $questions ) > 1 ) {
+					$has_questions = true;
+					break;
+				}
+			}
+		}
+
+		add_filter( 'camptix_get_sorted_questions', array( $this, 'filter_unconfirmed_attendees_questions' ), 10, 2 );
+
+		return $has_questions;
+	}
+
+	/**
+	 * Show a limited set to questions when a user is registering additional, unconfirmed attendees.
+	 *
+	 * @param array $questions
+	 * @param int $ticket_id
+	 *
+	 * @return array
+	 */
+	public function filter_unconfirmed_attendees_questions( $questions, $ticket_id ) {
+		if ( ! is_admin() && isset( $_REQUEST['tix_action'] ) && 'attendee_info' == $_REQUEST['tix_action'] ) {
+			if ( $this->is_first_registered_attendee ) {
+				$this->is_first_registered_attendee = false;
+			} else {
+				$questions = array();
+			}
+		}
+
+		return $questions;
 	}
 
 	/**
