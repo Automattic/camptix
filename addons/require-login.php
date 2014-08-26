@@ -350,7 +350,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 			get_post_meta( $attendee->ID, 'tix_payment_token', true )
 		);
 
-		if ( in_array( $current_user->user_login, $confirmed_usernames ) ) {
+		if ( $current_user->user_login != get_post_meta( $attendee->ID, 'tix_username', true ) && in_array( $current_user->user_login, $confirmed_usernames ) ) {
 			$camptix->error_flag( 'require_login_edit_attendee_duplicate_username' );
 			$camptix->redirect_with_error_flags();
 		}
