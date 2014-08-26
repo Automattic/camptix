@@ -5156,8 +5156,10 @@ class CampTix_Plugin {
 
 					</tbody>
 				</table>
+
 				<p>
-					<input type="submit" value="<?php esc_attr_e( 'Save Attendee Information', 'camptix' ); ?>" style="float: right; cursor: pointer;" />
+					<?php $submit_button_value = apply_filters( 'camptix_save_attendee_information_label', __( 'Save Attendee Information', 'camptix' ), $attendee, $ticket, $questions ); ?>
+					<input type="submit" value="<?php echo esc_attr( $submit_button_value ); ?>" style="float: right; cursor: pointer;" />
 					<br class="tix-clear" />
 				</p>
 			</form>
