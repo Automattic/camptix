@@ -798,6 +798,10 @@ class CampTix_Plugin {
 
 	/**
 	 * Takes a ticket id and returns a sorted array of questions.
+	 *
+	 * @param int $ticket_id
+	 *
+	 * @return array
 	 */
 	function get_sorted_questions( $ticket_id ) {
 		$question_ids = (array) get_post_meta( $ticket_id, 'tix_question_id' );
@@ -829,7 +833,7 @@ class CampTix_Plugin {
 
 		unset( $questions );
 
-		return $questions_sorted;
+		return apply_filters( 'camptix_get_sorted_questions', $questions_sorted, $ticket_id );
 	}
 
 	/**
