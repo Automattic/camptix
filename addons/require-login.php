@@ -189,7 +189,9 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 * @return array
 	 */
 	public function filter_unconfirmed_attendees_questions( $questions, $ticket_id ) {
-		if ( ! is_admin() && isset( $_REQUEST['tix_action'] ) && 'attendee_info' == $_REQUEST['tix_action'] ) {
+		$relevant_actions = array( 'attendee_info', 'checkout' );
+
+		if ( ! is_admin() && isset( $_REQUEST['tix_action'] ) && in_array( $_REQUEST['tix_action'], $relevant_actions ) ) {
 			if ( $this->is_first_registered_attendee ) {
 				$this->is_first_registered_attendee = false;
 			} else {
