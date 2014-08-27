@@ -45,4 +45,30 @@
 		$('.tix-field-email').keyup(refresh_receipt_emails);
 		$(document).ready(refresh_receipt_emails);
 	}
+
+	// Hide unknown attendee fields when reloading the page
+	$( document ).ready( function() {
+		tix.find( 'input.unknown-attendee' ).each( hide_input_rows_for_unknown_attendee );
+	} );
+
+	// Hide unknown attendee fields when checkbox is clicked
+	tix.find( 'input.unknown-attendee' ).change( hide_input_rows_for_unknown_attendee );
+
+	/**
+	 * Hide the input fields for unknown attendees
+	 */
+	function hide_input_rows_for_unknown_attendee() {
+		// Select core input rows. There aren't any question rows because those are removed by filter_unconfirmed_attendees_questions().
+		var input_rows = $( this ).parents( 'table' ).find( 'tr.tix-row-first-name, tr.tix-row-last-name, tr.tix-row-email' );
+
+		if ( this.checked ) {
+			input_rows.each( function() {
+				$( this ).addClass( 'tix-hidden' );
+			} );
+		} else {
+			input_rows.each( function() {
+				$( this ).removeClass( 'tix-hidden' );
+			} );
+		}
+	}
 }(jQuery));

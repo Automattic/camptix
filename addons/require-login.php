@@ -26,6 +26,8 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_filter( 'camptix_form_register_complete_attendee_object', array( $this, 'add_username_to_attendee_object' ), 10, 3 );
 		add_action( 'camptix_checkout_update_post_meta',              array( $this, 'save_checkout_username_meta' ), 10, 2 );
 		add_filter( 'camptix_email_tickets_template',                 array( $this, 'use_custom_email_templates' ), 10, 2 );
+		add_action( 'camptix_attendee_form_before_input',             array( $this, 'inject_unknown_attendee_checkbox' ), 10, 3 );
+		add_filter( 'camptix_checkout_attendee_info',                 array( $this, 'add_unknown_attendee_info_stubs' ) );
 
 		// wp-admin
 		add_filter( 'camptix_attendee_report_column_value_username',  array( $this, 'get_attendee_username_meta' ), 10, 2 );
@@ -40,6 +42,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_action( 'camptix_form_start_errors',                      array( $this, 'add_form_start_error_messages' ) );
 		add_action( 'camptix_form_edit_attendee_update_post_meta',    array( $this, 'update_attendee_post_meta' ), 10, 2 );
 		add_filter( 'camptix_save_attendee_information_label',        array( $this, 'rename_save_attendee_info_label' ), 10, 4 );
+		add_filter( 'camptix_form_edit_attendee_ticket_info',         array( $this, 'remove_unknown_attendee_info_stubs' ) );
 
 		// Misc
 		add_filter( 'camptix_attendees_shortcode_query_args',         array( $this, 'hide_unconfirmed_attendees' ) );
@@ -340,6 +343,88 @@ class CampTix_Require_Login extends CampTix_Addon {
 	}
 
 	/**
+	 * Add a checkbox to indicate an unknown attendee.
+	 *
+	 * @param array $form_data
+	 * @param WP_Post $ticket
+	 * @param int $i
+	 */
+	public function inject_unknown_attendee_checkbox( $form_data, $ticket, $i ) {
+		/** @var $camptix CampTix_Plugin */
+		global $camptix;
+
+		// This first attendee can't be unknown
+		$ticket_ids = array_keys( $form_data['tix_tickets_selected'] );
+		if ( $ticket_ids[0] == $ticket->ID && 1 == $i ) {
+			return;
+		}
+
+		$name = 'tix_attendee_info['. $i .'][unknown_attendee]';
+
+		?>
+
+		<tr class="unknown-attendee">
+			<td colspan="2">
+				<?php $camptix->field_checkbox( array(
+					'name'  => $name,
+					'value' => isset( $_POST['tix_attendee_info'][ $i ]['unknown_attendee'] ),
+					'class' => 'unknown-attendee',
+				) ); ?>
+
+				<label for="<?php echo esc_attr( $name ); ?>">
+					&nbsp;<?php _e( "I don't know who will use this ticket yet", 'camptix' ); ?>
+				</label>
+			</td>
+		</tr>
+
+		<?php
+	}
+
+	/**
+	 * Populate unknown attendee fields with stubbed values.
+	 *
+	 * Otherwise they would be empty and the checkout form would fail with errors.
+	 *
+	 * @param array $attendee_info
+	 *
+	 * @return array
+	 */
+	public function add_unknown_attendee_info_stubs( $attendee_info ) {
+		$unknown_attendee_info = $this->get_unknown_attendee_info();
+
+		if ( isset( $attendee_info['unknown_attendee'] ) ) {
+			if ( empty( $attendee_info['first_name'] ) ) {
+				$attendee_info['first_name'] = $unknown_attendee_info['first_name'];
+			}
+
+			if ( empty( $attendee_info['last_name'] ) ) {
+				$attendee_info['last_name'] = $unknown_attendee_info['last_name'];
+			}
+
+			if ( ! is_email( $attendee_info['email'] ) ) {
+				$attendee_info['email'] = $unknown_attendee_info['email'];
+			}
+		}
+
+		return $attendee_info;
+	}
+
+	/**
+	 * Define the unknown attendee info stubs
+	 *
+	 * @return array
+	 */
+	protected function get_unknown_attendee_info() {
+		$info = array(
+			'first_name' => __( 'Unknown', 'camptix' ),
+			'last_name'  => __( 'Attendee', 'camptix' ),
+			'email'      => 'unknown.attendee@example.org',
+		);
+
+		return $info;
+	}
+
+	/**
 	 * Ensure that each attendee is mapped to only one username.
 	 *
 	 * This prevents the buyer of a group of tickets from completing registration for the other attendees.
@@ -456,6 +541,28 @@ class CampTix_Require_Login extends CampTix_Addon {
 		}
 
 		return $label;
+	}
+
+	/**
+	 * Clear the stubbed unknown attendee info values.
+	 *
+	 * When the attendee is confirming their ticket, we want the fields to be empty instead of showing the
+	 * stubbed values.
+	 *
+	 * @param array $ticket_info
+	 *
+	 * @return array
+	 */
+	public function remove_unknown_attendee_info_stubs( $ticket_info ) {
+		$unknown_attendee_info = $this->get_unknown_attendee_info();
+
+		foreach ( $ticket_info as $key => $value ) {
+			if ( $value == $unknown_attendee_info[ $key ] ) {
+				$ticket_info[ $key ] = '';
+			}
+		}
+
+		return $ticket_info;
 	}
 
 	/**
