@@ -1608,8 +1608,26 @@ class CampTix_Plugin {
 	 * A checkbox field for the Settings API.
 	 */
 	function field_checkbox( $args ) {
+		$args = array_merge(
+			array(
+				'id'    => '',
+				'name'  => '',
+				'class' => '',
+				'value' => ''
+			),
+			$args
+		)
+
 		?>
-		<input type="checkbox" name="<?php echo esc_attr( $args['name'] ); ?>" value="1" <?php checked( $args['value'] ); ?> />
+
+		<input
+			type="checkbox"
+			id="<?php echo esc_attr( $args['name'] ); ?>"
+			name="<?php echo esc_attr( $args['name'] ); ?>"
+			class="<?php echo sanitize_html_class( $args['class'] ); ?>"
+			value="1"
+			<?php checked( $args['value'] ); ?> />
+
 		<?php
 	}
 
