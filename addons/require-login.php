@@ -354,8 +354,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		global $camptix;
 
 		// This first attendee can't be unknown
-		$ticket_ids = array_keys( $form_data['tix_tickets_selected'] );
-		if ( $ticket_ids[0] == $ticket->ID && 1 == $i ) {
+		if ( $this->current_row_is_buyer( $form_data['tix_tickets_selected'], $ticket, $i ) ) {
 			return;
 		}
 
@@ -378,6 +377,35 @@ class CampTix_Require_Login extends CampTix_Addon {
 		</tr>
 
 		<?php
+	}
+
+	/**
+	 * Determine if the attendee row being generated is the buyer or an additional attendee.
+	 *
+	 * @todo This does the same thing that $is_first_registered_attendee does for filter_unconfirmed_attendees_questions(),
+	 *       so maybe try to refactor it to work for both.
+	 *
+	 * @param array $tickets_selected
+	 * @param WP_Post $current_ticket
+	 * @param int $current_attendee
+	 *
+	 * @return bool
+	 */
+	protected function current_row_is_buyer( $tickets_selected, $current_ticket, $current_attendee_row ) {
+		$is_buyer = $first_ticket_id = false;
+
+		foreach( $tickets_selected as $ticket_id => $number_tickets_selected ) {
+			if ( $number_tickets_selected > 0 ) {
+				$first_ticket_id = $ticket_id;
+				break;
+			}
+		}
+
+		if ( $first_ticket_id == $current_ticket->ID && 1 == $current_attendee_row ) {
+			$is_buyer = true;
+		}
+
+		return $is_buyer;
 	}
 
 	/**
