@@ -231,6 +231,10 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 */
 	public function save_checkout_username_meta( $post_id, $attendee ) {
 		update_post_meta( $post_id, 'tix_username', $attendee->username );
+
+		if ( self::UNCONFIRMED_USERNAME != $attendee->username ) {
+			do_action( 'camptix_require_login_confirm_username', $post_id, $attendee->username );
+		}
 	}
 
 	/**
@@ -423,7 +427,13 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 */
 	public function update_attendee_post_meta( $new_ticket_info, $attendee ) {
 		$current_user = wp_get_current_user();
+		$old_username = get_post_meta( $attendee->ID, 'tix_username', true );
+
 		update_post_meta( $attendee->ID, 'tix_username', $current_user->user_login );
+
+		if ( self::UNCONFIRMED_USERNAME == $old_username ) {
+			do_action( 'camptix_require_login_confirm_username', $attendee->ID, $current_user->user_login );
+		}
 	}
 
 	/**
