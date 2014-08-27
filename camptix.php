@@ -6422,7 +6422,7 @@ class CampTix_Plugin {
 		 */
 		if ( count( $attendees ) > 1 && $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
 			foreach ( $attendees as $attendee ) {
-				$attendee_email = get_post_meta( $attendee->ID, 'tix_email', true );
+				$attendee_email = $this->get_attendee_email( $attendee->ID );
 				$edit_token = get_post_meta( $attendee->ID, 'tix_edit_token', true );
 				$edit_link = $this->get_edit_attendee_link( $attendee->ID, $edit_token );
 
@@ -6449,7 +6449,7 @@ class CampTix_Plugin {
 			$this->tmp( 'ticket_url', $this->get_tickets_url() );
 
 			foreach ( $attendees as $attendee ) {
-				$attendee_email = get_post_meta( $attendee->ID, 'tix_email', true );
+				$attendee_email = $this->get_attendee_email( $attendee->ID );
 
 				if ( $attendee_email != $receipt_email ) {
 					$subject = sprintf( __( "Your Refund for %s", 'camptix' ), $this->options['event_name'] );
@@ -6551,6 +6551,17 @@ class CampTix_Plugin {
 		// Bring the original shortcodes back.
 		$shortcode_tags = $this->removed_shortcodes;
 		$this->removed_shortcodes = array();
+	}
+
+	/**
+	 * Get the given attendee's e-mail address
+	 *
+	 * @param int $attendee_id
+	 *
+	 * @return string
+	 */
+	protected function get_attendee_email( $attendee_id ) {
+		return apply_filters( 'camptix_get_attendee_email', get_post_meta( $attendee_id, 'tix_email', true ), $attendee_id );
 	}
 
 	function redirect_with_error_flags( $query_args = array() ) {
