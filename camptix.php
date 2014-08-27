@@ -4780,6 +4780,9 @@ class CampTix_Plugin {
 										<?php echo $i; ?>. <?php echo $ticket->post_title; ?>
 									</th>
 								</tr>
+
+								<?php do_action( 'camptix_attendee_form_before_input', $this->form_data, $ticket, $i ); ?>
+
 								<tr class="tix-row-first-name">
 									<td class="tix-required tix-left"><?php _e( 'First Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['first_name'] ) ? $this->form_data['tix_attendee_info'][$i]['first_name'] : ''; ?>
@@ -5066,11 +5069,11 @@ class CampTix_Plugin {
 		$ticket = get_post( $ticket_id );
 		$questions = $this->get_sorted_questions( $ticket->ID );
 		$answers = (array) get_post_meta( $attendee->ID, 'tix_questions', true );
-		$ticket_info = array(
+		$ticket_info = apply_filters( 'camptix_form_edit_attendee_ticket_info', array(
 			'first_name' => get_post_meta( $attendee->ID, 'tix_first_name', true ),
 			'last_name' => get_post_meta( $attendee->ID, 'tix_last_name', true ),
 			'email' => get_post_meta( $attendee->ID, 'tix_email', true ),
-		);
+		) );
 
 		if ( isset( $_POST['tix_attendee_save'] ) ) {
 			$errors = array();
@@ -5807,6 +5810,8 @@ class CampTix_Plugin {
 
 			$attendee_info['first_name'] = sanitize_text_field( $attendee_info['first_name'] );
 			$attendee_info['last_name'] = sanitize_text_field( $attendee_info['last_name'] );
+
+			$attendee_info = apply_filters( 'camptix_checkout_attendee_info', $attendee_info );
 
 			if ( empty( $attendee_info['first_name'] ) || empty( $attendee_info['last_name'] ) )
 				$this->error_flags['required_fields'] = true;
