@@ -29,6 +29,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_filter( 'camptix_get_attendee_email',                     array( $this, 'redirect_unknown_attendee_emails_to_buyer' ), 10, 2 );
 		add_action( 'camptix_attendee_form_before_input',             array( $this, 'inject_unknown_attendee_checkbox' ), 10, 3 );
 		add_filter( 'camptix_checkout_attendee_info',                 array( $this, 'add_unknown_attendee_info_stubs' ) );
+		add_filter( 'camptix_edit_info_cell_content',                 array( $this, 'show_buyer_attendee_status_instead_of_edit_link' ), 10, 2 );
 
 		// wp-admin
 		add_filter( 'camptix_attendee_report_column_value_username',  array( $this, 'get_attendee_username_meta' ), 10, 2 );
@@ -468,6 +469,37 @@ class CampTix_Require_Login extends CampTix_Addon {
 		}
 
 		return $attendee_info;
+	}
+
+	/**
+	 * Show the buyer the status of other tickets instead of an 'Edit Information' link.
+	 *
+	 * The buyer is no longer responsible for editing attendee info, but they are responsible
+	 * for ensuring that the unknown/unconfirmed attendees complete registration.
+	 *
+	 * @param string $content
+	 * @param WP_Post $attendee
+	 *
+	 * @return string
+	 */
+	public function show_buyer_attendee_status_instead_of_edit_link( $content, $attendee ) {
+		$current_user          = wp_get_current_user();
+		$attendee_username     = get_post_meta( $attendee->ID, 'tix_username', true );
+		$unknown_attendee_info = $this->get_unknown_attendee_info();
+
+		if ( $attendee_username != $current_user->user_login ) {
+			$content = 'Status: ';
+
+			if ( get_post_meta( $attendee->ID, 'tix_email', true ) == $unknown_attendee_info['email'] ) {
+				$content .= 'Unknown';
+			} elseif ( self::UNCONFIRMED_USERNAME == $attendee_username ) {
+				$content .= 'Unconfirmed';
+			} else {
+				$content .= 'Confirmed';
+			}
+		}
+
+		return $content;
 	}
 
 	/**
