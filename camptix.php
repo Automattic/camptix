@@ -5038,7 +5038,13 @@ class CampTix_Plugin {
 							<?php echo mysql2date( get_option( 'date_format' ), $attendee->post_date ); ?>
 						</td>
 						<td>
-							<a href="<?php echo esc_url( $edit_link ); ?>"><?php _e( 'Edit information', 'camptix' ); ?></a>
+							<?php
+								echo apply_filters(
+									'camptix_edit_info_cell_content',
+									sprintf( '<a href="%s">%s</a>', esc_url( $edit_link ), __( 'Edit information', 'camptix' ) ),
+									$attendee
+								);
+							?>
 						</td>
 					</tr>
 
