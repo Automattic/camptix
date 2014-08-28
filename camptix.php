@@ -129,6 +129,8 @@ class CampTix_Plugin {
 
 		// Used to update stats
 		add_action( 'transition_post_status', array( $this, 'transition_post_status' ), 10, 3 );
+		add_action( 'wp_ajax_camptix_client_stats', array( $this, 'process_client_stats' ) );
+		add_action( 'wp_ajax_nopriv_camptix_client_stats', array( $this, 'process_client_stats' ) );
 
 		// Notices, errors and infos, all in one.
 		add_action( 'camptix_notices', array( $this, 'do_notices' ) );
@@ -443,6 +445,7 @@ class CampTix_Plugin {
 
 		wp_localize_script( 'camptix', 'camptix_l10n', array(
 			'enterEmail' => __( 'Please enter the e-mail addresses in the forms above.', 'camptix' ),
+			'ajaxURL'    => admin_url( 'admin-ajax.php' ),
 		) );
 
 		// Let's play by the rules and print this in the <head> section.
@@ -2291,6 +2294,55 @@ class CampTix_Plugin {
 				$this->flush_tickets_page();
 			}
 		}
+	}
+
+	/**
+	 * Handle AJAX requests for client-side stats
+	 *
+	 * This doesn't use nonces to verify the request because they'd be cached in the static page cache and
+	 * therefore invalid.
+	 */
+	public function process_client_stats() {
+		$valid_stats = array( 'tickets_form_unique_visitors' );
+
+		if ( empty( $_REQUEST['command'] ) || empty( $_REQUEST['stat'] ) ) {
+			wp_send_json_error();
+		}
+
+		if ( ! in_array( $_REQUEST['stat'], $valid_stats ) || 0 == $this->number_available_tickets() ) {
+			wp_send_json_error();
+		}
+
+		switch ( $_REQUEST['command'] ) {
+			case 'increment':
+				$this->increment_stats( $_REQUEST['stat'] );
+				wp_send_json_success();
+				break;
+		}
+
+		wp_send_json_error();
+	}
+
+	/**
+	 * Count the number of tickets that are available for purchase
+	 *
+	 * @return int
+	 */
+	protected function number_available_tickets() {
+		$available_tickets = 0;
+		$tickets = get_posts( array(
+			'post_type'      => 'tix_ticket',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+		) );
+
+		foreach ( $tickets as $ticket ) {
+			if ( $this->is_ticket_valid_for_purchase( $ticket ) ) {
+				$available_tickets++;
+			}
+		}
+
+		return $available_tickets;
 	}
 
 	/**

@@ -1,3 +1,10 @@
+/*
+ * MDN Cookie Framework
+ * https://developer.mozilla.org/en-US/docs/Web/API/document.cookie#A_little_framework.3A_a_complete_cookies_reader.2Fwriter_with_full_unicode_support
+ * Updated: 2014-08-28
+ */
+var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*"+encodeURIComponent(e).replace(/[\-\.\+\*]/g,"\\$&")+"\\s*\\=\\s*([^;]*).*$)|^.*$"),"$1"))||null},setItem:function(e,o,n,t,c,r){if(!e||/^(?:expires|max\-age|path|domain|secure)$/i.test(e))return!1;var s="";if(n)switch(n.constructor){case Number:s=1/0===n?"; expires=Fri, 31 Dec 9999 23:59:59 GMT":"; max-age="+n;break;case String:s="; expires="+n;break;case Date:s="; expires="+n.toUTCString()}return document.cookie=encodeURIComponent(e)+"="+encodeURIComponent(o)+s+(c?"; domain="+c:"")+(t?"; path="+t:"")+(r?"; secure":""),!0},removeItem:function(e,o,n){return e&&this.hasItem(e)?(document.cookie=encodeURIComponent(e)+"=; expires=Thu, 01 Jan 1970 00:00:00 GMT"+(n?"; domain="+n:"")+(o?"; path="+o:""),!0):!1},hasItem:function(e){return new RegExp("(?:^|;\\s*)"+encodeURIComponent(e).replace(/[\-\.\+\*]/g,"\\$&")+"\\s*\\=").test(document.cookie)},keys:function(){for(var e=document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g,"").split(/\s*(?:\=[^;]*)?;\s*/),o=0;o<e.length;o++)e[o]=decodeURIComponent(e[o]);return e}};
+
 /**
  * CampTix Javascript
  *
@@ -45,6 +52,57 @@
 		$('.tix-field-email').keyup(refresh_receipt_emails);
 		$(document).ready(refresh_receipt_emails);
 	}
+
+	// Get a cookie object
+	function tixGetCookie( name ) {
+		var cookie = docCookies.getItem( name );
+
+		if ( null == cookie ) {
+			cookie = {};
+		} else {
+			cookie = $.parseJSON( cookie );
+		}
+
+		return cookie;
+	}
+
+	// Count unique visitors to [tickets] page
+	$( document ).ready( function() {
+		if ( ! tix.length ) {
+			return;
+		}
+
+		var cookie = tixGetCookie( 'camptix_client_stats' );
+
+		// Do nothing if we've already counted them
+		if ( cookie.hasOwnProperty( 'visited_tickets_form' ) ) {
+			return;
+		}
+
+		// If it's their first visit, bump the counter on the server and set the client cookie
+		cookie.visited_tickets_form = true;
+
+		$.post(
+			camptix_l10n.ajaxURL,
+			{
+				action:  'camptix_client_stats',
+				command: 'increment',
+				stat:    'tickets_form_unique_visitors'
+			},
+
+			function( response ) {
+				if ( true != response.success ) {
+					return;
+				}
+
+				docCookies.setItem(
+					'camptix_client_stats',
+					JSON.stringify( cookie ),
+					60 * 60 * 24 * 365
+				);
+			}
+		);
+	} );
 
 	// Hide unknown attendee fields when reloading the page
 	$( document ).ready( function() {
