@@ -5528,9 +5528,16 @@ class CampTix_Plugin {
 
 	/**
 	 * Returns true if a ticket is valid for purchase.
+	 *
+	 * @param WP_Post | int
+	 *
+	 * @return bool
 	 */
-	function is_ticket_valid_for_purchase( $post_id ) {
-		$post = get_post( $post_id );
+	function is_ticket_valid_for_purchase( $post ) {
+		if ( ! is_a( $post, 'WP_Post' ) ) {
+			$post = get_post( $post );
+		}
+
 		if ( ! $post ) return false;
 		if ( $post->post_type != 'tix_ticket' ) return false;
 		if ( $post->post_status != 'publish' ) return false;
@@ -5539,10 +5546,10 @@ class CampTix_Plugin {
 		if ( isset( $this->reservation ) && $this->reservation )
 			$via_reservation = $this->reservation['token'];
 
-		if ( apply_filters( 'camptix_hide_empty_tickets', true ) && $this->get_remaining_tickets( $post_id, $via_reservation ) < 1 ) return false;
+		if ( apply_filters( 'camptix_hide_empty_tickets', true ) && $this->get_remaining_tickets( $post->ID, $via_reservation ) < 1 ) return false;
 
-		$start = get_post_meta( $post_id, 'tix_start', true );
-		$end = get_post_meta( $post_id, 'tix_end', true );
+		$start = get_post_meta( $post->ID, 'tix_start', true );
+		$end = get_post_meta( $post->ID, 'tix_end', true );
 
 		// Not started yet
 		if ( ! empty( $start ) && strtotime( $start ) > time() )
