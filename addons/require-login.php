@@ -255,14 +255,14 @@ class CampTix_Require_Login extends CampTix_Addon {
 	/**
 	 * Save the attendee's username in the database.
 	 *
-	 * @param int $post_id
+	 * @param int $attendee_id
 	 * @param stdClass $attendee
 	 */
-	public function save_checkout_username_meta( $post_id, $attendee ) {
-		update_post_meta( $post_id, 'tix_username', $attendee->username );
+	public function save_checkout_username_meta( $attendee_id, $attendee ) {
+		update_post_meta( $attendee_id, 'tix_username', $attendee->username );
 
 		if ( self::UNCONFIRMED_USERNAME != $attendee->username ) {
-			do_action( 'camptix_require_login_confirm_username', $post_id, $attendee->username );
+			do_action( 'camptix_require_login_confirm_username', $attendee_id, $attendee->username );
 		}
 	}
 
