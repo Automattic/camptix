@@ -44,7 +44,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_action( 'camptix_form_start_errors',                      array( $this, 'add_form_start_error_messages' ) );
 		add_action( 'camptix_form_edit_attendee_update_post_meta',    array( $this, 'update_attendee_post_meta' ), 10, 2 );
 		add_filter( 'camptix_save_attendee_information_label',        array( $this, 'rename_save_attendee_info_label' ), 10, 4 );
-		add_filter( 'camptix_form_edit_attendee_ticket_info',         array( $this, 'remove_unknown_attendee_info_stubs' ) );
+		add_filter( 'camptix_form_edit_attendee_ticket_info',         array( $this, 'replace_unknown_attendee_info_stubs' ) );
 
 		// Misc
 		add_filter( 'camptix_attendees_shortcode_query_args',         array( $this, 'hide_unconfirmed_attendees' ) );
@@ -637,21 +637,24 @@ class CampTix_Require_Login extends CampTix_Addon {
 	}
 
 	/**
-	 * Clear the stubbed unknown attendee info values.
-	 *
-	 * When the attendee is confirming their ticket, we want the fields to be empty instead of showing the
-	 * stubbed values.
+	 * Replace the stubbed unknown attendee info values with user's profile data.
 	 *
 	 * @param array $ticket_info
 	 *
 	 * @return array
 	 */
-	public function remove_unknown_attendee_info_stubs( $ticket_info ) {
+	public function replace_unknown_attendee_info_stubs( $ticket_info ) {
+		$current_user          = wp_get_current_user();
 		$unknown_attendee_info = $this->get_unknown_attendee_info();
+		$replacement_values    = array(
+			'first_name' => $current_user->first_name,
+			'last_name'  => $current_user->last_name,
+			'email'      => $current_user->user_email,
+		);
 
 		foreach ( $ticket_info as $key => $value ) {
 			if ( $value == $unknown_attendee_info[ $key ] ) {
-				$ticket_info[ $key ] = '';
+				$ticket_info[ $key ] = $replacement_values[ $key ];
 			}
 		}
 
