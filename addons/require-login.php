@@ -92,7 +92,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		if ( ! is_user_logged_in() ) {
 			$camptix->notice( apply_filters( 'camptix_require_login_please_login_message', sprintf(
 				__( 'Please <a href="%s">log in</a> or <a href="%s">create an account</a> to purchase your tickets.', 'camptix' ),
-				wp_login_url( add_query_arg( $_REQUEST, $camptix->get_tickets_url() ) ),
+				wp_login_url( add_query_arg( $_REQUEST, $this->get_redirect_return_url() ) ),
 				wp_registration_url()
 			) ) );
 		}
@@ -120,6 +120,27 @@ class CampTix_Require_Login extends CampTix_Addon {
 
 			$camptix->notice( $notice );
 		}
+	}
+
+	/**
+	 * Get the URL to return to after logging in or creating an account.
+	 *
+	 * @return string
+	 */
+	public function get_redirect_return_url() {
+		/** @var $camptix CampTix_Plugin */
+		global $camptix;
+
+		$camptix_url = $camptix->get_tickets_url();
+		$url_params  = array( 'tix_coupon', 'tix_reservation_id', 'tix_reservation_token' );
+
+		foreach ( $url_params as $param ) {
+			if ( isset( $_REQUEST[ $param ] ) ) {
+				$camptix_url = add_query_arg( $param, $_REQUEST[ $param ], $camptix_url );
+			}
+		}
+
+		return $camptix_url;
 	}
 
 	/**
