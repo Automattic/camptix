@@ -836,7 +836,7 @@ class CampTix_Plugin {
 
 		unset( $questions );
 
-		return apply_filters( 'camptix_get_sorted_questions', $questions_sorted, $ticket_id );
+		return $questions_sorted;
 	}
 
 	/**
@@ -4870,22 +4870,28 @@ class CampTix_Plugin {
 									do_action( 'camptix_question_fields_init' );
 									$question_num = 0; // Used for questions class names.
 								?>
-								<?php foreach ( $questions as $question ) : ?>
+								<?php if ( apply_filters( 'camptix_ask_questions', true, $this->tickets_selected, $ticket_id, $i, $questions ) ) : ?>
+									<?php foreach ( $questions as $question ) : ?>
 
-									<?php
-										$name = sprintf( 'tix_attendee_questions[%d][%s]', $i, $question->ID );
-										$value = isset( $this->form_data['tix_attendee_questions'][$i][$question->ID] ) ? $this->form_data['tix_attendee_questions'][$i][$question->ID] : '';
-										$type = get_post_meta( $question->ID, 'tix_type', true );
-										$required = get_post_meta( $question->ID, 'tix_required', true );
-										$class_name = 'tix-row-question-' . $question->ID;
-									?>
-									<tr class="<?php echo esc_attr( $class_name ); ?>">
-										<td class="<?php if ( $required ) echo 'tix-required'; ?> tix-left"><?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?><?php if ( $required ) echo ' <span class="tix-required-star">*</span>'; ?></td>
-										<td class="tix-right">
-											<?php do_action( "camptix_question_field_{$type}", $name, $value, $question ); ?>
-										</td>
-									</tr>
-								<?php endforeach; ?>
+										<?php
+											$name       = sprintf( 'tix_attendee_questions[%d][%s]', $i, $question->ID );
+											$value      = isset( $this->form_data['tix_attendee_questions'][ $i ][ $question->ID ] ) ? $this->form_data['tix_attendee_questions'][ $i ][ $question->ID ] : '';
+											$type       = get_post_meta( $question->ID, 'tix_type', true );
+											$required   = get_post_meta( $question->ID, 'tix_required', true );
+											$class_name = 'tix-row-question-' . $question->ID;
+										?>
+
+										<tr class="<?php echo esc_attr( $class_name ); ?>">
+											<td class="<?php if ( $required ) echo 'tix-required'; ?> tix-left">
+												<?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?>
+												<?php if ( $required ) echo ' <span class="tix-required-star">*</span>'; ?>
+											</td>
+											<td class="tix-right">
+												<?php do_action( "camptix_question_field_{$type}", $name, $value, $question ); ?>
+											</td>
+										</tr>
+									<?php endforeach; ?>
+								<?php endif; ?>
 							</tbody>
 						</table>
 						<?php $i++; ?>
@@ -5217,21 +5223,26 @@ class CampTix_Plugin {
 						</tr>
 
 						<?php do_action( 'camptix_question_fields_init' ); ?>
-						<?php foreach ( $questions as $question ) : ?>
-							<?php
-								$name = sprintf( 'tix_ticket_questions[%d]', $question->ID );
-								$value = isset( $answers[ $question->ID ] ) ? $answers[ $question->ID ] : '';
-								$type = get_post_meta( $question->ID, 'tix_type', true );
-								$required = get_post_meta( $question->ID, 'tix_required', true );
-								$class_name = 'tix-row-question-' . $question->ID;
-							?>
-							<tr class="<?php echo esc_attr( $class_name ); ?>">
-								<td class="<?php if ( $required ) echo 'tix-required'; ?> tix-left"><?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?><?php if ( $required ) echo ' <span class="tix-required-star">*</span>'; ?></td>
-								<td class="tix-right">
-									<?php do_action( "camptix_question_field_{$type}", $name, $value, $question ); ?>
-								</td>
-							</tr>
-						<?php endforeach; ?>
+						<?php if ( apply_filters( 'camptix_ask_questions', true, array( (int) $ticket_id => 1 ), (int) $ticket_id, 1, $questions ) ) : ?>
+							<?php foreach ( $questions as $question ) : ?>
+								<?php
+									$name       = sprintf( 'tix_ticket_questions[%d]', $question->ID );
+									$value      = isset( $answers[ $question->ID ] ) ? $answers[ $question->ID ] : '';
+									$type       = get_post_meta( $question->ID, 'tix_type', true );
+									$required   = get_post_meta( $question->ID, 'tix_required', true );
+									$class_name = 'tix-row-question-' . $question->ID;
+								?>
+
+								<tr class="<?php echo esc_attr( $class_name ); ?>">
+									<td class="<?php if ( $required ) echo 'tix-required'; ?> tix-left">
+										<?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?>
+										<?php if ( $required ) echo ' <span class="tix-required-star">*</span>'; ?></td>
+									<td class="tix-right">
+										<?php do_action( "camptix_question_field_{$type}", $name, $value, $question ); ?>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						<?php endif; ?>
 
 					</tbody>
 				</table>

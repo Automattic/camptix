@@ -6,15 +6,12 @@
  * todo add a detailed explanation of the goals, workflow, etc
  */
 class CampTix_Require_Login extends CampTix_Addon {
-	protected $is_first_registered_attendee;
 	const UNCONFIRMED_USERNAME = '[[ unconfirmed ]]';
 
 	/**
 	 * Register hook callbacks
 	 */
 	public function __construct() {
-		$this->is_first_registered_attendee = true;
-
 		add_action( 'template_redirect',                              array( $this, 'block_unauthenticated_actions' ), 7 );    // before CampTix_Plugin->template_redirect()
 
 		// Registration Information front-end screen
@@ -22,7 +19,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_filter( 'camptix_coupon_link_classes',                    array( $this, 'hide_register_form_elements' ) );
 		add_filter( 'camptix_quantity_row_classes',                   array( $this, 'hide_register_form_elements' ) );
 		add_action( 'camptix_notices',                                array( $this, 'ticket_form_message' ), 8 );
-		add_filter( 'camptix_get_sorted_questions',                   array( $this, 'filter_unconfirmed_attendees_questions' ), 10, 2 );
+		add_filter( 'camptix_ask_questions',                          array( $this, 'hide_additional_attendee_questions_during_checkout' ), 10, 5 );
 		add_filter( 'camptix_form_register_complete_attendee_object', array( $this, 'add_username_to_attendee_object' ), 10, 3 );
 		add_action( 'camptix_checkout_update_post_meta',              array( $this, 'save_checkout_username_meta' ), 10, 2 );
 		add_action( 'transition_post_status',                         array( $this, 'buyer_completed_registration' ), 10, 3 );
@@ -188,8 +185,6 @@ class CampTix_Require_Login extends CampTix_Addon {
 		global $camptix;
 		$has_questions = false;
 
-		remove_filter( 'camptix_get_sorted_questions', array( $this, 'filter_unconfirmed_attendees_questions' ), 10, 2 );
-
 		foreach ( $tickets_selected as $ticket_id => $number_attendees_current_ticket ) {
 			$number_attendees_current_ticket = absint( $number_attendees_current_ticket );
 
@@ -203,31 +198,35 @@ class CampTix_Require_Login extends CampTix_Addon {
 			}
 		}
 
-		add_filter( 'camptix_get_sorted_questions', array( $this, 'filter_unconfirmed_attendees_questions' ), 10, 2 );
-
 		return $has_questions;
 	}
 
 	/**
-	 * Show a limited set to questions when a user is registering additional, unconfirmed attendees.
+	 * When purchasing multiple tickets, only show questions for the buyer's ticket.
 	 *
+	 * We want the additional attendees to enter their own information when they confirm the ticket so that
+	 * it's more accurate. This also speeds up the checkout process for the buyer and allows them to bypass
+	 * questions when buying a ticket that they haven't decided who will use yet.
+	 *
+	 * @param bool  $ask_questions
+	 * @param array $tickets_selected
+	 * @param int   $ticket_id
+	 * @param int   $current_attendee
 	 * @param array $questions
-	 * @param int $ticket_id
 	 *
-	 * @return array
+	 * @return bool
 	 */
-	public function filter_unconfirmed_attendees_questions( $questions, $ticket_id ) {
-		$relevant_actions = array( 'attendee_info', 'checkout' );
+	public function hide_additional_attendee_questions_during_checkout( $ask_questions, $tickets_selected, $ticket_id, $current_attendee, $questions ) {
+		$additional_attendee_is_editing_info = isset( $_REQUEST['tix_action'] ) && 'edit_attendee' == $_REQUEST['tix_action'];
+		$current_row_is_buyer                = $this->current_row_is_buyer( $tickets_selected, get_post( $ticket_id ), $current_attendee );
 
-		if ( ! is_admin() && isset( $_REQUEST['tix_action'] ) && in_array( $_REQUEST['tix_action'], $relevant_actions ) ) {
-			if ( $this->is_first_registered_attendee ) {
-				$this->is_first_registered_attendee = false;
-			} else {
-				$questions = array();
-			}
+		if ( $current_row_is_buyer || $additional_attendee_is_editing_info ) {
+			$ask_questions = true;
+		} else {
+			$ask_questions = false;
 		}
 
-		return $questions;
+		return $ask_questions;
 	}
 
 	/**
@@ -461,8 +460,8 @@ class CampTix_Require_Login extends CampTix_Addon {
 	/**
 	 * Determine if the attendee row being generated is the buyer or an additional attendee.
 	 *
-	 * @todo This does the same thing that $is_first_registered_attendee does for filter_unconfirmed_attendees_questions(),
-	 *       so maybe try to refactor it to work for both.
+	 * Note: This will also return true if called in the contxt of an additional attendee editing their
+	 * individual ticket.
 	 *
 	 * @param array $tickets_selected
 	 * @param WP_Post $current_ticket
