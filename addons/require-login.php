@@ -667,7 +667,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		update_post_meta( $attendee->ID, 'tix_username', $current_user->user_login );
 
 		if ( self::UNCONFIRMED_USERNAME == $old_username ) {
-			do_action( 'camptix_require_login_confirm_username', $attendee->ID, $current_user->user_login );
+			do_action( 'camptix_rl_registration_confirmed', $attendee->ID, $current_user->user_login );
 		}
 	}
 
