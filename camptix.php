@@ -32,6 +32,7 @@ class CampTix_Plugin {
 	protected $tickets_selected;
 	protected $tickets_selected_count;
 	protected $form_data;
+	protected $reservation;
 	protected $coupon;
 	protected $error_flags;
 	protected $error_data;
@@ -2309,6 +2310,8 @@ class CampTix_Plugin {
 			wp_send_json_error();
 		}
 
+		$this->maybe_set_reservation();
+
 		if ( ! in_array( $_REQUEST['stat'], $valid_stats ) || 0 == $this->number_available_tickets() ) {
 			wp_send_json_error();
 		}
@@ -4303,15 +4306,9 @@ class CampTix_Plugin {
 		}
 
 		// Have we got a reservation?
-		if ( isset( $_REQUEST['tix_reservation_id'], $_REQUEST['tix_reservation_token'] ) ) {
-			$reservation = $this->get_reservation( $_REQUEST['tix_reservation_token'] );
-
-			if ( $reservation && $reservation['id'] == strtolower( $_REQUEST['tix_reservation_id'] ) && $this->is_reservation_valid_for_use( $reservation['token'] ) ) {
-				$this->reservation = $reservation;
-				$via_reservation = $this->reservation['token'];
-			} else {
-				$this->error_flags['invalid_reservation'] = true;
-			}
+		$this->maybe_set_reservation();
+		if ( ! empty( $this->reservation['token'] ) ) {
+			$via_reservation = $this->reservation['token'];
 		}
 
 		if ( ! $this->options['archived'] ) {
@@ -4486,6 +4483,21 @@ class CampTix_Plugin {
 		}
 
 		return $this->shortcode_contents = 'Hmmm.';
+	}
+
+	/**
+	 * Set the reservation members if we have a valid request
+	 */
+	protected function maybe_set_reservation() {
+		if ( isset( $_REQUEST['tix_reservation_id'], $_REQUEST['tix_reservation_token'] ) ) {
+			$reservation = $this->get_reservation( $_REQUEST['tix_reservation_token'] );
+
+			if ( $reservation && $reservation['id'] == strtolower( $_REQUEST['tix_reservation_id'] ) && $this->is_reservation_valid_for_use( $reservation['token'] ) ) {
+				$this->reservation = $reservation;
+			} else {
+				$this->error_flags['invalid_reservation'] = true;
+			}
+		}
 	}
 
 	/**

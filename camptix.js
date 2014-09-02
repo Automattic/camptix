@@ -72,7 +72,8 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 			return;
 		}
 
-		var cookie = tixGetCookie( 'camptix_client_stats' );
+		var cookie  = tixGetCookie( 'camptix_client_stats' ),
+			ajaxURL = camptix_l10n.ajaxURL;
 
 		// Do nothing if we've already counted them
 		if ( cookie.hasOwnProperty( 'visited_tickets_form' ) ) {
@@ -82,8 +83,12 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 		// If it's their first visit, bump the counter on the server and set the client cookie
 		cookie.visited_tickets_form = true;
 
+		if ( window.location.href.indexOf( 'tix_reservation_token' ) > -1 ) {
+			ajaxURL += window.location.search;
+		}
+
 		$.post(
-			camptix_l10n.ajaxURL,
+			ajaxURL,
 			{
 				action:  'camptix_client_stats',
 				command: 'increment',
