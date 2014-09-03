@@ -6719,7 +6719,7 @@ class CampTix_Plugin {
 
 		$printed = array();
 		$allowed_html = array_merge(
-			array( 'p' => array() ),
+			array( 'p' => array( 'id' => true ) ),
 			wp_kses_allowed_html( 'data' )
 		);
 
@@ -6729,7 +6729,7 @@ class CampTix_Plugin {
 				if ( in_array( $message, $printed ) ) continue;
 
 				$printed[] = $message;
-				echo '<div class="tix-error">' . wp_kses( $message, $allowed_html ) . '</div>';    // todo allow <p>
+				echo '<div class="tix-error">' . wp_kses( $message, $allowed_html ) . '</div>';
 			}
 			echo '</div><!-- #tix-errors -->';
 		}
