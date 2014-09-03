@@ -320,6 +320,7 @@ class CampTix_Plugin {
 		add_shortcode( 'event_name', array( $this, 'email_template_shortcode_event_name' ) );
 		add_shortcode( 'ticket_url', array( $this, 'email_template_shortcode_ticket_url' ) );
 		add_shortcode( 'receipt', array( $this, 'email_template_shortcode_receipt' ) );
+		add_shortcode( 'buyer_full_name', array( $this, 'email_template_shortcode_buyer_full_name' ) );
 	}
 
 	/**
@@ -345,6 +346,10 @@ class CampTix_Plugin {
 	 */
 	function email_template_shortcode_receipt( $atts ) {
 		return $this->tmp( 'receipt' );
+	}
+
+	function email_template_shortcode_buyer_full_name( $atts ) {
+		return $this->tmp( 'buyer_full_name' );
 	}
 
 	/**
@@ -1480,7 +1485,7 @@ class CampTix_Plugin {
 	}
 
 	function menu_setup_section_email_templates() {
-		echo '<p>' . __( 'Customize your confirmation e-mail templates. You can use the following shortcodes inside the message: [event_name], [ticket_url], and [receipt].', 'camptix' ) . '</p>';
+		echo '<p>' . __( 'Customize your confirmation e-mail templates. You can use the following shortcodes inside the message: [event_name], [ticket_url], [receipt], and [buyer_full_name].', 'camptix' ) . '</p>';
 	}
 
 	function menu_setup_section_general() {
@@ -6502,6 +6507,14 @@ class CampTix_Plugin {
 
 		// Set the tmp receipt for shortcodes use.
 		$this->tmp( 'receipt', $receipt_content );
+
+		foreach ( $attendees as $attendee ) {
+			$attendee_email = $this->get_attendee_email( $attendee->ID );
+
+			if ( $attendee_email == $receipt_email ) {
+				$this->tmp( 'buyer_full_name', get_post_meta( $attendee->ID, 'tix_first_name', true ) . ' ' . get_post_meta( $attendee->ID, 'tix_last_name', true ) );
+			}
+		}
 
 		/**
 		 * If there's more than one attendee we should e-mail a separate ticket to each attendee,
