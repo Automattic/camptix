@@ -364,7 +364,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 */
 	public function custom_email_template_default_values( $options ) {
 		$options['email_template_multiple_purchase_receipt_unconfirmed_attendees'] = __( "Hi there!\n\nYou have purchased the following tickets:\n\n[receipt]\n\nYou can view and edit your order at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nThe other attendees that you purchased tickets for will need to confirm their registration by visiting a link that was sent to them by e-mail.\n\nLet us know if you have any questions!", 'camptix' );
-		$options['email_template_multiple_purchase_unconfirmed_attendee']          = __( "Hi there!\n\nA ticket to [event_name] has been purchased for you by [buyer_full_name].\n\nTo complete your registration, please confirm your ticket by visiting the following page:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' );
+		$options['email_template_multiple_purchase_unconfirmed_attendee']          = __( "Hi there!\n\nA ticket to [event_name] has been purchased for you by [buyer_full_name].\n\nPlease visit the following page and fill in your information to complete your registration:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' );
 		$options['email_template_multiple_purchase_unknown_attendee']              = __( "Hi there!\n\nThis e-mail is for the unknown attendee that you purchased a ticket for. When you decide who will be using the ticket, please forward the link below to them so that they can complete their registration.\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' );
 
 		return $options;
