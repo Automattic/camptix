@@ -541,6 +541,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * result back to CampTix immediately.
 	 */
 	function payment_checkout( $payment_token ) {
+		/** @var CampTix_Plugin $camptix */
 		global $camptix;
 
 		if ( ! $payment_token || empty( $payment_token ) )
@@ -585,6 +586,12 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		$request = $this->request( $payload );
 		$response = wp_parse_args( wp_remote_retrieve_body( $request ) );
+		$camptix->log(
+			'Requesting PayPal transaction token',
+			null,
+			array( 'camptix_payment_token' => $payment_token, 'request_payload' => $payload, 'response' => $request )
+		);
+
 		if ( isset( $response['ACK'], $response['TOKEN'] ) && 'Success' == $response['ACK'] ) {
 			$token = $response['TOKEN'];
 			$url = $options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout';
