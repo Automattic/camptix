@@ -679,12 +679,20 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 * This fires when a user is editing their individual information, so the current user
 	 * should be the person that the ticket was purchased for.
 	 *
+	 * If an admin is editing a confirmed attendee, then we assume that they're just adjusting some data
+	 * on behalf of the attendee, rather than assuming ownership of the ticket, so we don't overwrite the
+	 * attendee's username with the admin's username.
+	 *
 	 * @param array $new_ticket_info
 	 * @param WP_Post $attendee
 	 */
 	public function update_attendee_post_meta( $new_ticket_info, $attendee ) {
 		$current_user = wp_get_current_user();
 		$old_username = get_post_meta( $attendee->ID, 'tix_username', true );
+
+		if ( self::UNCONFIRMED_USERNAME != $old_username && $old_username != $current_user->user_login && current_user_can( 'manage_options' ) ) {
+			return;
+		}
 
 		update_post_meta( $attendee->ID, 'tix_username', $current_user->user_login );
 
