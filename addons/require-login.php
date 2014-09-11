@@ -599,18 +599,11 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 *
 	 * This prevents the buyer of a group of tickets from completing registration for the other attendees.
 	 *
-	 * Administrators are still allowed to edit the ticket, but the original username will still be preserved by
-	 * update_attendee_post_meta().
-	 *
 	 * @param WP_Post $attendee
 	 */
 	public function require_unique_usernames( $attendee ) {
 		/** @var $camptix CampTix_Plugin */
 		global $camptix;
-
-		if ( current_user_can( 'manage_options' ) ) {
-			return;
-		}
 
 		$current_user = wp_get_current_user();
 		$confirmed_usernames = $this->get_confirmed_usernames(
@@ -686,19 +679,12 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 * This fires when a user is editing their individual information, so the current user
 	 * should be the person that the ticket was purchased for.
 	 *
-	 * Admins are still allowed to edit tickets other than their own, though -- see require_unique_usernames() --
-	 * so we won't override an existing username with an admin's username, to prevent unintended changes.
-	 *
 	 * @param array $new_ticket_info
 	 * @param WP_Post $attendee
 	 */
 	public function update_attendee_post_meta( $new_ticket_info, $attendee ) {
 		$current_user = wp_get_current_user();
 		$old_username = get_post_meta( $attendee->ID, 'tix_username', true );
-
-		if ( $old_username != $current_user->user_login && current_user_can( 'manage_options' ) ) {
-			return;
-		}
 
 		update_post_meta( $attendee->ID, 'tix_username', $current_user->user_login );
 
