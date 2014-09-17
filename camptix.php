@@ -2436,7 +2436,7 @@ class CampTix_Plugin {
 		while ( $attendees = get_posts( array(
 			'post_type' => 'tix_attendee',
 			'posts_per_page' => 200,
-			'post_status' => array( 'publish', 'pending' ),
+			'post_status' => array( 'publish' ),
 			'paged' => $paged++,
 			'fields' => 'ids', // ! no post objects
 			'orderby' => 'ID',
