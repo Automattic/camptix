@@ -130,6 +130,12 @@ class CampTix_Track_Attendance extends CampTix_Addon {
 	public function render_custom_columns( $column, $attendee_id ) {
 		switch ( $column ) {
 			case 'attended':
+				$attendee = get_post( $attendee_id );
+
+				if ( 'publish' != $attendee->post_status ) {
+					break;
+				}
+
 				if ( get_post_meta( $attendee_id, 'tix_attended', true ) ) {
 					_e( 'Attended', 'camptix' );
 				} else {
