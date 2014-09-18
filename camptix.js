@@ -85,6 +85,7 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 	}
 
 	// Count unique visitors to [tickets] page
+	// TODO: Refactor to use wpCookies instead of MDN Cookie Framework
 	$( document ).ready( function() {
 		if ( ! tix.length ) {
 			return;
