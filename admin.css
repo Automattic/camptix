@@ -272,10 +272,48 @@ label.tix-yes-no {
 	background-size: 196px 168px;
 }
 
+
+/*
+ * Track Attendance addon
+ */
+body.post-type-tix_attendee table.posts td.attended {
+	text-align: center;
+}
+
+body.post-type-tix_attendee table.posts td.attended div.spinner {
+	display: block;
+	float: none;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+
+/*
+ * Media queries
+ */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5) {
 	#icon-edit.icon32-posts-tix_ticket {
 		background-size: 98px 84px;
 		background-position: -52px -11px;
+	}
+}
+
+@media screen and ( max-width: 782px ) {
+	body.post-type-tix_attendee table.posts th.column-title {
+		width: auto;
+	}
+
+	.fixed .column-tix_email,
+	.fixed .column-tix_coupon,
+	.fixed .column-tix_ticket_price,
+	.fixed .column-tix_order_total {
+		display: none;
+	}
+}
+
+@media screen and ( max-width: 535px ) {
+	.fixed .column-tix_ticket {
+		display: none;
 	}
 }
 
