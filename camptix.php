@@ -6957,7 +6957,7 @@ class CampTix_Plugin {
 	 * @return array         Modified items
 	 */
 	public function glance_items( $items = array() ) {
-		$post_types = apply_filters( 'camptix_glance_items', array( 'tix_attendee' ) );
+		$post_types = apply_filters( 'camptix_glance_items', array( 'tix_attendee', 'tix_ticket' ) );
 
 	    foreach( $post_types as $type ) {
 
