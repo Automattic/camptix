@@ -306,6 +306,7 @@ body.post-type-tix_attendee table.posts td.attended div.spinner {
 	.fixed .column-tix_email,
 	.fixed .column-tix_coupon,
 	.fixed .column-tix_ticket_price,
+	.fixed .column-tix_reservation,
 	.fixed .column-tix_order_total {
 		display: none;
 	}
