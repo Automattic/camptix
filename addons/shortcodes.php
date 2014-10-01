@@ -304,7 +304,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		// If we have a view token cookie, we cas use that to search for attendees.
 		if ( isset( $_COOKIE['tix_view_token'] ) && ! empty( $_COOKIE['tix_view_token'] ) ) {
 			$view_token = $_COOKIE['tix_view_token'];
-			$attendees = get_posts( array(
+			$attendees_params = apply_filters( 'camptix_private_attendees_parameters', array(
 				'posts_per_page' => 50, // sane?
 				'post_type' => 'tix_attendee',
 				'post_status' => 'publish',
@@ -315,6 +315,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 					),
 				),
 			) );
+			$attendees = get_posts( $attendees_params );
 
 			// Having attendees is one piece of the puzzle.
 			// Making sure they have the right tickets is the other.
