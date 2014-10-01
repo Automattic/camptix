@@ -12,8 +12,6 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 * Register hook callbacks
 	 */
 	public function __construct() {
-		add_action( 'template_redirect',                              array( $this, 'block_unauthenticated_actions' ), 7 );    // before CampTix_Plugin->template_redirect()
-
 		// Registration Information front-end screen
 		add_filter( 'camptix_register_button_classes',                array( $this, 'hide_register_form_elements' ) );
 		add_filter( 'camptix_coupon_link_classes',                    array( $this, 'hide_register_form_elements' ) );
@@ -46,6 +44,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 		add_filter( 'camptix_form_edit_attendee_ticket_info',         array( $this, 'replace_unknown_attendee_info_stubs' ) );
 
 		// Misc
+		add_action( 'template_redirect',                              array( $this, 'block_unauthenticated_actions' ), 7 );    // before CampTix_Plugin->template_redirect()
 		add_filter( 'camptix_attendees_shortcode_query_args',         array( $this, 'hide_unconfirmed_attendees' ) );
 	}
 
