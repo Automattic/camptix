@@ -4727,7 +4727,7 @@ class CampTix_Plugin {
 		if ( isset( $this->error_flags['no_tickets_selected'], $_GET['tix_action'] ) && 'checkout' == $_GET['tix_action'] )
 			return $this->form_start();
 
-		if ( isset( $this->error_flags['tickets_excess'], $_GET['action'] ) )
+		if ( isset( $this->error_flags['tickets_excess'], $_GET['tix_action'] ) )
 			if ( 'attendee_info' == $_GET['tix_action'] )
 				$this->notice( __( 'It looks like you have chosen more tickets than we have left! We have stripped the extra ones.', 'camptix' ) );
 			elseif ( 'checkout' == $_GET['tix_action'] )
