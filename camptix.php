@@ -2684,11 +2684,6 @@ class CampTix_Plugin {
 							'key'    => 'tix_access_token',
 							'value'  => get_post_meta( $attendee->ID, 'tix_access_token', true ),
 						),
-
-						array(
-							'key'    => 'tix_email',
-							'value'  => get_post_meta( $attendee->ID, 'tix_receipt_email', true ),
-						),
 					),
 				) );
 
