@@ -2674,6 +2674,7 @@ class CampTix_Plugin {
 
 				$buyer = get_posts( array(
 					'post_type'      => 'tix_attendee',
+					'post_status'    => array( 'publish', 'pending' ),
 					'posts_per_page' => 1,
 					'orderby'        => 'ID',
 					'order'          => 'ASC',
