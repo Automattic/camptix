@@ -2630,6 +2630,8 @@ class CampTix_Plugin {
 			'status' => __( 'Status', 'camptix' ),
 			'txn_id' => __( 'Transaction ID', 'camptix' ),
 			'coupon' => __( 'Coupon', 'camptix' ),
+			'buyer_name' => __( 'Ticket Buyer Name', 'camptix' ),
+			'buyer_email' => __( 'Ticket Buyer E-mail Address', 'camptix' ),
 		);
 		foreach ( $questions as $question )
 			$columns[ 'tix_q_' . $question->ID ] = apply_filters( 'the_title', $question->post_title );
@@ -2670,6 +2672,25 @@ class CampTix_Plugin {
 			foreach ( $attendees as $attendee ) {
 				$attendee_id = $attendee->ID;
 
+				$buyer = get_posts( array(
+					'post_type'      => 'tix_attendee',
+					'posts_per_page' => 1,
+					'orderby'        => 'ID',
+					'order'          => 'ASC',
+
+					'meta_query'     => array(
+						array(
+							'key'    => 'tix_payment_token',
+							'value'  => get_post_meta( $attendee->ID, 'tix_payment_token', true ),
+						),
+
+						array(
+							'key'    => 'tix_email',
+							'value'  => get_post_meta( $attendee->ID, 'tix_receipt_email', true ),
+						),
+					),
+				) );
+
 				$line = array(
 					'id' => $attendee_id,
 					'ticket' => $this->get_ticket_title( intval( get_post_meta( $attendee_id, 'tix_ticket_id', true ) ) ),
@@ -2680,6 +2701,8 @@ class CampTix_Plugin {
 					'status' => ucfirst( $attendee->post_status ),
 					'txn_id' => get_post_meta( $attendee_id, 'tix_transaction_id', true ),
 					'coupon' => get_post_meta( $attendee_id, 'tix_coupon', true ),
+					'buyer_name' => empty( $buyer[0]->post_title ) ? '' : $buyer[0]->post_title,
+					'buyer_email' => get_post_meta( $attendee_id, 'tix_receipt_email', true ),
 				);
 
 				$answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
