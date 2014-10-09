@@ -2680,8 +2680,8 @@ class CampTix_Plugin {
 
 					'meta_query'     => array(
 						array(
-							'key'    => 'tix_payment_token',
-							'value'  => get_post_meta( $attendee->ID, 'tix_payment_token', true ),
+							'key'    => 'tix_access_token',
+							'value'  => get_post_meta( $attendee->ID, 'tix_access_token', true ),
 						),
 
 						array(
