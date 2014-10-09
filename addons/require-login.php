@@ -461,7 +461,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 	/**
 	 * Determine if the attendee row being generated is the buyer or an additional attendee.
 	 *
-	 * Note: This will also return true if called in the contxt of an additional attendee editing their
+	 * Note: This will also return true if called in the context of an additional attendee editing their
 	 * individual ticket.
 	 *
 	 * @param array $tickets_selected
