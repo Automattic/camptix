@@ -60,17 +60,16 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	/**
 	 * Callback for the [camptix_attendees] shortcode.
 	 */
-	function shortcode_attendees( $atts ) {
+	function shortcode_attendees( $attr ) {
 		global $post, $camptix;
 
-		extract( shortcode_atts( array(
-			'attr' => 'value',
+		$attr = shortcode_atts( array(
 			'order' => 'ASC',
 			'orderby' => 'title',
 			'posts_per_page' => 10000,
 			'tickets' => false,
 			'columns' => 3,
-		), $atts ) );
+		), $attr, 'camptix_attendees' );
 
 		$camptix_options = $camptix->get_options();
 
@@ -80,7 +79,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		$start = microtime(true);
 
 		// Serve from cache if cached copy is fresh.
-		$transient_key = md5( 'tix-attendees' . print_r( $atts, true ) );
+		$transient_key = md5( 'tix-attendees' . serialize( $attr ) );
 		if ( false !== ( $cached = get_transient( $transient_key ) ) ) {
 			if ( ! is_array( $cached ) )
 				return $cached; // back-compat
@@ -96,22 +95,24 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		ob_start();
 
 		// @todo validate atts here
-		if ( ! in_array( strtolower( $order ), array( 'asc', 'desc' ) ) )
-			$order = 'asc';
+		if ( ! in_array( strtolower( $attr['order'] ), array( 'asc', 'desc' ) ) )
+			$attr['order'] = 'asc';
 
-		if ( ! in_array( strtolower( $orderby ), array( 'title', 'date' ) ) )
-			$orderby = 'title';
+		if ( ! in_array( strtolower( $attr['orderby'] ), array( 'title', 'date' ) ) )
+			$attr['orderby'] = 'title';
 
-		if ( $tickets ) {
-			$tickets = array_map( 'intval', explode( ',', $tickets ) );
-			if ( count( $tickets ) > 0 ) {
+		if ( $attr['tickets'] ) {
+			$attr['tickets'] = array_map( 'intval', explode( ',', $attr['tickets'] ) );
+			if ( count( $attr['tickets'] ) > 0 ) {
 				$query_args['meta_query'] = array( array(
 					'key' => 'tix_ticket_id',
 					'compare' => 'IN',
-					'value' => $tickets,
+					'value' => $attr['tickets'],
 				) );
 			}
 		}
+
+		$attr['posts_per_page'] = absint( $attr['posts_per_page'] );
 
 		$paged = 0;
 		$printed = 0;
@@ -119,9 +120,9 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		?>
 
 		<div id="tix-attendees">
-			<ul class="tix-attendee-list tix-columns-<?php echo absint( $columns ); ?>">
+			<ul class="tix-attendee-list tix-columns-<?php echo absint( $attr['columns'] ); ?>">
 				<?php
-					while ( true && $printed < $posts_per_page ) {
+					while ( true && $printed < $attr['posts_per_page'] ) {
 						$paged++;
 						$attendee_args = apply_filters( 'camptix_attendees_shortcode_query_args', array_merge(
 							array(
@@ -129,8 +130,8 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 								'posts_per_page' => 200,
 								'post_status'    => array( 'publish', 'pending' ),
 								'paged'          => $paged,
-								'order'          => $order,
-								'orderby'        => $orderby,
+								'order'          => $attr['order'],
+								'orderby'        => $attr['orderby'],
 								'fields'         => 'ids', // ! no post objects
 								'cache_results'  => false,
 							),
@@ -145,7 +146,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 						$camptix->filter_post_meta = $camptix->prepare_metadata_for( $attendees );
 
 						foreach ( $attendees as $attendee_id ) {
-							if ( $printed > $posts_per_page )
+							if ( $printed >= $attr['posts_per_page'] )
 								break;
 
 							// Skip attendees marked as private.
