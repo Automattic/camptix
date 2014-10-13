@@ -1577,6 +1577,8 @@ class CampTix_Plugin {
 			}
 		}
 
+		$output = apply_filters( 'camptix_validate_options', $output, $input );
+
 		$current_user = wp_get_current_user();
 		$log_data = array(
 			'old'      => $this->options,
@@ -1585,7 +1587,6 @@ class CampTix_Plugin {
 		);
 		$this->log( 'Options updated.', 0, $log_data );
 
-		$output = apply_filters( 'camptix_validate_options', $output, $input );
 		return $output;
 	}
 
@@ -2714,6 +2715,7 @@ class CampTix_Plugin {
 
 				foreach ( $extra_columns as $index => $label ) {
 					$line[ $index ] = apply_filters( 'camptix_attendee_report_column_value_' . $index, '', $attendee );
+					$line[ $index ] = apply_filters( 'camptix_attendee_report_column_value', $line[ $index ], $index, $attendee );
 				}
 
 				// Make sure every column is printed.
@@ -3333,8 +3335,10 @@ class CampTix_Plugin {
 					</div>
 
 					<div class="misc-pub-section">
-						<input id="tix_privacy_<?php esc_attr( $post->ID ); ?>" name="tix_privacy" type="checkbox" <?php checked( get_post_meta( $post->ID, 'tix_privacy', true ), 'private' ); ?> />
-						<label for="tix_privacy_<?php esc_attr( $post->ID ); ?>"><?php _e( 'Hide from public attendees list', 'camptix' ); ?></label>
+						<div class="tix-pub-section-item">
+							<input id="tix_privacy_<?php esc_attr( $post->ID ); ?>" name="tix_privacy" type="checkbox" <?php checked( get_post_meta( $post->ID, 'tix_privacy', true ), 'private' ); ?> />
+							<label for="tix_privacy_<?php esc_attr( $post->ID ); ?>"><?php _e( 'Hide from public attendees list', 'camptix' ); ?></label>
+						</div>
 
 						<?php do_action( 'camptix_attendee_submitdiv_misc', $post ); ?>
 					</div>
@@ -6905,7 +6909,7 @@ class CampTix_Plugin {
 			'field-url'      => $this->get_default_addon_path( 'field-url.php' ),
 			'shortcodes'     => $this->get_default_addon_path( 'shortcodes.php' ),
 			'payment-paypal' => $this->get_default_addon_path( 'payment-paypal.php' ),
-			'logging-meta'  => $this->get_default_addon_path( 'logging-meta.php' ),
+			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),
 
 			/**
 			 * The following addons are available but inactive by default. Do not uncomment
