@@ -136,7 +136,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 								'cache_results'  => false,
 							),
 							$query_args
-						) );
+						), $attr );
 						$attendees = get_posts( $attendee_args );
 
 						if ( ! is_array( $attendees ) || count( $attendees ) < 1 )
