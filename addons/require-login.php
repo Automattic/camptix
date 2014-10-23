@@ -107,14 +107,16 @@ class CampTix_Require_Login extends CampTix_Addon {
 		}
 
 		// Inform a user registering multiple attendees that other attendees will enter their own info
-		if ( isset( $_REQUEST['tix_action'] ) && 'attendee_info' == $_REQUEST['tix_action'] && $this->registering_multiple_attendees( $_REQUEST['tix_tickets_selected'] ) ) {
-			$notice = __( '<p>Please enter your own information for the first ticket, and then enter the names and e-mail addresses of other attendees in the subsequent ticket fields.</p>', 'camptix' );
+		if ( isset( $_REQUEST['tix_action'], $_REQUEST['tix_tickets_selected'] ) ) {
+			if ( 'attendee_info' == $_REQUEST['tix_action'] && $this->registering_multiple_attendees( $_REQUEST['tix_tickets_selected'] ) ) {
+				$notice = __( '<p>Please enter your own information for the first ticket, and then enter the names and e-mail addresses of other attendees in the subsequent ticket fields.</p>', 'camptix' );
 
-			if ( $this->tickets_have_questions( $_REQUEST['tix_tickets_selected'] ) ) {
-				$notice .= __( '<p>The other attendees will receive an e-mail asking them to confirm their registration and enter their additional information.</p>', 'camptix' );
+				if ( $this->tickets_have_questions( $_REQUEST['tix_tickets_selected'] ) ) {
+					$notice .= __( '<p>The other attendees will receive an e-mail asking them to confirm their registration and enter their additional information.</p>', 'camptix' );
+				}
+
+				$camptix->notice( $notice );
 			}
-
-			$camptix->notice( $notice );
 		}
 
 		// Ask the attendee to confirm their registration
