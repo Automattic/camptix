@@ -85,7 +85,17 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 */
 	public function ticket_form_message() {
 		/** @var $camptix CampTix_Plugin */
-		global $camptix;
+		global $camptix, $post;
+
+		/*
+		 * Don't display the message on [camptix_private] pages.
+		 *
+		 * The user doesn't need to log in to view them, and they're already being asked to "log in" with their
+		 * name/email, so an additional message would be confusing.
+		 */
+		if ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'camptix_private' ) ) {
+			return;
+		}
 
 		// Warn users that they will need to login to purchase a ticket
 		if ( ! is_user_logged_in() ) {
