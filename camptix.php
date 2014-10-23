@@ -4303,8 +4303,8 @@ class CampTix_Plugin {
 		$this->error_flags = array();
 
 		// Allow third-party forms to initiate a ticket purchase.
-		if ( isset( $_POST['tix_single_ticket_purchase'] ) ) {
-			$_REQUEST['tix_tickets_selected'] = array( $_POST['tix_single_ticket_purchase'] => 1 );
+		if ( isset( $_REQUEST['tix_single_ticket_purchase'] ) ) {
+			$_REQUEST['tix_tickets_selected'] = array( $_REQUEST['tix_single_ticket_purchase'] => 1 );
 		}
 
 		if ( isset( $_POST ) && ! empty( $_POST ) )
