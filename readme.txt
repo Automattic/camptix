@@ -2,8 +2,8 @@
 Contributors:      automattic, kovshenin, andreamiddleton, iandunn
 Tags:              ticketing, event ticketing
 Requires at least: 3.5
-Tested up to:      4.0
-Stable tag:        1.4.1
+Tested up to:      4.1
+Stable tag:        1.4.2
 Donate link:       http://wordpressfoundation.org/donate/
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
@@ -46,6 +46,15 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.4.2 =
+* Added a nonce check for privacy and attendance toggles for better security
+* Various small i18n fixes and language updates
+* Various new actions and filters for more flexibility
+* New addon that allows admins to track attendance
+* New addon that allows admins to require users to be logged in to purchase a ticket
+* Removed pending attendees from revenue reports
+* [Full changelog](https://github.com/Automattic/camptix/compare/80b2d7997272aea68fa0cfb509d3d72f15cec18a...a9487f954f3013e698e7991c8f12e86ae85234ae)
 
 = 1.4.1 =
 * Updated PayPal module to use HTTP 1.1 now that PayPal requires it. Fixes "A payment error has occurred" errors.
