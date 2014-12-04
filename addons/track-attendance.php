@@ -52,10 +52,14 @@ class CampTix_Track_Attendance extends CampTix_Addon {
 			return;
 		}
 
-		if ( isset( $_POST['tix_attended'] ) && 'on' == $_POST['tix_attended'] ) {
-			update_post_meta( $attendee_id, 'tix_attended', true );
-		} else {
-			delete_post_meta( $attendee_id, 'tix_attended' );
+		$nonce_action = 'update-post_' . $attendee_id;
+
+		if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], $nonce_action ) ) {
+			if ( isset( $_POST['tix_attended'] ) && 'on' == $_POST['tix_attended'] ) {
+				update_post_meta( $attendee_id, 'tix_attended', true );
+			} else {
+				delete_post_meta( $attendee_id, 'tix_attended' );
+			}
 		}
 	}
 

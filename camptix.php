@@ -4180,10 +4180,14 @@ class CampTix_Plugin {
 		if ( wp_is_post_revision( $post_id ) || 'tix_attendee' != get_post_type( $post_id ) )
 			return;
 
-		if ( isset( $_POST['tix_privacy'] ) && 'on' == $_POST['tix_privacy'] ) {
-			update_post_meta( $post_id, 'tix_privacy', 'private' );
-		} else {
-			delete_post_meta( $post_id, 'tix_privacy' );
+		$nonce_action = 'update-post_' . $post_id;
+
+		if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], $nonce_action ) ) {
+			if ( isset( $_POST['tix_privacy'] ) && 'on' == $_POST['tix_privacy'] ) {
+				update_post_meta( $post_id, 'tix_privacy', 'private' );
+			} else {
+				delete_post_meta( $post_id, 'tix_privacy' );
+			}
 		}
 
 		$search_meta_fields = apply_filters( 'camptix_save_attendee_post_add_search_meta', array(
@@ -4224,8 +4228,9 @@ class CampTix_Plugin {
 		// There might be others in need of processing.
 		add_action( 'save_post', array( $this, __FUNCTION__ ) );
 
-		if ( isset( $_POST ) && ! empty( $_POST ) && is_admin() )
+		if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], $nonce_action ) ) {
 			$this->log( 'Saved attendee post with post data.', $post_id, $_POST );
+		}
 	}
 
 	/**
