@@ -328,7 +328,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		global $camptix;
 
 		if ( ! isset( $this->did_shortcode_private_template_redirect ) )
-			return __( 'An error has occured.', 'camptix' );
+			return __( 'An error has occurred.', 'camptix' );
 
 		// Lazy load the camptix js.
 		wp_enqueue_script( 'camptix' );
