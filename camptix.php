@@ -4315,7 +4315,7 @@ class CampTix_Plugin {
 		}
 
 		if ( isset( $_POST ) && ! empty( $_POST ) )
-			$this->form_data = $_POST;
+			$this->form_data = stripslashes_deep( $_POST );
 
 		$this->tickets = array();
 		$this->tickets_selected = array();

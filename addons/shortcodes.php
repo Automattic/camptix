@@ -256,9 +256,9 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		$this->did_shortcode_private_template_redirect = 1;
 
 		if ( isset( $_POST['tix_private_shortcode_submit'] ) ) {
-			$first_name = isset( $_POST['tix_first_name'] ) ? trim( $_POST['tix_first_name'] ) : '';
-			$last_name = isset( $_POST['tix_last_name'] ) ? trim( $_POST['tix_last_name'] ) : '';
-			$email = isset( $_POST['tix_email'] ) ? trim( $_POST['tix_email'] ) : '';
+			$first_name = isset( $_POST['tix_first_name'] ) ? trim( stripslashes( $_POST['tix_first_name'] ) ) : '';
+			$last_name  = isset( $_POST['tix_last_name'] )  ? trim( stripslashes( $_POST['tix_last_name'] ) )  : '';
+			$email      = isset( $_POST['tix_email'] )      ? trim( stripslashes( $_POST['tix_email'] ) )      : '';
 
 			// Remove cookies if a previous one was set.
 			if ( isset( $_COOKIE['tix_view_token'] ) ) {
