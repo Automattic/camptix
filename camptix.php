@@ -4676,7 +4676,7 @@ class CampTix_Plugin {
 									<?php if ( $price > 0 ) : ?>
 										<?php echo $this->append_currency( $price ); ?>
 									<?php else : ?>
-										Free
+										<?php _e( 'Free', 'camptix' ); ?>
 									<?php endif; ?>
 								</td>
 								<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
@@ -4836,7 +4836,7 @@ class CampTix_Plugin {
 								<?php if ( $price > 0 ) : ?>
 									<?php echo $this->append_currency( $price ); ?>
 								<?php else : ?>
-									Free
+									<?php _e( 'Free', 'camptix' ); ?>
 								<?php endif; ?>
 								</td>
 								<td class="tix-column-quantity"><?php echo intval( $count ); ?></td>
