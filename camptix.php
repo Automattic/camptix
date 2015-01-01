@@ -6914,6 +6914,7 @@ class CampTix_Plugin {
 		$default_addons = apply_filters( 'camptix_default_addons', array(
 			'field-twitter'  => $this->get_default_addon_path( 'field-twitter.php' ),
 			'field-url'      => $this->get_default_addon_path( 'field-url.php' ),
+			'field-country'  => $this->get_default_addon_path( 'field-country.php' ),
 			'shortcodes'     => $this->get_default_addon_path( 'shortcodes.php' ),
 			'payment-paypal' => $this->get_default_addon_path( 'payment-paypal.php' ),
 			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),
