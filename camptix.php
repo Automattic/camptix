@@ -5548,7 +5548,7 @@ class CampTix_Plugin {
 	 * Looks for the [camptix] page and returns the page's id.
 	 */
 	function get_tickets_post_id() {
-		$posts = get_posts( array(
+		$params = apply_filters( 'camptix_get_tickets_post_id_params', array(
 			'post_type' => 'page',
 			'post_status' => 'publish',
 			's' => '[camptix',
@@ -5556,6 +5556,7 @@ class CampTix_Plugin {
 			'update_post_term_cache' => false,
 			'update_post_meta_cache' => false,
 		) );
+		$posts = get_posts( $params );
 
 		if ( ! $posts )
 			return false;
@@ -5706,7 +5707,7 @@ class CampTix_Plugin {
 			$remaining -= $reserved_tickets;
 		}
 
-		return $remaining;
+		return apply_filters( 'camptix_get_remaining_tickets', $remaining, $post_id, $via_reservation, $quantity, $reservations );
 	}
 
 	function get_purchased_tickets_count( $post_id, $via_reservation = false ) {
