@@ -4661,6 +4661,7 @@ class CampTix_Plugin {
 
 								$price = $ticket->tix_discounted_price;
 							}
+							$max = min($max, apply_filters('camptix_max_tickets_per_order', $max, $ticket));
 							?>
 							<tr class="tix-ticket-<?php echo absint( $ticket->ID ); ?>">
 								<td class="tix-column-description">
@@ -6195,8 +6196,9 @@ class CampTix_Plugin {
 				$this->error_flag( 'tickets_excess' );
 			}
 
-			if ( $item['quantity'] > 10 ) {
-				$item['quantity'] = min( 10, $ticket->tix_remaining );
+			$max_tickets = min(10, intval(apply_filters('camptix_max_tickets_per_order', 10, $ticket)));
+			if ( $item['quantity'] > $max_tickets ) {
+				$item['quantity'] = min( $max_tickets, $ticket->tix_remaining );
 				$this->error_flag( 'tickets_excess' );
 			}
 
