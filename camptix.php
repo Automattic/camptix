@@ -121,7 +121,6 @@ class CampTix_Plugin {
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		add_action( 'admin_head', array( $this, 'admin_menu_fix' ) );
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
-		add_action( 'admin_head', array( $this, 'admin_head' ) );
 
 		// Handle meta for our post types.
 		add_action( 'save_post', array( $this, 'save_ticket_post' ) );
@@ -489,8 +488,6 @@ class CampTix_Plugin {
 			wp_enqueue_script( 'jquery-ui-datepicker' );
 			wp_enqueue_style( 'jquery-ui', plugins_url( '/external/jquery-ui.css', __FILE__ ), array(), $this->version );
 		}
-
-		wp_enqueue_style( 'campicons', plugins_url( 'fonts/campicons.css', __FILE__ ), array(), $this->version );
 	}
 
 	/**
@@ -887,6 +884,7 @@ class CampTix_Plugin {
 				'delete_post' => $this->caps['manage_tickets'],
 				'read_post' => $this->caps['manage_tickets'],
 			),
+			'menu_icon' => 'dashicons-tickets',
 		) );
 
 		register_post_type( 'tix_question', array(
@@ -1878,20 +1876,6 @@ class CampTix_Plugin {
 		// Make sure Tickets is selected when creating a new ticket
 		if ( 'post-new.php' == $pagenow && 'tix_ticket' == $typenow )
 			$submenu_file = 'edit.php?post_type=tix_ticket';
-	}
-
-	/**
-	 * Runs during admin_head, outputs some icons CSS.
-	 */
-	function admin_head() {
-		?>
-		<style>
-			#menu-posts-tix_ticket .wp-menu-image:before {
-				font-family: 'Campicons' !important;
-				content: '\e604' !important;
-			}
-		</style>
-		<?php
 	}
 
 	/**
