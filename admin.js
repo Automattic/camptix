@@ -1,7 +1,7 @@
 /**
  * CampTix Admin JavaScript
  */
-window.camptix = window.camptix || { models: {}, views: {} };
+window.camptix = window.camptix || { models: {}, views: {}, collections: {} };
 
 (function($){
 
@@ -11,6 +11,147 @@ window.camptix = window.camptix || { models: {}, views: {} };
 		escape:      /\{\{([^\}]+?)\}\}(?!\})/g,
 		variable:    'data'
 	};
+
+	$(document).on( 'load-notify-segments.camptix', function() {
+		var Segment = Backbone.Model.extend({
+			defaults: {
+				field: 'ticket',
+				op: 'is',
+				value: null,
+			},
+
+			initialize: function() {
+				this.bind( 'change', this.change, this );
+				this.trigger( 'change' );
+
+				return Backbone.Model.prototype.initialize.apply( this, arguments );
+			},
+
+			change: function() {
+				var selectedField = camptix.collections.segmentFields.findWhere({ option_value: this.get( 'field' ) }),
+					values;
+
+				// Make sure the value is a valid one for select types.
+				if ( selectedField.get( 'type' ) == 'select' ) {
+					values = _.pluck( selectedField.get( 'values' ), 'value' );
+					if ( ! _.contains( values, this.get( 'value' ) ) ) {
+						this.set( 'value', _.first( values ), { silent: true } );
+					}
+				}
+			}
+		});
+
+		var SegmentView = Backbone.View.extend({
+			className: 'tix-segment-item',
+			events: {
+				'click .tix-delete-segment-condition': 'remove',
+				'change select': 'change',
+				'change input[type="text"]': 'change',
+			},
+
+			initialize: function() {
+				this.model.bind( 'change', this.render, this );
+				this.model.bind( 'destroy', this.remove, this );
+
+				Backbone.View.prototype.initialize.apply( this, arguments );
+			},
+
+			render: function() {
+				var selectedField = camptix.collections.segmentFields.findWhere({ option_value: this.model.get( 'field' ) })
+
+				var data = {
+					model: this.model.toJSON(),
+					fields: camptix.collections.segmentFields.toJSON(),
+					ops: selectedField.get( 'ops' ),
+					type: selectedField.get( 'type' )
+				};
+
+				if ( data.type == 'select' ) {
+					data.values = selectedField.get( 'values' );
+				}
+
+				this.template = _.template( $( '#camptix-tmpl-notify-segment-item' ).html(), null, camptix.template_options );
+				this.$el.html( this.template( data ) );
+				return this;
+			},
+
+			change: function() {
+				var args = {
+					field: this.$el.find( '.segment-field' ).val(),
+					op: this.$el.find( '.segment-op' ).val(),
+					value: this.$el.find( '.segment-value' ).val()
+				};
+
+				// Reset the value if the field has changed.
+				if ( this.model.get( 'field' ) !== args.field )
+					args.value = null;
+
+				this.model.set( args );
+				return this;
+			},
+
+			remove: function(e) {
+				this.collection.remove( this.model );
+				Backbone.View.prototype.remove.apply( this, arguments );
+				e.preventDefault();
+				return this;
+			}
+		});
+
+		var Segments = Backbone.Collection.extend({
+			model: Segment
+		});
+
+		var SegmentsView = Backbone.View.extend({
+			initialize: function() {
+				this.$query = $( '#tix-notify-segment-query' );
+
+				this.collection.bind( 'add', this.addOne, this );
+				this.collection.bind( 'add remove change', this.updateQuery, this );
+			},
+
+			render: function() {
+				return this;
+			},
+
+			addOne: function( item ) {
+				var view = new SegmentView({ model: item, collection: this.collection });
+				$( '.tix-segments' ).append( view.render().el );
+			},
+
+			updateQuery: function() {
+				this.$query.val( JSON.stringify( this.collection.toJSON() ) );
+				console.log( this.$query.val() );
+			},
+		});
+
+		var SegmentField = Backbone.Model.extend({
+			defaults: {
+				type: 'text',
+				caption: '',
+				option_value: '',
+				ops: [ 'is', 'is not' ],
+				values: []
+			}
+		});
+
+		var SegmentFields = Backbone.Collection.extend({
+			model: SegmentField
+		});
+
+		camptix.models.Segment = Segment;
+		camptix.models.SegmentField = SegmentField;
+
+		camptix.collections.segments = new Segments();
+		camptix.collections.segmentFields = new SegmentFields();
+
+		camptix.views.SegmentsView = new SegmentsView({ collection: camptix.collections.segments });
+
+		$('.tix-add-segment-condition').on( 'click', function() {
+			camptix.collections.segments.add( new camptix.models.Segment() );
+			return false;
+		});
+	});
 
 	$(document).on( 'load-questions.camptix', function() {
 		var Question = Backbone.Model.extend({
