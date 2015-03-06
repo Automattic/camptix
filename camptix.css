@@ -10,6 +10,19 @@
 	border-radius: 3px;
 }
 
+	.tix-error p,
+	.tix-notice p,
+	.tix-info p {
+		margin: 0 0 1em 0;
+		padding: 0;
+	}
+
+	.tix-error p:last-child,
+	.tix-notice p:last-child,
+	.tix-info p:last-child {
+		margin-bottom: 0;
+	}
+
 .tix-error {
 	background: #FFEBE8;
 	border: solid 1px #C00;
@@ -101,12 +114,20 @@ body.admin-bar #tix {
 }
 
 .tix-ticket-form input[type="text"],
+.tix-ticket-form input[type="email"],
+.tix-ticket-form input[type="url"],
 .tix-ticket-form textarea,
 .tix-private-form input[type="text"],
+.tix-private-form input[type="email"],
+.tix-private-form input[type="url"],
 .tix-private-form textarea,
 .tix-attendee-form input[type="text"],
+.tix-attendee-form input[type="email"],
+.tix-attendee-form input[type="url"],
 .tix-attendee-form textarea,
 .tix-receipt-form input[type="text"],
+.tix-receipt-form input[type="email"],
+.tix-receipt-form input[type="url"],
 .tix-receipt-form textarea {
 	width: 70%;
 }
@@ -143,8 +164,9 @@ body.admin-bar #tix {
 }
 
 #tix.tix-js .tix-hide-if-js,
-#tix .tix-show-if-js {
-	display: none;
+#tix .tix-show-if-js,
+.tix-hidden {
+	display: none !important;
 }
 #tix.tix-js .tix-show-if-js,
 #tix .tix-hide-if-js {
