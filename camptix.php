@@ -2845,10 +2845,15 @@ class CampTix_Plugin {
 								<input type="hidden" id="tix-notify-segment-query" name="tix-notify-segment-query" value="" />
 
 								<div class="tix-match">
+									<?php
+										$match = ! empty( $_POST['tix-notify-segment-match'] ) ? $_POST['tix-notify-segment-match'] : 'OR';
+									?>
 									<?php printf( _x( 'Attendees matching %s of the following:', 'Placeholder is all/any', 'camptix' ),
 										'<select name="tix-notify-segment-match">
-											<option value="OR">' . _x( 'all', 'Attendees matching X of the following', 'camptix' ) . '</option>
-											<option value="AND">' . _x( 'any', 'Attendees matching X of the following', 'camptix' ) . '</option>
+											<option value="AND" ' . selected( $match, 'AND', false ) . '>' .
+												_x( 'all', 'Attendees matching X of the following', 'camptix' ) . '</option>
+											<option value="OR" ' . selected( $match, 'OR', false ) . '>' .
+												_x( 'any', 'Attendees matching X of the following', 'camptix' ) . '</option>
 										</select>' ); ?>
 								</div>
 
@@ -2982,8 +2987,53 @@ class CampTix_Plugin {
 				ops: [ 'before', 'after' ]
 			}));
 
-			camptix.collections.segments.add( new camptix.models.Segment({
-			}));
+			<?php foreach ( $this->get_all_questions() as $question ) : ?>
+
+				<?php
+					// Segmenting supported by these types. only
+					if ( ! in_array( get_post_meta( $question->ID, 'tix_type', true ), array( 'select' ) ) )
+						continue;
+				?>
+
+				camptix.collections.segmentFields.add( new camptix.models.SegmentField({
+					caption: '<?php echo esc_js( $question->post_title ); ?>',
+					option_value: '<?php echo esc_js( sprintf( 'tix-question-%d', $question->ID ) ); ?>',
+
+					<?php if ( get_post_meta( $question->ID, 'tix_type', true ) == 'select' ) : ?>
+
+						type: 'select',
+						ops: [ 'is', 'is not' ],
+						values: <?php
+							$values = array();
+							foreach ( (array) get_post_meta( $question->ID, 'tix_values', true ) as $value ) {
+								$values[] = array(
+									'caption' => $value,
+									'value' => $value,
+								);
+							}
+
+							echo json_encode( $values );
+						?>,
+
+					<?php endif; ?>
+
+					noop: null
+				}));
+
+			<?php endforeach; ?>
+
+
+			// Add POST'ed conditions.
+			<?php if ( ! empty( $conditions ) ) : ?>
+				<?php foreach ( $conditions as $condition ) : ?>
+					camptix.collections.segments.add(
+						new camptix.models.Segment(<?php echo json_encode( $condition ); ?>)
+					);
+				<?php endforeach; ?>
+			<?php else : ?>
+				camptix.collections.segments.add( new camptix.models.Segment() );
+			<?php endif; ?>
+
 		}(jQuery));
 		</script>
 
@@ -3025,9 +3075,13 @@ class CampTix_Plugin {
 	 * @return array A list of attendee IDs.
 	 */
 	public function get_segment( $relation, $conditions ) {
+		$segment = array();
+		$post_query_segment = array();
+		$post_query_conditions = array();
+
 		$relation = strtolower( $relation );
 		if ( ! in_array( $relation, array( 'and', 'or' ) ) )
-			return array();
+			return $segment;
 
 		$query = array(
 			'post_type' => 'tix_attendee',
@@ -3081,9 +3135,65 @@ class CampTix_Plugin {
 				}
 				continue;
 			}
+
+			// Conditions to be applied after the query has executed.
+			if ( preg_match( '#^tix-question-\d+$#', $condition['field'] ) ) {
+				$post_query_conditions[] = $condition;
+				continue;
+			}
 		}
 
-		return get_posts( $query );
+		$post_query_segment = get_posts( $query );
+		unset( $conditions );
+		unset( $query );
+
+		foreach ( $post_query_segment as $key => $attendee_id ) {
+			$include = empty( $post_query_conditions );
+
+			// These conditions further filter the query.
+			foreach ( $post_query_conditions as $condition ) {
+
+				if ( preg_match( '#^tix-question-(\d+)$#', $condition['field'], $matches ) ) {
+					$question_id = $matches[1];
+					$answers = get_post_meta( $attendee_id, 'tix_questions', true );
+
+					// If the attendee was not asked this question, then they're not part of the segment.
+					if ( ! isset( $answers[ $question_id ] ) )
+						continue 2;
+
+					$answer = $answers[ $question_id ];
+					if ( ! is_array( $answer ) )
+						$answer = array( $answer );
+
+					$in_array = in_array( $condition['value'], $answer );
+					$maybe_include = ( $condition['op'] == 'is' ) ? $in_array : ! $in_array;
+
+					// For 'or' relations a single 'true' is enough to
+					// include the attendee in the segment.
+					if ( $relation == 'or' && $maybe_include ) {
+						$include = true;
+						break;
+					}
+
+					// For 'and' relations a single 'false' is enough to
+					// exclude the attendee, no need to look further.
+					if ( $relation == 'and' && ! $maybe_include ) {
+						$include = false;
+						break;
+					}
+
+					if ( $relation == 'and' && $maybe_include ) {
+						$include = true;
+						continue;
+					}
+				}
+			}
+
+			if ( $include )
+				$segment[] = $attendee_id;
+		}
+
+		return $segment;
 	}
 
 	function menu_tools_refund() {
