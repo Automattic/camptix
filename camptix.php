@@ -21,8 +21,8 @@ class CampTix_Plugin {
 	public $debug;
 	public $beta_features_enabled;
 	public $version     = 20140325;
-	public $css_version = 20140827;
-	public $js_version  = '20140902-2';
+	public $css_version = 20150311;
+	public $js_version  = 20150311;
 	public $caps;
 
 	public $addons = array();
@@ -2783,11 +2783,16 @@ class CampTix_Plugin {
 			if ( ! is_array( $conditions ) || count( $conditions ) < 1 )
 				$errors[] = __( 'At least one segment condition must be defined.', 'camptix' );
 
+			$recipients = $this->get_segment( $_POST['tix-notify-segment-match'], $conditions );
+
+			if ( count( $recipients ) < 1 ) {
+				$errors[] = __( 'The selected segment does not match any recipients. Please try a again.', 'camptix' );
+			}
+
 			// If everything went well.
 			if ( count( $errors ) == 0 && isset( $_POST['tix_notify_submit'] ) && $_POST['tix_notify_submit'] ) {
 				$subject = sanitize_text_field( wp_kses_post( $_POST['tix_notify_subject'] ) );
 				$body = wp_kses_post( $_POST['tix_notify_body'] );
-				$recipients = $this->get_segment( $_POST['tix-notify-segment-match'], $conditions );
 
 				// Create a new e-mail job.
 				$email_id = wp_insert_post( array(
@@ -2835,6 +2840,7 @@ class CampTix_Plugin {
 		do_action( 'camptix_init_notify_shortcodes' );
 		?>
 		<?php settings_errors( 'camptix' ); ?>
+
 		<form method="post" action="<?php echo esc_url( add_query_arg( 'tix_notify_attendees', 1 ) ); ?>">
 			<table class="form-table">
 				<tbody>
@@ -2934,26 +2940,35 @@ class CampTix_Plugin {
 		<script type="text/template" id="camptix-tmpl-notify-segment-item">
 			<div class="tix-segment">
 				<a href="#" class="dashicons dashicons-dismiss tix-delete-segment-condition"></a>
-				<select class="segment-field">
-					<# _.each( data.fields, function( field ) { #>
-					<option value="{{ field.option_value }}" <# if ( field.option_value == data.model.field ) { #>selected="selected"<# } #> >{{ field.caption }}</option>
-					<# }); #>
-				</select>
-				<select class="segment-op">
-					<# _.each( data.ops, function( op ) { #>
-					<option value="{{ op }}" <# if ( op == data.model.op ) { #>selected="selected"<# } #> >{{ op }}</option>
-					<# }); #>
-				</select>
+				<div class="segment-field-wrap">
+					<select class="segment-field">
+						<# _.each( data.fields, function( field ) { #>
+						<option value="{{ field.option_value }}" <# if ( field.option_value == data.model.field ) { #>selected="selected"<# } #> >{{ field.caption }}</option>
+						<# }); #>
+					</select>
+				</div>
 
-				<# if ( data.type == 'select' ) { #>
-				<select class="segment-value">
-					<# _.each( data.values, function( value ) { #>
-					<option value="{{ value.value }}" <# if ( value.value == data.model.value ) { #>selected="selected"<# } #> >{{ value.caption }}</option>
-					<# }); #>
-				</select>
-				<# } else if ( data.type == 'text' ) { #>
-				<input type="text" class="segment-value regular-text" value="{{ data.model.value }}" />
-				<# } #>
+				<div class="segment-op-wrap">
+					<select class="segment-op">
+						<# _.each( data.ops, function( op ) { #>
+						<option value="{{ op }}" <# if ( op == data.model.op ) { #>selected="selected"<# } #> >{{ op }}</option>
+						<# }); #>
+					</select>
+				</div>
+
+				<div class="segment-value-wrap">
+					<# if ( data.type == 'select' ) { #>
+					<select class="segment-value">
+						<# _.each( data.values, function( value ) { #>
+						<option value="{{ value.value }}" <# if ( value.value == data.model.value ) { #>selected="selected"<# } #> >{{ value.caption }}</option>
+						<# }); #>
+					</select>
+					<# } else if ( data.type == 'text' ) { #>
+					<input type="text" class="segment-value regular-text" value="{{ data.model.value }}" />
+					<# } #>
+				</div>
+
+				<div class="clear"></div>
 			</div>
 		</script>
 
