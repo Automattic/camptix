@@ -597,6 +597,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			$url = $options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout' : 'https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout';
 			$url = add_query_arg( 'token', $token, $url );
 			wp_redirect( esc_url_raw( $url ) );
+			die();
 		} else {
 			$this->log( 'Error during SetExpressCheckout.', null, $response );
 			$error_code = isset( $response['L_ERRORCODE0'] ) ? $response['L_ERRORCODE0'] : 0;
