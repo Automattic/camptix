@@ -5,9 +5,7 @@
  *
  * @since 1.2
  */
-
-class CampTix_Payment_Method extends CampTix_Addon {
-
+abstract class CampTix_Payment_Method extends CampTix_Addon {
 	public $id = false;
 	public $name = false;
 	public $description = false;
@@ -183,9 +181,14 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		return array();
 	}
 
-	function payment_checkout( $payment_token ) {
-		die( __FUNCTION__ . ' not implemented' );
-	}
+	/**
+	 * Handle the checkout process
+	 *
+	 * @param string $payment_token
+	 *
+	 * @return int A payment status, e.g., PAYMENT_STATUS_CANCELLED, PAYMENT_STATUS_COMPLETED, etc
+	 */
+	abstract function payment_checkout( $payment_token );
 
 	/**
 	 * Handle the refund process
@@ -230,7 +233,6 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	 * Register settings for the Payment screen
 	 */
 	function payment_settings_fields() {
-		return;
 	}
 
 	/**
