@@ -1,6 +1,8 @@
 <?php
+
 /**
  * Payment Method Class for CampTix
+ *
  * @since 1.2
  */
 
@@ -9,14 +11,17 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	public $id = false;
 	public $name = false;
 	public $description = false;
-
 	public $supported_currencies = false;
 	public $supported_features = array(
 		'refund-single' => false,
 		'refund-all' => false,
 	);
 
+	/**
+	 * Constructor
+	 */
 	function __construct() {
+		/** @var $camptix CampTix_Plugin */
 		global $camptix;
 
 		parent::__construct();
@@ -44,10 +49,25 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		return ( in_array( $currency, $this->supported_currencies ) );
 	}
 
+	/**
+	 * Check if the payment method supports the given feature
+	 *
+	 * @param string $feature
+	 *
+	 * @return bool
+	 */
 	function supports_feature( $feature ) {
 		return array_key_exists( $feature, $this->supported_features ) ? $this->supported_features[ $feature ] : false;
 	}
 
+	/**
+	 * Get the payment gateway object for the given ID
+	 *
+	 * @param CampTix_Payment_Method $payment_method
+	 * @param string                 $id
+	 *
+	 * @return CampTix_Payment_Method
+	 */
 	function _camptix_get_payment_method_by_id( $payment_method, $id ) {
 		if ( $this->id == $id )
 			$payment_method = $this;
@@ -55,11 +75,19 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		return $payment_method;
 	}
 
+	/**
+	 * Render the section header markup on the Payment screen
+	 */
 	function _camptix_settings_section_callback() {
 		echo '<p>' . $this->description . '</p>';
 		printf( '<p>' . __( 'Supported currencies: <code>%s</code>.', 'camptix' ) . '</p>', implode( '</code>, <code>', $this->supported_currencies ) );
 	}
 
+	/**
+	 * Render the markup for the Enabled button
+	 *
+	 * @param array $args
+	 */
 	function _camptix_settings_enabled_callback( $args = array() ) {
 		if ( in_array( $this->camptix_options['currency'], $this->supported_currencies ) )
 			return $this->field_yesno( $args );
@@ -70,6 +98,13 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		<?php
 	}
 
+	/**
+	 * Validate options if they were submitted for this payment method
+	 *
+	 * @param array $camptix_options
+	 *
+	 * @return array
+	 */
 	function _camptix_validate_options( $camptix_options ) {
 		$post_key = "camptix_payment_options_{$this->id}";
 		$option_key = "payment_options_{$this->id}";
@@ -84,6 +119,13 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		return $camptix_options;
 	}
 
+	/**
+	 * Validate new option values before saving
+	 *
+	 * @param array $input
+	 *
+	 * @return array
+	 */
 	function validate_options( $input ) {
 		return array();
 	}
@@ -92,16 +134,34 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		die( __FUNCTION__ . ' not implemented' );
 	}
 
+	/**
+	 * Handle the refund process
+	 *
+	 * @param string $payment_token
+	 *
+	 * @return int A payment status, e.g., PAYMENT_STATUS_CANCELLED, PAYMENT_STATUS_COMPLETED, etc
+	 */
 	function payment_refund( $payment_token ) {
+		/** @var $camptix Camptix_Plugin  */
 		global $camptix;
+
 		$refund_data = array();
 		$camptix->log( __FUNCTION__ . ' not implemented in payment module.', 0, null, 'refund' );
 
 		return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED, $refund_data );
 	}
 
+	/**
+	 * Send a request for a refund to the payment gateway API
+	 *
+	 * @param string $payment_token
+	 *
+	 * @return array
+	 */
 	function send_refund_request( $payment_token ) {
+		/** @var $camptix Camptix_Plugin  */
 		global $camptix;
+
 		$result = array(
 			'token' => $payment_token,
 			'status' => CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED,
@@ -113,10 +173,20 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		return $result;
 	}
 
+	/**
+	 * Register settings for the Payment screen
+	 */
 	function payment_settings_fields() {
 		return;
 	}
 
+	/**
+	 * Add the current payment method to the list of available methods
+	 *
+	 * @param array $payment_methods
+	 *
+	 * @return array
+	 */
 	function _camptix_available_payment_methods( $payment_methods ) {
 		if ( $this->id && $this->name && $this->description )
 			$payment_methods[ $this->id ] = array(
@@ -176,8 +246,16 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		return $this->get_order_by_attendee_id( $attendees[0]->ID );
 	}
 
+	/**
+	 * Get the order for the given attendee
+	 *
+	 * @param int $attendee_id
+	 *
+	 * @return array
+	 */
 	function get_order_by_attendee_id( $attendee_id ) {
 		$order = (array) get_post_meta( $attendee_id, 'tix_order', true );
+
 		if ( $order ) {
 			$order['attendee_id'] = $attendee_id;
 		}
@@ -205,7 +283,11 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	}
 
 	/**
-	 * A yes-no field for the Settings API.
+	 * Get an escaped field name for a setting
+	 *
+	 * @param string $name
+	 *
+	 * @return string
 	 */
 	function field_yesno( $args ) {
 		?>
@@ -222,6 +304,14 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		return esc_attr( "camptix_payment_options_{$this->id}[{$name}]" );
 	}
 
+	/**
+	 * Add a setting field
+	 *
+	 * @param string $option_name
+	 * @param string $title
+	 * @param string $callback
+	 * @param string $description
+	 */
 	function add_settings_field_helper( $option_name, $title, $callback, $description = '' ) {
 		return add_settings_field( 'camptix_payment_' . $this->id . '_' . $option_name, $title, $callback, 'camptix_options', 'payment_' . $this->id, array(
 			'name' => $this->settings_field_name_attr( $option_name ),
@@ -230,6 +320,11 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		) );
 	}
 
+	/**
+	 * Get this payment method's options
+	 *
+	 * @return array
+	 */
 	function get_payment_options() {
 		$payment_options = array();
 		$option_key = "payment_options_{$this->id}";

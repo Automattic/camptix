@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PayPal Express Checkout Payment Method for CampTix
  *
@@ -31,6 +32,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 	/**
 	 * Runs during camptix_init, loads our options and sets some actions.
+	 *
 	 * @see CampTix_Addon
 	 */
 	function camptix_init() {
@@ -46,6 +48,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
+	 * Add payment settings fields
+	 *
 	 * This runs during settings field registration in CampTix for the
 	 * payment methods configuration screen. If your payment method has
 	 * options, this method is the place to add them to. You can use the
@@ -53,7 +57,6 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * validate them all in validate_options.
 	 */
 	function payment_settings_fields() {
-
 		// Allow pre-defined accounts if any are defined by plugins.
 		if ( count( $this->get_predefined_accounts() ) > 0 )
 			$this->add_settings_field_helper( 'api_predef', __( 'Predefined Account', 'camptix' ), array( $this, 'field_api_predef' ) );
@@ -77,6 +80,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * to select from, as well as some js for better ux.
 	 *
 	 * @uses $this->get_predefined_accounts()
+	 *
+	 * @param array $args
 	 */
 	function field_api_predef( $args ) {
 		$accounts = $this->get_predefined_accounts();
@@ -84,12 +89,15 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			return;
 
 		?>
+
 		<select id="camptix-predef-select" name="<?php echo esc_attr( $args['name'] ); ?>">
 			<option value=""><?php _e( 'None', 'camptix' ); ?></option>
+
 			<?php foreach ( $accounts as $key => $account ) : ?>
 			<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $args['value'], $key ); ?>><?php echo esc_html( $account['label'] ); ?></option>
 			<?php endforeach; ?>
 		</select>
+
 		<!-- Let's disable the rest of the fields unless None is selected -->
 		<script>
 		jQuery(document).ready(function($){
@@ -106,16 +114,18 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			});
 		});
 		</script>
+
 		<?php
 	}
 
 	/**
 	 * Get an array of predefined PayPal accounts
 	 *
-	 * Runs an empty array through a filter, where one might specifiy a list of
+	 * Runs an empty array through a filter, where one might specify a list of
 	 * predefined PayPal credentials, through a plugin or something.
 	 *
 	 * @static $predefs
+	 *
 	 * @return array An array of predefined accounts (or an empty one)
 	 */
 	function get_predefined_accounts() {
@@ -134,6 +144,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * predefined account is set, PayPal credentials will be overwritten during API
 	 * requests, but never saved/exposed. Useful with array_merge().
 	 *
+	 * @param string $key
+	 *
 	 * @return array An array with credentials, or an empty array if key not found.
 	 */
 	function get_predefined_account( $key = false ) {
@@ -149,8 +161,11 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Validate the above option. Runs automatically upon options save and is
-	 * given an $input array. Expects an $output array of filtered payment method options.
+	 * Validate options
+	 *
+	 * @param array $input
+	 *
+	 * @return array
 	 */
 	function validate_options( $input ) {
 		$output = $this->options;
@@ -168,7 +183,6 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			$output['sandbox'] = (bool) $input['sandbox'];
 
 		if ( isset( $input['api_predef'] ) ) {
-
 			// If a valid predefined account is set, erase the credentials array.
 			// We do not store predefined credentials in options, only code.
 			if ( $this->get_predefined_account( $input['api_predef'] ) ) {
@@ -189,11 +203,12 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
+	 * Watch for and process PayPal requests
+	 *
 	 * For PayPal we'll watch for some additional CampTix actions which may be
 	 * fired from PayPal either with a redirect (cancel and return) or an IPN (notify).
 	 */
 	function template_redirect() {
-
 		// Backwards compatibility with CampTix 1.1
 		if ( isset( $_GET['tix_paypal_ipn'] ) && $_GET['tix_paypal_ipn'] == 1 )
 			$this->payment_notify_back_compat();
@@ -215,11 +230,16 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
+	 * Process an IPN
+	 *
 	 * Runs when PayPal sends an IPN signal with a payment token and a
 	 * payload in $_POST. Verify the payload and use $this->payment_result
 	 * to signal a transaction result back to CampTix.
+	 * 
+	 * @return mixed Null if returning early, or an integer matching one of the CampTix_Plugin::PAYMENT_STATUS_{status} constants
 	 */
 	function payment_notify() {
+		/** @var $camptix CampTix_Plugin */
 		global $camptix;
 
 		$payment_token = ( isset( $_REQUEST['tix_payment_token'] ) ) ? trim( $_REQUEST['tix_payment_token'] ) : '';
@@ -278,6 +298,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * In CampTix 1.1 and below, CampTix has already sent requests to PayPal with
 	 * the old-style notify URL. This method, runs during template_redirect and
 	 * ensures that IPNs on old attendees still work.
+	 *
+	 * @return mixed Null if returning early, or an integer matching one of the CampTix_Plugin::PAYMENT_STATUS_{status} constants 
 	 */
 	function payment_notify_back_compat() {
 		if ( ! isset( $_REQUEST['tix_paypal_ipn'] ) )
@@ -326,7 +348,13 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
+	 * Get the payment status ID for the given shorthand name   
+	 * 
 	 * Helps convert payment statuses from PayPal responses, to CampTix payment statuses.
+	 * 
+	 * @param string $payment_status
+	 * 
+	 * @return int
 	 */
 	function get_status_from_string( $payment_status ) {
 		$statuses = array(
@@ -349,10 +377,15 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
+	 * Handle a canceled payment
+	 * 
 	 * Runs when the user cancels their payment during checkout at PayPal.
 	 * his will simply tell CampTix to put the created attendee drafts into to Cancelled state.
+	 * 
+	 * @return int One of the CampTix_Plugin::PAYMENT_STATUS_{status} constants
 	 */
 	function payment_cancel() {
+		/** @var $camptix CampTix_Plugin */
 		global $camptix;
 
 		$this->log( sprintf( 'Running payment_cancel. Request data attached.' ), null, $_REQUEST );
@@ -423,13 +456,18 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
+	 * Process a request to complete the order
+	 * 
 	 * This runs when PayPal redirects the user back after the user has clicked
 	 * Pay Now on PayPal. At this point, the user hasn't been charged yet, so we
 	 * verify their order once more and fire DoExpressCheckoutPayment to produce
 	 * the charge. This method ends with a call to payment_result back to CampTix
 	 * which will redirect the user to their tickets page, send receipts, etc.
+	 * 
+	 * @return int One of the CampTix_Plugin::PAYMENT_STATUS_{status} constants
 	 */
 	function payment_return() {
+		/** @var $camptix CampTix_Plugin */
 		global $camptix;
 
 		$payment_token = ( isset( $_REQUEST['tix_payment_token'] ) ) ? trim( $_REQUEST['tix_payment_token'] ) : '';
@@ -508,37 +546,40 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				);
 
 				if ( isset( $txn['L_ERRORCODE0'] ) && '11607' == $txn['L_ERRORCODE0'] ) {
-					$this->log( 'Duplicate request warning from PayPal.', null, $txn );
+					$camptix->log( 'Duplicate request warning from PayPal.', null, $txn );
 				}
 
-				return $this->payment_result( $payment_token, $this->get_status_from_string( $payment_status ), $payment_data );
-
+				return $camptix->payment_result( $payment_token, $this->get_status_from_string( $payment_status ), $payment_data );
 			} else {
 				$payment_data = array(
 					'error' => 'Error during DoExpressCheckoutPayment',
 					'data' => $request,
 				);
-				$this->log( 'Error during DoExpressCheckoutPayment.', null, $request );
-				return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, $payment_data );
+				$camptix->log( 'Error during DoExpressCheckoutPayment.', null, $request );
+				return $camptix->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, $payment_data );
 			}
 		} else {
 			$payment_data = array(
 				'error' => 'Error during GetExpressCheckoutDetails',
 				'data' => $request,
 			);
-			$this->log( 'Error during GetExpressCheckoutDetails.', null, $request );
-			return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, $payment_data );
+			$camptix->log( 'Error during GetExpressCheckoutDetails.', null, $request );
+			return $camptix->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, $payment_data );
 		}
-
-		die();
 	}
 
 	/**
+	 * Process a checkout request
+	 *
 	 * This method is the fire starter. It's called when the user initiates
 	 * a checkout process with the selected payment method. In PayPal's case,
 	 * if everything's okay, we redirect to the PayPal Express Checkout page with
 	 * the details of our transaction. If something's wrong, we return a failed
 	 * result back to CampTix immediately.
+	 *
+	 * @param string $payment_token
+	 *
+	 * @return int One of the CampTix_Plugin::PAYMENT_STATUS_{status} constants
 	 */
 	function payment_checkout( $payment_token ) {
 		/** @var CampTix_Plugin $camptix */
@@ -615,6 +656,11 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 	/**
 	 * Helper function for PayPal which fills a $payload array with items from the $order array.
+	 *
+	 * @param array $payload
+	 * @param array $order
+	 *
+	 * @return array
 	 */
 	function fill_payload_with_order( &$payload, $order ) {
 		$event_name = 'Event';
@@ -641,8 +687,13 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 	/**
 	 * Submits a single, user-initiated refund request to PayPal and returns the result
+	 *
+	 * @param string $payment_token
+	 *
+	 * @return int One of the CampTix_Plugin::PAYMENT_STATUS_{status} constants
 	 */
 	function payment_refund( $payment_token ) {
+		/** @var $camptix CampTix_Plugin */
 		global $camptix;
 
 		$result = $this->send_refund_request( $payment_token );
@@ -668,9 +719,15 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 	/*
 	 * Sends a request to PayPal to refund a transaction
+	 *
+	 * @param string $payment_token
+	 *
+	 * @return array
 	 */
 	function send_refund_request( $payment_token ) {
+		/** @var $camptix CampTix_Plugin */
 		global $camptix;
+		
 		$result = array(
 			'token' => $payment_token,
 			'transaction_id' => $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' )
@@ -714,9 +771,16 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 	/**
 	 * Use this method to fire a POST request to the PayPal API.
+	 *
+	 * @param $payload array
+	 *
+	 * @return mixed A WP_Error for a failed request, or an array for a successful one
 	 */
 	function request( $payload = array() ) {
-		// Replace creds from a predefined account if any.
+		/** @var $camptix CampTix_Plugin */
+		global $camptix;
+
+		// Replace credentials from a predefined account if any.
 		$options = array_merge( $this->options, $this->get_predefined_account( $this->options['api_predef'] ) );
 
 		$url = $options['sandbox'] ? 'https://api-3t.sandbox.paypal.com/nvp' : 'https://api-3t.paypal.com/nvp';
@@ -739,10 +803,14 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Use this method to validate an incoming IPN request.
+	 * Validate an incoming IPN request
+	 *
+	 * @param array $payload
+	 *
+	 * @return mixed A WP_Error for a failed request, or an array for a successful response
 	 */
 	function verify_ipn( $payload = array() ) {
-		// Replace creds from a predefined account if any.
+		// Replace credentials from a predefined account if any.
 		$options = array_merge( $this->options, $this->get_predefined_account( $this->options['api_predef'] ) );
 
 		$url = $options['sandbox'] ? 'https://www.sandbox.paypal.com/cgi-bin/webscr' : 'https://www.paypal.com/cgi-bin/webscr';
