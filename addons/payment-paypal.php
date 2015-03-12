@@ -349,11 +349,11 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		 */
 		$attendees = get_posts( array(
 			'posts_per_page' => 1,
-			'post_type' => 'tix_attendee',
-			'post_status' => 'any',
-			'meta_query' => array(
+			'post_type'      => 'tix_attendee',
+			'post_status'    => 'any',
+			'meta_query'     => array(
 				array(
-					'key' => 'tix_transaction_id',
+					'key'   => 'tix_transaction_id',
 					'value' => $transaction_id,
 				),
 			),
