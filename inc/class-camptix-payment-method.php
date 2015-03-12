@@ -28,17 +28,23 @@ abstract class CampTix_Payment_Method extends CampTix_Addon {
 		add_filter( 'camptix_validate_options', array( $this, '_camptix_validate_options' ) );
 		add_filter( 'camptix_get_payment_method_by_id', array( $this, '_camptix_get_payment_method_by_id' ), 10, 2 );
 
-		if ( ! $this->id )
-			die( 'id not specified in a payment method' );
+		$payment_method = get_class( $this );
 
-		if ( ! $this->name )
-			die( 'name not specified in a payment method' );
+		if ( ! $this->id ) {
+			wp_die( "ID not specified in $payment_method." );
+		}
 
-		if ( ! $this->description )
-			die( 'description not specified in a payment method' );
+		if ( ! $this->name ) {
+			wp_die( "Name not specified in $payment_method." );
+		}
 
-		if ( ! is_array( $this->supported_currencies ) || count( $this->supported_currencies ) < 1 )
-			die( 'supported currencies not specified in a payment method' );
+		if ( ! $this->description ) {
+			wp_die( "Description not specified in $payment_method." );
+		}
+
+		if ( ! is_array( $this->supported_currencies ) || count( $this->supported_currencies ) < 1 ) {
+			wp_die( "Supported currencies not specified in $payment_method." );
+		}
 
 		$this->camptix_options = $camptix->get_options();
 	}
