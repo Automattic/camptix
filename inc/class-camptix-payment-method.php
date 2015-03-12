@@ -46,7 +46,7 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	}
 
 	function supports_currency( $currency ) {
-		return ( in_array( $currency, $this->supported_currencies ) );
+		return in_array( $currency, $this->supported_currencies );
 	}
 
 	/**
@@ -69,8 +69,9 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	 * @return CampTix_Payment_Method
 	 */
 	function _camptix_get_payment_method_by_id( $payment_method, $id ) {
-		if ( $this->id == $id )
+		if ( $this->id == $id ) {
 			$payment_method = $this;
+		}
 
 		return $payment_method;
 	}
@@ -92,10 +93,15 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		if ( in_array( $this->camptix_options['currency'], $this->supported_currencies ) )
 			return $this->field_yesno( $args );
 
-		_e( 'Disabled', 'camptix' );
-		?>
-		<p class="description"><?php printf( __( '%s is not supported by this payment method.', 'camptix' ), '<code>' . $this->camptix_options['currency'] . '</code>' ); ?></p>
-		<?php
+			<p class="description">
+				<?php printf(
+					__( '%s is not supported by this payment method.', 'camptix' ),
+					'<code>' . $this->camptix_options['currency'] . '</code>'
+				); ?>
+			</p>
+
+			<?php
+		}
 	}
 
 	/**
@@ -109,8 +115,9 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		$post_key = "camptix_payment_options_{$this->id}";
 		$option_key = "payment_options_{$this->id}";
 
-		if ( ! isset( $_POST[ $post_key ] ) )
+		if ( ! isset( $_POST[ $post_key ] ) ) {
 			return $camptix_options;
+		}
 
 		$input = $_POST[ $post_key ];
 		$output = $this->validate_options( $input );
@@ -188,11 +195,12 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	 * @return array
 	 */
 	function _camptix_available_payment_methods( $payment_methods ) {
-		if ( $this->id && $this->name && $this->description )
+		if ( $this->id && $this->name && $this->description ) {
 			$payment_methods[ $this->id ] = array(
 				'name' => $this->name,
 				'description' => $this->description,
 			);
+		}
 
 		return $payment_methods;
 	}
@@ -223,25 +231,27 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	}
 
 	function get_order( $payment_token = false ) {
-		if ( ! $payment_token )
+		if ( ! $payment_token ) {
 			return array();
+		}
 
 		$attendees = get_posts( array(
 			'posts_per_page' => 1,
-			'post_type' => 'tix_attendee',
-			'post_status' => 'any',
-			'meta_query' => array(
+			'post_type'      => 'tix_attendee',
+			'post_status'    => 'any',
+			'meta_query'     => array(
 				array(
-					'key' => 'tix_payment_token',
+					'key'     => 'tix_payment_token',
 					'compare' => '=',
-					'value' => $payment_token,
-					'type' => 'CHAR',
+					'value'   => $payment_token,
+					'type'    => 'CHAR',
 				),
 			),
 		) );
 
-		if ( ! $attendees )
+		if ( ! $attendees ) {
 			return array();
+		}
 
 		return $this->get_order_by_attendee_id( $attendees[0]->ID );
 	}
@@ -313,10 +323,16 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	 * @param string $description
 	 */
 	function add_settings_field_helper( $option_name, $title, $callback, $description = '' ) {
-		return add_settings_field( 'camptix_payment_' . $this->id . '_' . $option_name, $title, $callback, 'camptix_options', 'payment_' . $this->id, array(
-			'name' => $this->settings_field_name_attr( $option_name ),
-			'value' => $this->options[ $option_name ],
-			'description' => $description,
+		add_settings_field(
+			'camptix_payment_' . $this->id . '_' . $option_name,
+			$title,
+			$callback,
+			'camptix_options',
+			'payment_' . $this->id,
+			array(
+				'name' => $this->settings_field_name_attr( $option_name ),
+				'value' => $this->options[ $option_name ],
+				'description' => $description,
 		) );
 	}
 
@@ -329,8 +345,9 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		$payment_options = array();
 		$option_key = "payment_options_{$this->id}";
 
-		if ( isset( $this->camptix_options[ $option_key ] ) )
+		if ( isset( $this->camptix_options[ $option_key ] ) ) {
 			$payment_options = (array) $this->camptix_options[ $option_key ];
+		}
 
 		return $payment_options;
 	}
