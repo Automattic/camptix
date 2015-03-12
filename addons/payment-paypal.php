@@ -264,7 +264,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	function payment_notify() {
 		/** @var $camptix CampTix_Plugin */
 		global $camptix;
-		
+
 		$payment_token = isset( $_REQUEST['tix_payment_token'] ) ? trim( $_REQUEST['tix_payment_token'] ) : '';
 
 		// Verify the IPN came from PayPal.
@@ -328,7 +328,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	function payment_notify_back_compat() {
 		/** @var $camptix CampTix_Plugin */
 		global $camptix;
-		
+
 		if ( ! isset( $_REQUEST['tix_paypal_ipn'] ) ) {
 			return;
 		}
@@ -340,7 +340,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		}
 
 		if ( empty( $transaction_id ) ) {
-			$this->log( 'Received old-style IPN request with an empty transaction id.', null, $payload );
+			$camptix->log( 'Received old-style IPN request with an empty transaction id.', null, $payload );
 			return;
 		}
 
@@ -360,14 +360,14 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		) );
 
 		if ( ! $attendees ) {
-			$this->log( 'Received old-style IPN request. Could not match to attendee by transaction id.', null, $payload );
+			$camptix->log( 'Received old-style IPN request. Could not match to attendee by transaction id.', null, $payload );
 			return;
 		}
 
 		$payment_token = get_post_meta( $attendees[0]->ID, 'tix_payment_token', true );
 
 		if ( ! $payment_token ) {
-			$this->log( 'Received old-style IPN request. Could find a payment token by transaction id.', null, $payload );
+			$camptix->log( 'Received old-style IPN request. Could find a payment token by transaction id.', null, $payload );
 			return;
 		}
 
@@ -418,8 +418,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		/** @var $camptix CampTix_Plugin */
 		global $camptix;
 
-		$this->log( sprintf( 'Running payment_cancel. Request data attached.' ), null, $_REQUEST );
-		$this->log( sprintf( 'Running payment_cancel. Server data attached.' ), null, $_SERVER );
+		$camptix->log( sprintf( 'Running payment_cancel. Request data attached.' ), null, $_REQUEST );
+		$camptix->log( sprintf( 'Running payment_cancel. Server data attached.'  ), null, $_SERVER );
 
 		$payment_token = ( isset( $_REQUEST['tix_payment_token'] ) ) ? trim( $_REQUEST['tix_payment_token'] ) : '';
 		$paypal_token = ( isset( $_REQUEST['token'] ) ) ? trim( $_REQUEST['token'] ) : '';
@@ -470,10 +470,10 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			$transaction_details = wp_parse_args( wp_remote_retrieve_body( $request ) );
 			if ( isset( $transaction_details['ACK'] ) && 'Success' == $transaction_details['ACK'] ) {
 				$status = $this->get_status_from_string( $transaction_details['PAYMENTSTATUS'] );
-				
+
 				if ( in_array( $status, array( CampTix_Plugin::PAYMENT_STATUS_PENDING, CampTix_Plugin::PAYMENT_STATUS_COMPLETED	) ) ) {
 					// False alarm. The payment has indeed been made and no need to cancel.
-					$this->log( 'False alarm on payment_cancel. This transaction is valid.', 0, $transaction_details );
+					$camptix->log( 'False alarm on payment_cancel. This transaction is valid.', 0, $transaction_details );
 					wp_safe_redirect( $camptix->get_access_tickets_link( $access_token ) );
 					die();
 				}
@@ -530,7 +530,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				'tix_action' => 'payment_notify',
 				'tix_payment_token' => $payment_token,
 				'tix_payment_method' => 'paypal',
-			), $this->get_tickets_url() );
+			), $camptix->get_tickets_url() );
 
 			$payload = array(
 				'METHOD'                                => 'DoExpressCheckoutPayment',
@@ -560,7 +560,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				$txn_id = $txn['PAYMENTINFO_0_TRANSACTIONID'];
 				$payment_status = $txn['PAYMENTINFO_0_PAYMENTSTATUS'];
 
-				$this->log( sprintf( 'Payment details for %s', $txn_id ), null, $txn );
+				$camptix->log( sprintf( 'Payment details for %s', $txn_id ), null, $txn );
 
 				/**
 				 * Note that when returning a successful payment, CampTix will be
@@ -625,13 +625,13 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'tix_action'         => 'payment_return',
 			'tix_payment_token'  => $payment_token,
 			'tix_payment_method' => 'paypal',
-		), $this->get_tickets_url() );
+		), $camptix->get_tickets_url() );
 
 		$cancel_url = add_query_arg( array(
 			'tix_action'         => 'payment_cancel',
 			'tix_payment_token'  => $payment_token,
 			'tix_payment_method' => 'paypal',
-		), $this->get_tickets_url() );
+		), $camptix->get_tickets_url() );
 
 		$payload = array(
 			'METHOD'                                => 'SetExpressCheckout',
@@ -671,15 +671,15 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			wp_redirect( esc_url_raw( $url ) );
 			die();
 		} else {
-			$this->log( 'Error during SetExpressCheckout.', null, $response );
-			$error_code = isset( $response['L_ERRORCODE0'] ) ? $response['L_ERRORCODE0'] : 0;
+			$camptix->log( 'Error during SetExpressCheckout.', null, $response );
+			$error_code    = isset( $response['L_ERRORCODE0'] )   ? $response['L_ERRORCODE0']   : 0;
 			$error_message = isset( $response['L_LONGMESSAGE0'] ) ? $response['L_LONGMESSAGE0'] : '';
 
 			if ( ! empty( $error_message ) ) {
 				$camptix->error( sprintf( __( 'PayPal error: %s (%d)', 'camptix' ), $error_message, $error_code ) );
 			}
 
-			return $this->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, array(
+			return $camptix->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, array(
 				'error_code' => $error_code,
 				'raw' => $request,
 			) );
@@ -749,7 +749,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			),
 		);
 
-		return $this->payment_result( $payment_token, $result['status'] , $refund_data );
+		return $camptix->payment_result( $payment_token, $result['status'] , $refund_data );
 	}
 
 	/*
@@ -798,7 +798,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			$result['refund_transaction_details'] = $response;
 			$result['status']                     = CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED;
 
-			$this->log( 'Error during RefundTransaction.', null, $response );
+			$camptix->log( 'Error during RefundTransaction.', null, $response );
 		}
 
 		return $result;
@@ -835,7 +835,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		$status = wp_parse_args( wp_remote_retrieve_body( $response ) );
 		if ( isset( $status['ACK'] ) && 'SuccessWithWarning' == $status['ACK'] ) {
-			$this->log( 'Warning during PayPal request', null, $response );
+			$camptix->log( 'Warning during PayPal request', null, $response );
 		}
 
 		return $response;

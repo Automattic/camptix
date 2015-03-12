@@ -45,6 +45,45 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		$this->camptix_options = $camptix->get_options();
 	}
 
+	/**
+	 * Handle calls to inaccessible methods
+	 *
+	 * In the past, this class duplicated some methods from the CampTix_Plugin class, and had wrappers that would
+	 * do nothing except call public methods in the CampTix_Plugin class. That is unnecessary and undesirable,
+	 * though, as those methods should just be called directly. Those methods were removed, and this method was added
+	 * to maintain backwards-compatibility with any addons that are still calling the methods on this class.
+	 *
+	 * @param string $name
+	 * @param array  $arguments
+	 *
+	 * @return mixed the function result, or false on error.
+	 */
+	public function __call( $name, $arguments ) {
+		/** @var $camptix Camptix_Plugin */
+		global $camptix;
+
+		// Whitelist the methods we want to use to avoid unintentionally calling CampTix_Plugin methods in case of typos, etc
+		$camptix_methods = array( 'payment_result', 'redirect_with_error_flags', 'error_flag', 'get_tickets_url', 'log', 'field_text', 'field_checkbox', 'field_yesno' );
+
+		if ( in_array( $name, $camptix_methods ) ) {
+			// Set a default value for the log $module parameter
+			if ( 'log' == $name && empty( $arguments[4] ) ) {
+				$arguments[4] = 'payment';
+			}
+
+			return call_user_func_array( array( $camptix, $name ), $arguments );
+		} else {
+			trigger_error( sprintf( 'Call to undefined method %s::%s()', get_class( $this ), $name ), E_USER_ERROR );
+		}
+	}
+
+	/**
+	 * Check if the payment method supports the given currency
+	 *
+	 * @param string $currency
+	 *
+	 * @return bool
+	 */
 	function supports_currency( $currency ) {
 		return in_array( $currency, $this->supported_currencies );
 	}
@@ -90,8 +129,15 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	 * @param array $args
 	 */
 	function _camptix_settings_enabled_callback( $args = array() ) {
-		if ( in_array( $this->camptix_options['currency'], $this->supported_currencies ) )
-			return $this->field_yesno( $args );
+		/** @var $camptix CampTix_Plugin */
+		global $camptix;
+
+		if ( in_array( $this->camptix_options['currency'], $this->supported_currencies ) ) {
+			$camptix->field_yesno( $args );
+		} else {
+			_e( 'Disabled', 'camptix' );
+
+			?>
 
 			<p class="description">
 				<?php printf(
@@ -205,31 +251,13 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		return $payment_methods;
 	}
 
-	function payment_result( $payment_token, $result, $data = array() ) {
-		global $camptix;
-		return $camptix->payment_result( $payment_token, $result, $data );
-	}
-
-	function redirect_with_error_flags( $query_args = array() ) {
-		global $camptix;
-		$camptix->redirect_with_error_flags( $query_args );
-	}
-
-	function error_flag( $flag ) {
-		global $camptix;
-		$camptix->error_flag( $flag );
-	}
-
-	function get_tickets_url() {
-		global $camptix;
-		return $camptix->get_tickets_url();
-	}
-
-	function log( $message, $post_id = 0, $data = null, $module = 'payment' ) {
-		global $camptix;
-		return $camptix->log( $message, $post_id, $data, $module );
-	}
-
+	/**
+	 * Get the order for the given payment token
+	 *
+	 * @param string $payment_token
+	 *
+	 * @return array
+	 */
 	function get_order( $payment_token = false ) {
 		if ( ! $payment_token ) {
 			return array();
@@ -269,27 +297,8 @@ class CampTix_Payment_Method extends CampTix_Addon {
 		if ( $order ) {
 			$order['attendee_id'] = $attendee_id;
 		}
+
 		return $order;
-
-	}
-
-	/**
-	 * A text input for the Settings API, name and value attributes
-	 * should be specified in $args. Same goes for the rest.
-	 */
-	function field_text( $args ) {
-		?>
-		<input type="text" name="<?php echo esc_attr( $args['name'] ); ?>" value="<?php echo esc_attr( $args['value'] ); ?>" class="regular-text" />
-		<?php
-	}
-
-	/**
-	 * A checkbox field for the Settings API.
-	 */
-	function field_checkbox( $args ) {
-		?>
-		<input type="checkbox" name="<?php echo esc_attr( $args['name'] ); ?>" value="1" <?php checked( $args['value'] ); ?> />
-		<?php
 	}
 
 	/**
@@ -299,17 +308,6 @@ class CampTix_Payment_Method extends CampTix_Addon {
 	 *
 	 * @return string
 	 */
-	function field_yesno( $args ) {
-		?>
-		<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="1" <?php checked( $args['value'], true ); ?>> <?php _e( 'Yes', 'camptix' ); ?></label>
-		<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="0" <?php checked( $args['value'], false ); ?>> <?php _e( 'No', 'camptix' ); ?></label>
-
-		<?php if ( isset( $args['description'] ) ) : ?>
-		<p class="description"><?php echo $args['description']; ?></p>
-		<?php endif; ?>
-		<?php
-	}
-
 	function settings_field_name_attr( $name ) {
 		return esc_attr( "camptix_payment_options_{$this->id}[{$name}]" );
 	}
