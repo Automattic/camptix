@@ -21,8 +21,8 @@ class CampTix_Plugin {
 	public $debug;
 	public $beta_features_enabled;
 	public $version     = 20140325;
-	public $css_version = 20140827;
-	public $js_version  = 20140902;
+	public $css_version = 20150311;
+	public $js_version  = 20150311;
 	public $caps;
 
 	public $addons = array();
@@ -57,6 +57,9 @@ class CampTix_Plugin {
 	 */
 	function __construct() {
 		do_action( 'camptix_pre_init' );
+
+		// Debug
+		// $this->js_version = rand( 1, 100000 );
 
 		require( dirname( __FILE__ ) . '/inc/class-camptix-addon.php' );
 		require( dirname( __FILE__ ) . '/inc/class-camptix-payment-method.php' );
@@ -2761,6 +2764,7 @@ class CampTix_Plugin {
 
 		if ( isset( $_POST['tix_notify_attendees'] ) && check_admin_referer( 'tix_notify_attendees' ) ) {
 			$errors = array();
+			$_POST = wp_unslash( $_POST );
 
 			// Error handling.
 			if ( empty( $_POST['tix_notify_subject'] ) )
@@ -2769,40 +2773,26 @@ class CampTix_Plugin {
 			if ( empty( $_POST['tix_notify_body'] ) )
 				$errors[] = __( 'Please enter the e-mail body.', 'camptix' );
 
-			if ( ! isset( $_POST['tix_notify_tickets'] ) || count( (array) $_POST['tix_notify_tickets'] ) < 1 )
-				$errors[] = __( 'Please select at least one ticket group.', 'camptix' );
+			if ( empty( $_POST['tix-notify-segment-query'] ) )
+				$errors[] = __( 'At least one segment condition must be defined.', 'camptix' );
+
+			if ( empty( $_POST['tix-notify-segment-match'] ) )
+				$error[] = __( 'Please select a segment match mode' );
+
+			$conditions = json_decode( $_POST['tix-notify-segment-query'], true );
+			if ( ! is_array( $conditions ) || count( $conditions ) < 1 )
+				$errors[] = __( 'At least one segment condition must be defined.', 'camptix' );
+
+			$recipients = $this->get_segment( $_POST['tix-notify-segment-match'], $conditions );
+
+			if ( count( $recipients ) < 1 ) {
+				$errors[] = __( 'The selected segment does not match any recipients. Please try a again.', 'camptix' );
+			}
 
 			// If everything went well.
 			if ( count( $errors ) == 0 && isset( $_POST['tix_notify_submit'] ) && $_POST['tix_notify_submit'] ) {
-				$tickets = array_map( 'absint', (array) $_POST['tix_notify_tickets'] );
-				$subject = sanitize_text_field( wp_kses_post( stripslashes( $_POST['tix_notify_subject'] ) ) );
-				$body = wp_kses_post( stripslashes( $_POST['tix_notify_body'] ) );
-				$recipients = array();
-
-				$paged = 1;
-				while ( $attendees = get_posts( array(
-					'post_type' => 'tix_attendee',
-					'posts_per_page' => 200,
-					'post_status' => array( 'publish', 'pending' ),
-					'paged' => $paged++,
-					'fields' => 'ids', // ! no post objects
-					'orderby' => 'ID',
-					'order' => 'ASC',
-					'cache_results' => false, // no caching
-				) ) ) {
-
-					// Disables object caching, see Revenue report for details.
-					$this->filter_post_meta = $this->prepare_metadata_for( $attendees );
-
-					foreach ( $attendees as $attendee_id )
-						if ( array_key_exists( get_post_meta( $attendee_id, 'tix_ticket_id', true ), $tickets ) )
-							$recipients[] = $attendee_id;
-
-					// Enable object caching for post meta back on.
-					$this->filter_post_meta = false;
-				}
-
-				unset( $attendees );
+				$subject = sanitize_text_field( wp_kses_post( $_POST['tix_notify_subject'] ) );
+				$body = wp_kses_post( $_POST['tix_notify_body'] );
 
 				// Create a new e-mail job.
 				$email_id = wp_insert_post( array(
@@ -2830,8 +2820,8 @@ class CampTix_Plugin {
 						add_settings_error( 'camptix', false, $error );
 
 				// Keep form data.
-				$form_data['subject'] = wp_kses_post( stripslashes( $_POST['tix_notify_subject'] ) );
-				$form_data['body'] = wp_kses_post( stripslashes( $_POST['tix_notify_body'] ) );
+				$form_data['subject'] = wp_kses_post( $_POST['tix_notify_subject'] );
+				$form_data['body'] = wp_kses_post( $_POST['tix_notify_body'] );
 				if ( isset( $_POST['tix_notify_tickets'] ) )
 					$form_data['tickets'] = array_map( 'absint', (array) $_POST['tix_notify_tickets'] );
 			}
@@ -2841,25 +2831,47 @@ class CampTix_Plugin {
 		$this->removed_shortcodes = $shortcode_tags;
 		remove_all_shortcodes();
 
+		$tickets_query = new WP_Query( array(
+			'post_type' => 'tix_ticket',
+			'post_status' => 'any',
+			'posts_per_page' => -1,
+		) );
+
 		do_action( 'camptix_init_notify_shortcodes' );
 		?>
 		<?php settings_errors( 'camptix' ); ?>
+
 		<form method="post" action="<?php echo esc_url( add_query_arg( 'tix_notify_attendees', 1 ) ); ?>">
 			<table class="form-table">
 				<tbody>
 					<tr>
 						<th scope="row"><?php _e( 'To', 'camptix' ); ?></th>
 						<td>
-							<?php
-								$tickets_query = new WP_Query( array(
-									'post_type' => 'tix_ticket',
-									'post_status' => 'any',
-									'posts_per_page' => -1,
-								) );
-							?>
-							<?php while ( $tickets_query->have_posts() ) : $tickets_query->the_post(); ?>
-							<label><input type="checkbox" <?php checked( array_key_exists( get_the_ID(), $form_data['tickets'] ) ); ?> name="tix_notify_tickets[<?php the_ID(); ?>]" value="1" /> <?php echo sanitize_text_field( get_the_title() ); ?></label><br />
-							<?php endwhile; ?>
+							<div class="tix-notify-segment">
+								<input type="hidden" id="tix-notify-segment-query" name="tix-notify-segment-query" value="" />
+
+								<div class="tix-match">
+									<?php
+										$match = ! empty( $_POST['tix-notify-segment-match'] ) ? $_POST['tix-notify-segment-match'] : 'OR';
+									?>
+									<?php printf( _x( 'Attendees matching %s of the following:', 'Placeholder is all/any', 'camptix' ),
+										'<select name="tix-notify-segment-match">
+											<option value="AND" ' . selected( $match, 'AND', false ) . '>' .
+												_x( 'all', 'Attendees matching X of the following', 'camptix' ) . '</option>
+											<option value="OR" ' . selected( $match, 'OR', false ) . '>' .
+												_x( 'any', 'Attendees matching X of the following', 'camptix' ) . '</option>
+										</select>' ); ?>
+								</div>
+
+								<div class="tix-segments">
+								</div>
+
+								<div class="tix-add-segment-condition">
+									<a href="#"><?php _e( 'Add Condition &rarr;', 'camptix' ); ?></a>
+								</div>
+
+								<!--<p><a href="#" class="button"><?php _e( 'Test Segment' ); ?></a></p>-->
+							</div>
 						</td>
 					</tr>
 					<tr>
@@ -2885,7 +2897,7 @@ class CampTix_Plugin {
 					<?php
 						$attendees_ids = get_posts( array(
 							'post_type' => 'tix_attendee',
-							'post_status' => array( 'publish', 'pending' ),
+							'post_status' => array( 'publish' ),
 							'posts_per_page' => 1,
 							'orderby' => 'rand',
 							'fields' => 'ids',
@@ -2924,6 +2936,122 @@ class CampTix_Plugin {
 			</p>
 		</form>
 
+		<!-- Notify Segment Item -->
+		<script type="text/template" id="camptix-tmpl-notify-segment-item">
+			<div class="tix-segment">
+				<a href="#" class="dashicons dashicons-dismiss tix-delete-segment-condition"></a>
+				<div class="segment-field-wrap">
+					<select class="segment-field">
+						<# _.each( data.fields, function( field ) { #>
+						<option value="{{ field.option_value }}" <# if ( field.option_value == data.model.field ) { #>selected="selected"<# } #> >{{ field.caption }}</option>
+						<# }); #>
+					</select>
+				</div>
+
+				<div class="segment-op-wrap">
+					<select class="segment-op">
+						<# _.each( data.ops, function( op ) { #>
+						<option value="{{ op }}" <# if ( op == data.model.op ) { #>selected="selected"<# } #> >{{ op }}</option>
+						<# }); #>
+					</select>
+				</div>
+
+				<div class="segment-value-wrap">
+					<# if ( data.type == 'select' ) { #>
+					<select class="segment-value">
+						<# _.each( data.values, function( value ) { #>
+						<option value="{{ value.value }}" <# if ( value.value == data.model.value ) { #>selected="selected"<# } #> >{{ value.caption }}</option>
+						<# }); #>
+					</select>
+					<# } else if ( data.type == 'text' ) { #>
+					<input type="text" class="segment-value regular-text" value="{{ data.model.value }}" />
+					<# } #>
+				</div>
+
+				<div class="clear"></div>
+			</div>
+		</script>
+
+		<script>
+		(function($){
+			$(document).trigger( 'load-notify-segments.camptix' );
+
+			camptix.collections.segmentFields.add( new camptix.models.SegmentField({
+				caption: 'Purchased ticket',
+				option_value: 'ticket',
+				type: 'select',
+				ops: [ 'is', 'is not' ],
+				values: <?php
+					$values = array();
+					while ( $tickets_query->have_posts() ) {
+						$tickets_query->the_post();
+						$values[] = array(
+							'caption' => html_entity_decode( get_the_title() ),
+							'value' => (string) get_the_ID(),
+						);
+					}
+
+					echo json_encode( $values );
+				?>
+			}));
+
+			camptix.collections.segmentFields.add( new camptix.models.SegmentField({
+				caption: 'Purchase date',
+				option_value: 'date',
+				type: 'text',
+				ops: [ 'before', 'after' ]
+			}));
+
+			<?php foreach ( $this->get_all_questions() as $question ) : ?>
+
+				<?php
+					// Segmenting supported by these types. only
+					if ( ! in_array( get_post_meta( $question->ID, 'tix_type', true ), array( 'select' ) ) )
+						continue;
+				?>
+
+				camptix.collections.segmentFields.add( new camptix.models.SegmentField({
+					caption: '<?php echo esc_js( $question->post_title ); ?>',
+					option_value: '<?php echo esc_js( sprintf( 'tix-question-%d', $question->ID ) ); ?>',
+
+					<?php if ( get_post_meta( $question->ID, 'tix_type', true ) == 'select' ) : ?>
+
+						type: 'select',
+						ops: [ 'is', 'is not' ],
+						values: <?php
+							$values = array();
+							foreach ( (array) get_post_meta( $question->ID, 'tix_values', true ) as $value ) {
+								$values[] = array(
+									'caption' => html_entity_decode( $value ),
+									'value' => $value,
+								);
+							}
+
+							echo json_encode( $values );
+						?>,
+
+					<?php endif; ?>
+
+					noop: null
+				}));
+
+			<?php endforeach; ?>
+
+
+			// Add POST'ed conditions.
+			<?php if ( ! empty( $conditions ) ) : ?>
+				<?php foreach ( $conditions as $condition ) : ?>
+					camptix.collections.segments.add(
+						new camptix.models.Segment(<?php echo json_encode( $condition ); ?>)
+					);
+				<?php endforeach; ?>
+			<?php else : ?>
+				camptix.collections.segments.add( new camptix.models.Segment() );
+			<?php endif; ?>
+
+		}(jQuery));
+		</script>
+
 		<?php
 
 		// Bring back the original shortcodes.
@@ -2951,6 +3079,136 @@ class CampTix_Plugin {
 			}
 			$this->table( $rows, 'widefat tix-email-history' );
 		}
+	}
+
+	/**
+	 * Get a Segment of Attendee IDs based on $conditions.
+	 *
+	 * @param string $relation AND or OR.
+	 * @param array $conditions An array of conditions, where each condition is also an array.
+	 *
+	 * @return array A list of attendee IDs.
+	 */
+	public function get_segment( $relation, $conditions ) {
+		$segment = array();
+		$post_query_segment = array();
+		$post_query_conditions = array();
+
+		$relation = strtolower( $relation );
+		if ( ! in_array( $relation, array( 'and', 'or' ) ) )
+			return $segment;
+
+		$query = array(
+			'post_type' => 'tix_attendee',
+			'posts_per_page' => -1,
+			'post_status' => array( 'publish' ),
+			'fields' => 'ids',
+			'orderby' => 'ID',
+			'order' => 'ASC',
+			'cache_results' => false,
+			'meta_query' => array(
+				'relation' => $relation,
+			),
+			'date_query' => array(),
+		);
+
+		foreach ( $conditions as $condition ) {
+			if ( empty( $condition['field'] ) || empty( $condition['op'] ) || ! isset( $condition['value'] ) )
+				continue;
+
+			// Purchased ticket.
+			if ( 'ticket' == $condition['field'] ) {
+				$meta_query = array(
+					'key' => 'tix_ticket_id',
+					'value' => $condition['value'],
+				);
+
+				switch ( $condition['op'] ) {
+					case 'is not':
+						$meta_query['compare'] = '!=';
+						break;
+
+					case 'is':
+					default:
+						$meta_query['compare'] = '=';
+						break;
+				}
+
+				$query['meta_query'][] = $meta_query;
+				continue;
+			}
+
+			// Purchase date.
+			if ( 'date' == $condition['field'] ) {
+				switch ( $condition['op'] ) {
+					case 'before':
+						$query['date_query'][] = array( 'before' => $condition['value'] );
+						break;
+					case 'after':
+						$query['date_query'][] = array( 'after' => $condition['value'] );
+						break;
+				}
+				continue;
+			}
+
+			// Conditions to be applied after the query has executed.
+			if ( preg_match( '#^tix-question-\d+$#', $condition['field'] ) ) {
+				$post_query_conditions[] = $condition;
+				continue;
+			}
+		}
+
+		$post_query_segment = get_posts( $query );
+		unset( $conditions );
+		unset( $query );
+
+		foreach ( $post_query_segment as $key => $attendee_id ) {
+			$include = empty( $post_query_conditions );
+
+			// These conditions further filter the query.
+			foreach ( $post_query_conditions as $condition ) {
+
+				if ( preg_match( '#^tix-question-(\d+)$#', $condition['field'], $matches ) ) {
+					$question_id = $matches[1];
+					$answers = get_post_meta( $attendee_id, 'tix_questions', true );
+
+					// If the attendee was not asked this question, then they're not part of the segment.
+					if ( ! isset( $answers[ $question_id ] ) )
+						continue 2;
+
+					$answer = $answers[ $question_id ];
+					if ( ! is_array( $answer ) )
+						$answer = array( $answer );
+
+					$in_array = in_array( $condition['value'], $answer );
+					$maybe_include = ( $condition['op'] == 'is' ) ? $in_array : ! $in_array;
+
+					// For 'or' relations a single 'true' is enough to
+					// include the attendee in the segment.
+					if ( $relation == 'or' && $maybe_include ) {
+						$include = true;
+						break;
+					}
+
+					// For 'and' relations a single 'false' is enough to
+					// exclude the attendee, no need to look further.
+					if ( $relation == 'and' && ! $maybe_include ) {
+						$include = false;
+						break;
+					}
+
+					if ( $relation == 'and' && $maybe_include ) {
+						$include = true;
+						continue;
+					}
+				}
+			}
+
+			if ( $include )
+				$segment[] = $attendee_id;
+		}
+
+		return $segment;
 	}
 
 	function menu_tools_refund() {
