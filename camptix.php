@@ -2986,7 +2986,7 @@ class CampTix_Plugin {
 					while ( $tickets_query->have_posts() ) {
 						$tickets_query->the_post();
 						$values[] = array(
-							'caption' => (string) get_the_title(),
+							'caption' => html_entity_decode( get_the_title() ),
 							'value' => (string) get_the_ID(),
 						);
 					}
@@ -3022,7 +3022,7 @@ class CampTix_Plugin {
 							$values = array();
 							foreach ( (array) get_post_meta( $question->ID, 'tix_values', true ) as $value ) {
 								$values[] = array(
-									'caption' => $value,
+									'caption' => html_entity_decode( $value ),
 									'value' => $value,
 								);
 							}
