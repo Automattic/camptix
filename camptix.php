@@ -3037,6 +3037,24 @@ class CampTix_Plugin {
 
 			<?php endforeach; ?>
 
+			camptix.collections.segmentFields.add( new camptix.models.SegmentField({
+				caption: 'Coupon code used',
+				option_value: 'coupon',
+				type: 'select',
+				ops: [ 'is', 'is not' ],
+				values: <?php
+					$values = array();
+					foreach ( $this->get_all_coupons() as $coupon ) {
+						$values[] = array(
+							'caption' => $coupon->post_title,
+							'value' => (string) $coupon->ID,
+						);
+					}
+
+					echo json_encode( $values );
+				?>
+			}));
+
 
 			// Add POST'ed conditions.
 			<?php if ( ! empty( $conditions ) ) : ?>
@@ -3148,6 +3166,29 @@ class CampTix_Plugin {
 						$query['date_query'][] = array( 'after' => $condition['value'] );
 						break;
 				}
+				continue;
+			}
+
+			// Coupon code.
+			if ( 'coupon' == $condition['field'] ) {
+				$meta_query = array(
+					'key' => 'tix_coupon_id',
+					'value' => $condition['value'],
+				);
+
+				switch ( $condition['op'] ) {
+					case 'is not':
+						$meta_query['compare'] = '!=';
+						break;
+
+					case 'is':
+					default:
+						$meta_query['compare'] = '=';
+						break;
+
+				}
+
+				$query['meta_query'][] = $meta_query;
 				continue;
 			}
 
