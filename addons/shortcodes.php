@@ -256,8 +256,6 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		$this->did_shortcode_private_template_redirect = 1;
 
 		if ( isset( $_POST['tix_private_shortcode_submit'] ) ) {
-			$first_name = isset( $_POST['tix_first_name'] ) ? trim( stripslashes( $_POST['tix_first_name'] ) ) : '';
-			$last_name  = isset( $_POST['tix_last_name'] )  ? trim( stripslashes( $_POST['tix_last_name'] ) )  : '';
 			$email      = isset( $_POST['tix_email'] )      ? trim( stripslashes( $_POST['tix_email'] ) )      : '';
 
 			// Remove cookies if a previous one was set.
@@ -266,8 +264,9 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 				unset( $_COOKIE['tix_view_token'] );
 			}
 
-			if ( empty( $first_name ) || empty( $last_name ) || empty( $email ) )
-				return $camptix->error( __( 'Please fill in all fields.', 'camptix' ) );
+			if ( empty( $email ) ) {
+				return $camptix->error( __( 'Please enter the e-mail address that was used to register for your ticket.', 'camptix' ) );
+			}
 
 			if ( ! is_email( $email ) )
 				return $camptix->error( __( 'The e-mail address you have entered does not seem to be valid.', 'camptix' ) );
@@ -277,14 +276,6 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 				'post_type' => 'tix_attendee',
 				'post_status' => 'publish',
 				'meta_query' => array(
-					array(
-						'key' => 'tix_first_name',
-						'value' => $first_name,
-					),
-					array(
-						'key' => 'tix_last_name',
-						'value' => $last_name,
-					),
 					array(
 						'key' => 'tix_email',
 						'value' => $email,
@@ -417,8 +408,6 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	 * [camptix_private] shortcode, displays the login form.
 	 */
 	function shortcode_private_login_form( $atts, $content ) {
-		$first_name = isset( $_POST['tix_first_name'] ) ? $_POST['tix_first_name'] : '';
-		$last_name = isset( $_POST['tix_last_name'] ) ? $_POST['tix_last_name'] : '';
 		$email = isset( $_POST['tix_email'] ) ? $_POST['tix_email'] : '';
 		ob_start();
 
@@ -433,14 +422,6 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 				<table class="tix-private-form">
 					<tr>
 						<th class="tix-left" colspan="2"><?php _e( 'Have a ticket? Sign in', 'camptix' ); ?></th>
-					</tr>
-					<tr>
-						<td class="tix-left"><?php _e( 'First Name', 'camptix' ); ?></td>
-						<td class="tix-right"><input name="tix_first_name" value="<?php echo esc_attr( $first_name ); ?>" type="text" /></td>
-					</tr>
-					<tr>
-						<td class="tix-left"><?php _e( 'Last Name', 'camptix' ); ?></td>
-						<td class="tix-right"><input name="tix_last_name" value="<?php echo esc_attr( $last_name ); ?>" type="text" /></td>
 					</tr>
 					<tr>
 						<td class="tix-left"><?php _e( 'E-mail', 'camptix' ); ?></td>
@@ -487,12 +468,10 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	}
 
 	function generate_view_token_for_attendee( $attendee_id ) {
-		$first_name = get_post_meta( $attendee_id, 'tix_first_name', true );
-		$last_name = get_post_meta( $attendee_id, 'tix_last_name', true );
 		$email = get_post_meta( $attendee_id, 'tix_email', true );
 		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '';
 
-		$view_token = md5( 'tix-view-token-' . strtolower( $first_name . $last_name . $email . $ip ) );
+		$view_token = md5( 'tix-view-token-' . strtolower( $email . $ip ) );
 		return $view_token;
 	}
 }
