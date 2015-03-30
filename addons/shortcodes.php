@@ -162,6 +162,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 							$first = get_post_meta( $attendee_id, 'tix_first_name', true );
 							$last = get_post_meta( $attendee_id, 'tix_last_name', true );
+							$profile = get_post_meta( $attendee_id, 'tix_user_name', true );
 
 							echo get_avatar( get_post_meta( $attendee_id, 'tix_email', true ) );
 							?>
@@ -177,7 +178,11 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 									</div>
 								<?php endif; ?>
 							<?php endforeach; ?>
-
+							<?php if ( ! empty ( $profile ) ) : ?>
+								<div class="tix-field tix-<?php echo $profile; ?>">
+									<?php echo "<a target='_blank' href='http://profiles.wordpress.org/".$profile."'>http://profiles.wordpress.org/".$profile."</a>" ; ?>
+								</div>
+							<?php endif; ?>
 							<?php
 							do_action( 'camptix_attendees_shortcode_item', $attendee_id );
 							echo '</li>';
