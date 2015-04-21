@@ -416,7 +416,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		?>
 		<div id="tix">
 			<?php do_action( 'camptix_notices' ); ?>
-			<form method="POST" action="<?php add_query_arg( null, null ); ?>#tix">
+			<form method="POST" action="#tix">
 				<input type="hidden" name="tix_private_shortcode_submit" value="1" />
 				<input type="hidden" name="tix_post_id" value="<?php the_ID(); ?>" />
 				<table class="tix-private-form">
