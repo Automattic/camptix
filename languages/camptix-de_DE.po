@@ -1698,7 +1698,7 @@ msgstr "Du musst den Bedingungen zustimmen um eine Erstattung zu beantragen."
 
 #: ../camptix.php:5237
 msgid "Your tickets have been successfully refunded."
-msgstr "Deien Tickets wurden erfolgreich erstattet."
+msgstr "Deine Tickets wurden erfolgreich erstattet."
 
 #: ../camptix.php:5240
 msgid "Can not refund the transaction at this time. Please try again later."
