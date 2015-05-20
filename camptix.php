@@ -130,6 +130,9 @@ class CampTix_Plugin {
 		add_action( 'save_post', array( $this, 'save_attendee_post' ) );
 		add_action( 'save_post', array( $this, 'save_coupon_post' ) );
 
+		// Handle query extras for attendees, tickets, etc.
+		add_action( 'pre_get_posts', array( $this, 'pre_get_posts' ) );
+
 		// Used to update stats
 		add_action( 'transition_post_status', array( $this, 'transition_post_status' ), 10, 3 );
 		add_action( 'wp_ajax_camptix_client_stats', array( $this, 'process_client_stats' ) );
@@ -504,6 +507,7 @@ class CampTix_Plugin {
 
 		// Attendee columns
 		add_filter( 'manage_edit-tix_attendee_columns', array( $this, 'manage_columns_attendee_filter' ) );
+		add_filter( 'manage_edit-tix_attendee_sortable_columns', array( $this, 'manage_columns_attendee_sortable' ) );
 		add_action( 'manage_tix_attendee_posts_custom_column', array( $this, 'manage_columns_attendee_action' ), 10, 2 );
 
 		// Coupon columns
@@ -596,6 +600,18 @@ class CampTix_Plugin {
 		unset( $columns['date'] );
 
 		$columns['date'] = $date;
+		return $columns;
+	}
+
+	/**
+	 * Sortable columns for the Attendees screen.
+	 *
+	 * @param array $columns An array of sortable columns, key => orderby value.
+	 *
+	 * @return array The result with additional sortable columns.
+	 */
+	public function manage_columns_attendee_sortable( $columns ) {
+		$columns['tix_ticket'] = 'tix_ticket_id';
 		return $columns;
 	}
 
@@ -760,6 +776,42 @@ class CampTix_Plugin {
 				'tix_purchase_count',
 				'tix_reserved',
 			), true );
+		}
+	}
+
+	/**
+	 * Support for custom sorting and other campthings.
+	 *
+	 * @param object $query A WP_Query object.
+	 */
+	public function pre_get_posts( $query ) {
+		if ( ! $query->is_main_query() )
+			return;
+
+		// Allow ordering by the purchased ticket id.
+		if ( $query->get('orderby') == 'tix_ticket_id' && $query->get('post_type') == 'tix_attendee' ) {
+			$meta_query = array(
+				'relation' => 'OR',
+				array(
+					'key' => 'tix_ticket_id',
+					'compare' => 'EXISTS',
+				),
+				array(
+					'key' => 'tix_ticket_id',
+					'compare' => 'NOT EXISTS',
+				),
+			);
+
+			// Merge the meta query if one's already been provided.
+			if ( ! empty( $query->get('meta_query') ) ) {
+				$meta_query = array(
+					'relation' => 'AND',
+					$query->get('meta_query'),
+					$meta_query,
+				);
+			}
+
+			$query->set( 'meta_query', $meta_query );
 		}
 	}
 
