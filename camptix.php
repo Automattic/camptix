@@ -2873,9 +2873,13 @@ class CampTix_Plugin {
 				}
 			} else { // errors or preview
 
-				if ( count( $errors ) > 0 )
-					foreach ( $errors as $error )
+				if ( count( $errors ) > 0 ) {
+					foreach ( $errors as $error ) {
 						add_settings_error( 'camptix', false, $error );
+					}
+				} elseif ( ! empty( $_POST['tix_notify_preview'] ) ) {
+					add_settings_error( 'camptix', 'none', sprintf( __( 'Your segment matched %s recipients.', 'camptix' ), count( $recipients ) ), 'updated' );
+				}
 
 				// Keep form data.
 				$form_data['subject'] = wp_kses_post( $_POST['tix_notify_subject'] );
