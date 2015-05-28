@@ -3064,7 +3064,7 @@ class CampTix_Plugin {
 
 				<?php
 					// Segmenting supported by these types. only
-					if ( ! in_array( get_post_meta( $question->ID, 'tix_type', true ), array( 'select', 'radio' ) ) )
+					if ( ! in_array( get_post_meta( $question->ID, 'tix_type', true ), array( 'select', 'radio', 'checkbox' ) ) )
 						continue;
 				?>
 
@@ -3083,6 +3083,31 @@ class CampTix_Plugin {
 								$values[] = array(
 									'caption' => html_entity_decode( $value ),
 									'value' => $value,
+								);
+							}
+
+							echo json_encode( $values );
+						?>,
+
+					<?php elseif ( $type == 'checkbox' ) : ?>
+
+						type: 'select',
+						ops: [ 'is', 'is not' ],
+						values: <?php
+							$values = array( array( 'caption' => 'None', 'value' => -1 ) );
+							$question_values = (array) get_post_meta( $question->ID, 'tix_values', true );
+
+							if ( ! empty( $question_values ) ) {
+								foreach ( (array) get_post_meta( $question->ID, 'tix_values', true ) as $value ) {
+									$values[] = array(
+										'caption' => html_entity_decode( $value ),
+										'value' => $value,
+									);
+								}
+							} else {
+								$values[] = array(
+									'caption' => __( 'Yes', 'camptix' ),
+									'value' => 'Yes',
 								);
 							}
 
@@ -3271,12 +3296,23 @@ class CampTix_Plugin {
 				if ( preg_match( '#^tix-question-(\d+)$#', $condition['field'], $matches ) ) {
 					$question_id = $matches[1];
 					$answers = get_post_meta( $attendee_id, 'tix_questions', true );
+					$question = get_post( $question_id );
+
+					// Make sure the question is valid.
+					if ( $question->post_type != 'tix_question' || $question->post_status != 'publish' ) {
+						continue;
+					}
+
+					// Looking at a checkbox that's not checked.
+					if ( get_post_meta( $question->ID, 'tix_type', true ) == 'checkbox' && $condition['value'] == -1 && empty( $answers[ $question->ID ] ) ) {
+						$answers[ $question->ID ] = array(-1);
+					}
 
 					// If the attendee was not asked this question, then they're not part of the segment.
-					if ( ! isset( $answers[ $question_id ] ) )
+					if ( ! isset( $answers[ $question->ID ] ) )
 						continue 2;
 
-					$answer = $answers[ $question_id ];
+					$answer = $answers[ $question->ID ];
 					if ( ! is_array( $answer ) )
 						$answer = array( $answer );
 
