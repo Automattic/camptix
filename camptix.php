@@ -3064,7 +3064,7 @@ class CampTix_Plugin {
 
 				<?php
 					// Segmenting supported by these types. only
-					if ( ! in_array( get_post_meta( $question->ID, 'tix_type', true ), array( 'select' ) ) )
+					if ( ! in_array( get_post_meta( $question->ID, 'tix_type', true ), array( 'select', 'radio' ) ) )
 						continue;
 				?>
 
@@ -3072,7 +3072,8 @@ class CampTix_Plugin {
 					caption: '<?php echo esc_js( $question->post_title ); ?>',
 					option_value: '<?php echo esc_js( sprintf( 'tix-question-%d', $question->ID ) ); ?>',
 
-					<?php if ( get_post_meta( $question->ID, 'tix_type', true ) == 'select' ) : ?>
+					<?php $type = get_post_meta( $question->ID, 'tix_type', true ); ?>
+					<?php if ( in_array( $type, array( 'select', 'radio' ) ) ) : ?>
 
 						type: 'select',
 						ops: [ 'is', 'is not' ],
