@@ -628,7 +628,7 @@ class CampTix_Plugin {
 					$attendees_url = add_query_arg( 's', 'tix_ticket_id:' . intval( $ticket->ID ), $attendees_url );
 
 					// Don't drop the post_status query variable.
-					if ( ! empty( get_query_var('post_status') ) ) {
+					if ( get_query_var('post_status') ) {
 						$attendees_url = add_query_arg( 'post_status', get_query_var('post_status'), $attendees_url );
 					}
 
