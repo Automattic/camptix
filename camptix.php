@@ -3068,7 +3068,7 @@ class CampTix_Plugin {
 
 				<?php
 					// Segmenting supported by these types. only
-					if ( ! in_array( get_post_meta( $question->ID, 'tix_type', true ), array( 'select', 'radio', 'checkbox' ) ) )
+					if ( ! in_array( get_post_meta( $question->ID, 'tix_type', true ), array( 'select', 'radio', 'checkbox', 'text' ) ) )
 						continue;
 				?>
 
@@ -3117,6 +3117,11 @@ class CampTix_Plugin {
 
 							echo json_encode( $values );
 						?>,
+
+					<?php elseif ( $type == 'text' ) : ?>
+
+						type: 'text',
+						ops: [ 'is', 'is not', 'contains', 'does not contain', 'starts with', 'does not start with' ],
 
 					<?php endif; ?>
 
@@ -3197,6 +3202,7 @@ class CampTix_Plugin {
 	 */
 	public function get_segment( $relation, $conditions ) {
 		$segment = array();
+		$empty_query = true;
 		$post_query_segment = array();
 		$post_query_conditions = array();
 
@@ -3241,6 +3247,7 @@ class CampTix_Plugin {
 				}
 
 				$query['meta_query'][] = $meta_query;
+				$empty_query = false;
 				continue;
 			}
 
@@ -3254,6 +3261,8 @@ class CampTix_Plugin {
 						$query['date_query'][] = array( 'after' => $condition['value'] );
 						break;
 				}
+
+				$empty_query = false;
 				continue;
 			}
 
@@ -3276,6 +3285,7 @@ class CampTix_Plugin {
 
 				}
 
+				$empty_query = false;
 				$query['meta_query'][] = $meta_query;
 				continue;
 			}
@@ -3288,6 +3298,20 @@ class CampTix_Plugin {
 		}
 
 		$post_query_segment = get_posts( $query );
+
+		// If the initial query was not a generic "empty" query, and we have an "or" relation,
+		// Then we can safely include anything that we got in the first results set, but should
+		// also query all the remaining attendees to try and match additional post_query_conditions.
+
+		if ( $relation == 'or' && ! $empty_query && ! empty( $post_query_conditions ) ) {
+			unset( $query['meta_query'] );
+			unset( $query['date_query'] );
+			$query['post__not_in'] = $post_query_segment;
+
+			$segment = $post_query_segment;
+			$post_query_segment = get_posts( $query );
+		}
+
 		unset( $conditions );
 		unset( $query );
 
@@ -3296,11 +3320,11 @@ class CampTix_Plugin {
 
 			// These conditions further filter the query.
 			foreach ( $post_query_conditions as $condition ) {
-
 				if ( preg_match( '#^tix-question-(\d+)$#', $condition['field'], $matches ) ) {
 					$question_id = $matches[1];
 					$answers = get_post_meta( $attendee_id, 'tix_questions', true );
 					$question = get_post( $question_id );
+					$question_type = get_post_meta( $question->ID, 'tix_type', true );
 
 					// Make sure the question is valid.
 					if ( $question->post_type != 'tix_question' || $question->post_status != 'publish' ) {
@@ -3308,7 +3332,7 @@ class CampTix_Plugin {
 					}
 
 					// Looking at a checkbox that's not checked.
-					if ( get_post_meta( $question->ID, 'tix_type', true ) == 'checkbox' && $condition['value'] == -1 && empty( $answers[ $question->ID ] ) ) {
+					if ( $question_type == 'checkbox' && $condition['value'] == -1 && empty( $answers[ $question->ID ] ) ) {
 						$answers[ $question->ID ] = array(-1);
 					}
 
@@ -3317,11 +3341,47 @@ class CampTix_Plugin {
 						continue 2;
 
 					$answer = $answers[ $question->ID ];
-					if ( ! is_array( $answer ) )
-						$answer = array( $answer );
+					$maybe_include = false;
 
-					$in_array = in_array( $condition['value'], $answer );
-					$maybe_include = ( $condition['op'] == 'is' ) ? $in_array : ! $in_array;
+					if ( in_array( $question_type, array( 'select', 'checkbox', 'radio' ) ) ) {
+						if ( ! is_array( $answer ) )
+							$answer = array( $answer );
+
+						$in_array = in_array( $condition['value'], $answer );
+						$maybe_include = ( $condition['op'] == 'is' ) ? $in_array : ! $in_array;
+					} elseif ( $question_type == 'text' ) {
+
+						// Lowercase comparison.
+						if ( function_exists( 'mb_strtolower' ) ) {
+							$condition['value'] = mb_strtolower( $condition['value'] );
+							$answer = mb_strtolower( $answer );
+						} else {
+							$condition['value'] = strtolower( $condition['value'] );
+							$answer = strtolower( $answer );
+						}
+
+						switch ( $condition['op'] ) {
+							case 'is':
+								$maybe_include = $condition['value'] == $answer;
+								break;
+							case 'is not':
+								$maybe_include = $condition['value'] != $answer;
+								break;
+							case 'contains':
+								$maybe_include = ! empty( $condition['value'] ) && strpos( $answer, $condition['value'] ) !== false;
+								break;
+							case 'does not contain':
+								$maybe_include = ! empty( $condition['value'] ) && strpos( $answer, $condition['value'] ) === false;
+								break;
+							case 'starts with':
+								$maybe_include = ! empty( $condition['value'] ) && strpos( $answer, $condition['value'] ) === 0;
+								break;
+							case 'does not start with':
+								$maybe_include = ! empty( $condition['value'] ) && strpos( $answer, $condition['value'] ) !== 0;
+								break;
+							default:
+						}
+					}
 
 					// For 'or' relations a single 'true' is enough to
 					// include the attendee in the segment.
