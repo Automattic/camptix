@@ -809,7 +809,7 @@ class CampTix_Plugin {
 			);
 
 			// Merge the meta query if one's already been provided.
-			if ( ! empty( $query->get('meta_query') ) ) {
+			if ( $query->get('meta_query') ) {
 				$meta_query = array(
 					'relation' => 'AND',
 					$query->get('meta_query'),
