@@ -503,13 +503,17 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		$paypal_token  = isset( $_REQUEST['token'] )             ? trim( $_REQUEST['token'] )             : '';
 		$payer_id      = isset( $_REQUEST['PayerID'] )           ? trim( $_REQUEST['PayerID'] )           : '';
 
+		$camptix->log( 'User returning from PayPal', null, compact( 'payer_id', 'payment_token', 'paypal_token' ) );
+
 		if ( ! $payment_token || ! $paypal_token || ! $payer_id ) {
+			$camptix->log( 'Dying because invalid PayPal return data', null, compact( 'payer_id', 'payment_token', 'paypal_token' ) );
 			wp_die( 'empty token' );
 		}
 
 		$order = $this->get_order( $payment_token );
 
 		if ( ! $order ) {
+			$camptix->log( "Dying because couldn't find order", null, compact( 'payment_token' ) );
 			wp_die( 'could not find order' );
 		}
 
@@ -544,11 +548,13 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			$this->fill_payload_with_order( $payload, $order );
 
 			if ( (float) $checkout_details['PAYMENTREQUEST_0_AMT'] != $order['total'] ) {
+				$camptix->log( 'Dying because unexpected total', $order['attendee_id'], compact( 'checkout_details', 'order' ) );
 				wp_die( __( "Unexpected total!", 'camptix' ) );
 			}
 
 			// One final check before charging the user.
 			if ( ! $camptix->verify_order( $order ) ) {
+				$camptix->log( "Dying because couldn't verify order", $order['attendee_id'] );
 				wp_die( 'Something went wrong, order is no longer available.' );
 			}
 
