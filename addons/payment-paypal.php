@@ -566,7 +566,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				$txn_id = $txn['PAYMENTINFO_0_TRANSACTIONID'];
 				$payment_status = $txn['PAYMENTINFO_0_PAYMENTSTATUS'];
 
-				$camptix->log( sprintf( 'Payment details for %s', $txn_id ), null, $txn );
+				$camptix->log( sprintf( 'Payment details for %s', $txn_id ), $order['attendee_id'], $txn );
 
 				/**
 				 * Note that when returning a successful payment, CampTix will be
@@ -581,7 +581,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				);
 
 				if ( isset( $txn['L_ERRORCODE0'] ) && '11607' == $txn['L_ERRORCODE0'] ) {
-					$camptix->log( 'Duplicate request warning from PayPal.', null, $txn );
+					$camptix->log( 'Duplicate request warning from PayPal.', $order['attendee_id'], $txn );
 				}
 
 				return $camptix->payment_result( $payment_token, $this->get_status_from_string( $payment_status ), $payment_data );
@@ -590,7 +590,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 					'error' => 'Error during DoExpressCheckoutPayment',
 					'data' => $request,
 				);
-				$camptix->log( 'Error during DoExpressCheckoutPayment.', null, $request );
+				$camptix->log( 'Error during DoExpressCheckoutPayment.', $order['attendee_id'], $request );
 				return $camptix->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, $payment_data );
 			}
 		} else {
@@ -598,7 +598,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				'error' => 'Error during GetExpressCheckoutDetails',
 				'data' => $request,
 			);
-			$camptix->log( 'Error during GetExpressCheckoutDetails.', null, $request );
+			$camptix->log( 'Error during GetExpressCheckoutDetails.', $order['attendee_id'], $request );
 			return $camptix->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, $payment_data );
 		}
 	}
