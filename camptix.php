@@ -1945,7 +1945,7 @@ class CampTix_Plugin {
 	function menu_setup() {
 		?>
 		<div class="wrap">
-			<h2><?php _e( 'CampTix Setup', 'camptix' ); ?></h2>
+			<h1><?php _e( 'CampTix Setup', 'camptix' ); ?></h1>
 			<?php settings_errors(); ?>
 			<h3 class="nav-tab-wrapper"><?php $this->menu_setup_tabs(); ?></h3>
 			<form method="post" action="options.php" class="tix-setup-form">
@@ -2009,7 +2009,7 @@ class CampTix_Plugin {
 	function menu_tools() {
 		?>
 		<div class="wrap">
-			<h2><?php _e( 'CampTix Tools', 'camptix' ); ?></h2>
+			<h1><?php _e( 'CampTix Tools', 'camptix' ); ?></h1>
 			<?php settings_errors(); ?>
 			<h3 class="nav-tab-wrapper"><?php $this->menu_tools_tabs(); ?></h3>
 			<?php
