@@ -155,6 +155,8 @@ class CampTix_Plugin {
 		add_action( 'camptix_init_notify_shortcodes', array( $this, 'init_notify_shortcodes' ), 9 );
 		add_action( 'camptix_init_email_templates_shortcodes', array( $this, 'init_email_templates_shortcodes' ), 9 );
 
+		add_filter( 'dashboard_glance_items', array( $this, 'dashboard_glance_items' ) );
+
 		// Other things required during init.
 		$this->custom_columns();
 		$this->register_post_types();
@@ -473,10 +475,13 @@ class CampTix_Plugin {
 
 		// Let's see whether to include admin.css and admin.js
 		if ( is_admin() ) {
+			$screen = get_current_screen();
 			$post_types = array( 'tix_ticket', 'tix_coupon', 'tix_email', 'tix_attendee' );
 			$pages = array( 'camptix_options', 'camptix_tools' );
+			$screen_ids = array( 'dashboard' );
 			if (
 				( in_array( get_post_type(), $post_types ) ) ||
+				( in_array( $screen->id, $screen_ids ) ) ||
 				( isset( $_REQUEST['post_type'] ) && in_array( $_REQUEST['post_type'], $post_types ) ) ||
 				( isset( $_REQUEST['page'] ) && in_array( $_REQUEST['page'], $pages ) )
 			) {
@@ -7255,6 +7260,24 @@ class CampTix_Plugin {
 		if ( is_array( $this->admin_notices ) && ! empty( $this->admin_notices) )
 		foreach ( $this->admin_notices as $notice )
 			printf( '<div class="updated"><p>%s</p></div>', $notice );
+	}
+
+	/**
+	 * Add items to 'At a Glance' dashboard widget
+	 *
+	 * @param array $items Existing items
+	 * @return array Modified items
+	 */
+	public function dashboard_glance_items( $items ) {
+		$attendees = wp_count_posts( 'tix_attendee' );
+		if ( current_user_can( $this->caps['manage_attendees'] ) ) {
+			$post_type = get_post_type_object( 'tix_attendee' );
+			$text = sprintf( _n( '%d Attendee', '%d Attendees', $attendees->publish ), $attendees->publish );
+			$items[] = sprintf( '<a class="tix_attendee-count" href="%s">%s</a>',
+				admin_url( 'edit.php?post_type=tix_attendee' ), esc_html( $text ) );
+		}
+
+		return $items;
 	}
 
 	/**

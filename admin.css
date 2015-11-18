@@ -272,6 +272,9 @@ label.tix-yes-no {
 	background-size: 196px 168px;
 }
 
+#dashboard_right_now a.tix_attendee-count:before {
+	content: "\f307";
+}
 
 /*
  * Track Attendance addon
