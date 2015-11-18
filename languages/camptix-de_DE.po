@@ -5,14 +5,14 @@ msgstr ""
 "Project-Id-Version: CampTix Event Ticketing 1.4.1\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/camptix\n"
 "POT-Creation-Date: 2014-03-26 15:21+0100\n"
-"PO-Revision-Date: 2015-04-24 14:46+0100\n"
-"Last-Translator: pixolin <pixolin@gmx.com>\n"
+"PO-Revision-Date: 2015-11-18 16:43+0300\n"
+"Last-Translator: Konstantin Kovshenin <kovshenin@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.1\n"
+"X-Generator: Poedit 1.8.6\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SourceCharset: UTF-8\n"
@@ -141,8 +141,8 @@ msgstr "Vorname"
 msgid "Last Name"
 msgstr "Nachname"
 
-#: ../addons/shortcodes.php:398 ../camptix.php:576 ../camptix.php:987
-#: ../camptix.php:3794 ../camptix.php:4741 ../camptix.php:5091 ../camptix.php:5261
+#: ../addons/shortcodes.php:398 ../camptix.php:576 ../camptix.php:987 ../camptix.php:3794
+#: ../camptix.php:4741 ../camptix.php:5091 ../camptix.php:5261
 msgid "E-mail"
 msgstr "E-Mail"
 
