@@ -4773,6 +4773,7 @@ class CampTix_Plugin {
 		$this->tickets_selected = array();
 		$coupon_used_count = 0;
 		$via_reservation = false;
+		$max_tickets_per_order = apply_filters( 'camptix_max_tickets_per_order', 10 );
 
 		if ( count( $this->get_enabled_payment_methods() ) < 1 )
 			$this->error_flags['no_payment_methods'] = true;
@@ -4881,11 +4882,11 @@ class CampTix_Plugin {
 		foreach ( $this->tickets_selected as $ticket_id => $count ) {
 			$ticket = $this->tickets[ $ticket_id ];
 
-			// Don't allow more than 10 tickets of each type to be purchased in bulk.
-			if ( $count > 10 && $ticket->tix_remaining > 10 ) {
-				$this->tickets_selected[ $ticket_id ] = 10;
-				$count = 10;
-				$tickets_excess += $count - 10;
+			// Don't allow more than X tickets of each type to be purchased in bulk.
+			if ( $count > $max_tickets_per_order && $ticket->tix_remaining > $max_tickets_per_order ) {
+				$this->tickets_selected[ $ticket_id ] = $max_tickets_per_order;
+				$count = $max_tickets_per_order;
+				$tickets_excess += $count - $max_tickets_per_order;
 			}
 
 			// ref: #1001
@@ -5005,6 +5006,8 @@ class CampTix_Plugin {
 	 */
 	function form_start() {
 		$available_tickets = 0;
+		$max_tickets_per_order = apply_filters( 'camptix_max_tickets_per_order', 10 );
+
 		foreach ( $this->tickets as $ticket )
 			if ( $this->is_ticket_valid_for_purchase( $ticket->ID ) )
 				$available_tickets++;
@@ -5100,14 +5103,14 @@ class CampTix_Plugin {
 							$price = $ticket->tix_price;
 							$discounted = '';
 
-							$max = min( $ticket->tix_remaining, 10 );
+							$max = min( $ticket->tix_remaining, $max_tickets_per_order );
 							$selected = ( 1 == count( $this->tickets ) ) ? 1 : 0;
 							if ( isset( $this->tickets_selected[$ticket->ID] ) )
 								$selected = intval( $this->tickets_selected[$ticket->ID] );
 
 							// Recount selects, change price.
 							if ( $ticket->tix_coupon_applied ) {
-								$max = min( $this->coupon->tix_coupon_remaining, $ticket->tix_remaining, 10 );
+								$max = min( $this->coupon->tix_coupon_remaining, $ticket->tix_remaining, $max_tickets_per_order );
 								if ( $selected > $this->coupon->tix_coupon_remaining )
 									$selected = $this->coupon->tix_coupon_remaining;
 
@@ -6563,6 +6566,7 @@ class CampTix_Plugin {
 		$coupon = null;
 		$reservation = null;
 		$via_reservation = false;
+		$max_tickets_per_order = apply_filters( 'camptix_max_tickets_per_order', 10 );
 
 		// Let's check the coupon first.
 		if ( isset( $order['coupon'] ) && ! empty( $order['coupon'] ) ) {
@@ -6647,8 +6651,8 @@ class CampTix_Plugin {
 				$this->error_flag( 'tickets_excess' );
 			}
 
-			if ( $item['quantity'] > 10 ) {
-				$item['quantity'] = min( 10, $ticket->tix_remaining );
+			if ( $item['quantity'] > $max_tickets_per_order ) {
+				$item['quantity'] = min( $max_tickets_per_order, $ticket->tix_remaining );
 				$this->error_flag( 'tickets_excess' );
 			}
 
