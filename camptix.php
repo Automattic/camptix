@@ -1166,7 +1166,7 @@ class CampTix_Plugin {
 			return $this->options;
 
 		$default_options = $this->get_default_options();
- 		$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
+		$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
 
 		// Allow plugins to hi-jack or read the options.
 		$options = apply_filters( 'camptix_options', $options );
@@ -1232,12 +1232,12 @@ class CampTix_Plugin {
 			 * Update options.
 			 */
 			$default_options = $this->get_default_options();
-	 		$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
+			$options = array_merge( $default_options, get_option( 'camptix_options', array() ) );
 
-	 		if ( ! isset( $options['payment_options_paypal'] ) )
-	 			$options['payment_options_paypal'] = array();
+			if ( ! isset( $options['payment_options_paypal'] ) )
+				$options['payment_options_paypal'] = array();
 
-	 		if ( isset( $options['paypal_api_username'] ) )
+			if ( isset( $options['paypal_api_username'] ) )
 				$options['payment_options_paypal']['api_username'] = $options['paypal_api_username'];
 
 			if ( isset( $options['paypal_api_password'] ) )
@@ -2574,7 +2574,7 @@ class CampTix_Plugin {
 			__( 'Discounted', 'camptix' ) => $this->append_currency( $totals->discounted ),
 			__( 'Revenue', 'camptix' ) => $this->append_currency( $totals->revenue ),
 		);
-		
+
 		// Update stats
 		$this->update_stats( 'sold', $totals->sold );
 		$this->update_stats( 'remaining', $totals->remaining );
@@ -5447,7 +5447,7 @@ class CampTix_Plugin {
 		$is_refundable = false;
 
 		// Let's get one attendee
- 		$attendees = get_posts( array(
+		$attendees = get_posts( array(
 			'posts_per_page' => 1,
 			'post_type' => 'tix_attendee',
 			'post_status' => array( 'publish', 'pending' ),
@@ -5771,7 +5771,7 @@ class CampTix_Plugin {
 		$access_token = $_REQUEST['tix_access_token'];
 
 		// Let's get one attendee
- 		$attendees = get_posts( array(
+		$attendees = get_posts( array(
 			'posts_per_page' => -1,
 			'post_type' => 'tix_attendee',
 			'post_status' => array( 'publish', 'pending' ),
@@ -6708,7 +6708,7 @@ class CampTix_Plugin {
 	 * @return mixed
 	 */
 	function get_post_meta_from_payment_token( $payment_token, $field ) {
-	 	$attendees = $this->get_attendees_from_payment_token( $payment_token );
+		$attendees = $this->get_attendees_from_payment_token( $payment_token );
 		if ( isset( $attendees[0]->ID ) )
 			$data = get_post_meta( $attendees[0]->ID, $field, true );
 		else
