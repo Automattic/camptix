@@ -6019,7 +6019,7 @@ class CampTix_Plugin {
 			'post_type' => 'page',
 			'post_status' => 'publish',
 			's' => '[camptix',
-			'posts_per_page' => 5,
+			'posts_per_page' => 50,
 			'update_post_term_cache' => false,
 			'update_post_meta_cache' => false,
 		) );
