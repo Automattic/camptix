@@ -1878,11 +1878,16 @@ class CampTix_Plugin {
 		if ( ! $currency )
 			$currency = array( 'label' => __( 'U.S. Dollar', 'camptix' ), 'locale' => 'en_US.UTF-8' );
 
-		setlocale( LC_MONETARY, $currency['locale'] );
+		if ( isset( $currency['locale'] ) ) {
+			setlocale( LC_MONETARY, $currency['locale'] );
+		}
+
 		$with_currency = money_format( '%n', $price );
 
-		if ( $currency['format'] )
+		if ( isset( $currency['format'] ) && $currency['format'] ) {
 			$with_currency = sprintf( $currency['format'], number_format( (float) $price, 2 ) );
+		}
+
 		if ( $nbsp )
 			$with_currency = str_replace( ' ', '&nbsp;', $with_currency );
 
