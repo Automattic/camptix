@@ -121,7 +121,6 @@ window.camptix = window.camptix || { models: {}, views: {}, collections: {} };
 
 			updateQuery: function() {
 				this.$query.val( JSON.stringify( this.collection.toJSON() ) );
-				console.log( this.$query.val() );
 			},
 		});
 
