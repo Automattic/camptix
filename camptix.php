@@ -1630,7 +1630,7 @@ class CampTix_Plugin {
 
 		foreach ( $email_templates as $template ) {
 			if ( isset( $input[ $template ] ) ) {
-				$output[ $template ] = $input[ $template ];
+				$output[ $template ] = wp_kses( $input[ $template ], self::get_allowed_html_mail_tags() );
 			}
 		}
 
@@ -2993,7 +2993,15 @@ class CampTix_Plugin {
 						<td>
 							<div id="tix-notify-preview">
 								<p><strong><?php echo esc_html( $subject ); ?></strong></p>
-								<p style="margin-bottom: 0;"><?php echo nl2br( esc_html( $content ) ); ?></p>
+								<div>
+									<?php
+										if ( $this->html_mail_enabled() ) {
+											echo self::sanitize_format_html_message( $content );
+										} else {
+											echo nl2br( esc_html( $content ) );
+										}
+									?>
+								</div>
 							</div>
 						</td>
 					</tr>
@@ -7377,12 +7385,162 @@ class CampTix_Plugin {
 			$headers[] = sprintf( 'From: %s <%s>', $this->options['event_name'], get_option( 'admin_email' ) );
 		$message_data = array( 'to' => $to, 'subject' => $subject, 'message' => $message, 'headers' => $headers );
 
+		add_action( 'phpmailer_init', array( $this, 'maybe_send_html_email' ) );
 		$results = wp_mail( $to, $subject, $message, $headers, $attachments );
+		remove_action( 'phpmailer_init', array( $this, 'maybe_send_html_email' ) );
 		$log_message = $results ? sprintf( 'Sent e-mail to %s.', $to ) : sprintf( 'E-mail to %s failed to send.', $to );
 		$this->log( $log_message, null, $message_data, 'email' );
 
 		do_action( 'camptix_wp_mail_finish' );
 		return $results;
+	}
+
+	/**
+	 * Send the message as HTML if a 3rd party template is provided
+	 *
+	 * This is the first step towards providing HTML emails for CampTix. It provides the basic functionality, but
+	 * relies on the user to render the HTML message via a filter. In the future, we can bundle a default template
+	 * and turn it on by default, provided we solve any potential back-compat issues.
+	 *
+	 * This isn't the traditional way to send HTML e-mails in WordPress, because the bug described in #15448-core
+	 * prevents multi-part content-types, which we want for better accessibility and lower spam scores.
+	 *
+	 * @param PHPMailer $phpmailer
+	 */
+	public function maybe_send_html_email( $phpmailer ) {
+		$html_message = apply_filters( 'camptix_html_message', false, $phpmailer );
+
+		if ( $html_message ) {
+			$phpmailer->AltBody = strip_tags( $phpmailer->Body ); // setting AltBody automatically triggers a multi-part content-type
+			$phpmailer->Body    = $html_message;
+		}
+	}
+
+	/**
+	 * Check if HTML emails are enabled
+	 *
+	 * Note: This is only intended for contexts where the caller wants to know if HTML messages are enabled, but
+	 * not actually send one, like the Notify preview functionality.
+	 *
+	 * @return bool
+	 */
+	protected static function html_mail_enabled() {
+		global $phpmailer;
+		$enabled = false;
+
+		if ( empty ( $phpmailer ) ) {
+			wp_mail( '', '', '' );  // instantiate $phpmailer
+		}
+
+		if ( $html_message = apply_filters( 'camptix_html_message', false, $phpmailer ) ) {
+			$enabled = true;
+		}
+
+		return $enabled;
+	}
+
+	/**
+	 * Get the list of HTML tags allowed in e-mails
+	 *
+	 * This should be formatted the way that wp_kses() expects.
+	 *
+	 * @return array
+	 */
+	public static function get_allowed_html_mail_tags() {
+		$tags = array(
+			'address' => array(),
+			'a' => array(
+				'href' => true,
+			),
+			'b' => array(),
+			'big' => array(),
+			'blockquote' => array(),
+			'br' => array(),
+			'div' => array(
+				'align' => true,
+			),
+			'font' => array(
+				'color' => true,
+				'face' => true,
+				'size' => true,
+			),
+			'h1' => array(
+				'align' => true,
+			),
+			'h2' => array(
+				'align' => true,
+			),
+			'h3' => array(
+				'align' => true,
+			),
+			'h4' => array(
+				'align' => true,
+			),
+			'h5' => array(
+				'align' => true,
+			),
+			'h6' => array(
+				'align' => true,
+			),
+			'hr' => array(
+				'align' => true,
+				'noshade' => true,
+				'size' => true,
+				'width' => true,
+			),
+			'i' => array(),
+			'img' => array(
+				'alt' => true,
+				'align' => true,
+				'border' => true,
+				'height' => true,
+				'src' => true,
+				'width' => true,
+			),
+			'li' => array(
+				'align' => true,
+				'value' => true,
+			),
+			'p' => array(
+				'align' => true,
+			),
+			'pre' => array(
+				'width' => true,
+			),
+			'q' => array(
+				'cite' => true,
+			),
+			's' => array(),
+			'span' => array(
+				'align' => true,
+			),
+			'small' => array(),
+			'strike' => array(),
+			'strong' => array(),
+			'sub' => array(),
+			'sup' => array(),
+			'u' => array(),
+			'ul' => array(
+				'type' => true,
+			),
+			'ol' => array(
+				'start' => true,
+				'type' => true,
+			),
+		);
+
+		return apply_filters( 'camptix_allowed_html_tags', $tags );
+	}
+
+	/**
+	 * Sanitize and format the contents of an HTML mail message
+	 *
+	 * @param string $message
+	 *
+	 * @return string
+	 */
+	public static function sanitize_format_html_message( $message ) {
+		return make_clickable( wpautop( wp_kses( $message, self::get_allowed_html_mail_tags() ) ) );
 	}
 
 	/**
