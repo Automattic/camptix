@@ -3020,7 +3020,8 @@ class CampTix_Plugin {
 				<div class="segment-field-wrap">
 					<select class="segment-field">
 						<# _.each( data.fields, function( field ) { #>
-						<option value="{{ field.option_value }}" <# if ( field.option_value == data.model.field ) { #>selected="selected"<# } #> >{{ field.caption }}</option>
+							<# var selected = field.option_value == data.model.field ? 'selected' : ''; #>
+							<option value="{{ field.option_value }}" {{ selected }}>{{ field.caption }}</option>
 						<# }); #>
 					</select>
 				</div>
@@ -3028,7 +3029,8 @@ class CampTix_Plugin {
 				<div class="segment-op-wrap">
 					<select class="segment-op">
 						<# _.each( data.ops, function( op ) { #>
-						<option value="{{ op }}" <# if ( op == data.model.op ) { #>selected="selected"<# } #> >{{ op }}</option>
+							<# var selected = op == data.model.op ? 'selected' : ''; #>
+							<option value="{{ op }}" {{ selected }} >{{ op }}</option>
 						<# }); #>
 					</select>
 				</div>
@@ -3037,7 +3039,8 @@ class CampTix_Plugin {
 					<# if ( data.type == 'select' ) { #>
 					<select class="segment-value">
 						<# _.each( data.values, function( value ) { #>
-						<option value="{{ value.value }}" <# if ( value.value == data.model.value ) { #>selected="selected"<# } #> >{{ value.caption }}</option>
+							<# var selected = value.value == data.model.value ? 'selected' : ''; #>
+							<option value="{{ value.value }}" {{ selected }} >{{ value.caption }}</option>
 						<# }); #>
 					</select>
 					<# } else if ( data.type == 'text' ) { #>
