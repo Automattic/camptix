@@ -1549,7 +1549,22 @@ class CampTix_Plugin {
 	}
 
 	function menu_setup_section_email_templates() {
-		echo '<p>' . __( 'Customize your confirmation e-mail templates. You can use the following shortcodes inside the message: [event_name], [ticket_url], [receipt], and [buyer_full_name].', 'camptix' ) . '</p>';
+		?>
+
+		<p><?php _e( 'Customize your confirmation e-mail templates.', 'camptix' ); ?></p>
+
+		<p>
+			<?php _e( 'You can use the following shortcodes inside the message: [event_name], [ticket_url], [receipt], and [buyer_full_name].', 'camptix' ); ?>
+		</p>
+
+		<p>
+			<?php printf(
+				__( 'You can use the following HTML tags inside the message: %s.', 'camptix' ),
+				esc_html( self::get_allowed_html_mail_tags( 'display' ) )
+			); ?>
+		</p>
+
+		<?php
 	}
 
 	function menu_setup_section_general() {
@@ -2968,6 +2983,11 @@ class CampTix_Plugin {
 								<?php endforeach; ?>
 							</p>
 							<?php endif; ?>
+
+							<p>
+								<?php _e( 'You can use the following HTML tags:', 'camptix' ); ?>
+								<?php echo esc_html( self::get_allowed_html_mail_tags( 'display' ) ); ?>
+							</p>
 						</td>
 					</tr>
 					<?php if ( isset( $_POST['tix_notify_preview'], $form_data ) ) : ?>
@@ -7463,7 +7483,7 @@ class CampTix_Plugin {
 	 *
 	 * @return array
 	 */
-	public static function get_allowed_html_mail_tags() {
+	public static function get_allowed_html_mail_tags( $format = 'raw' ) {
 		$tags = array(
 			'address' => array(),
 			'a' => array(
@@ -7546,7 +7566,13 @@ class CampTix_Plugin {
 			),
 		);
 
-		return apply_filters( 'camptix_allowed_html_tags', $tags );
+		$tags = apply_filters( 'camptix_allowed_html_tags', $tags );
+
+		if ( 'display' == $format ) {
+			$tags = implode( ', ', array_keys( $tags ) );
+		}
+
+		return $tags;
 	}
 
 	/**
