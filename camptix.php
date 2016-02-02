@@ -1557,12 +1557,14 @@ class CampTix_Plugin {
 			<?php _e( 'You can use the following shortcodes inside the message: [event_name], [ticket_url], [receipt], and [buyer_full_name].', 'camptix' ); ?>
 		</p>
 
-		<p>
-			<?php printf(
-				__( 'You can use the following HTML tags inside the message: %s.', 'camptix' ),
-				esc_html( self::get_allowed_html_mail_tags( 'display' ) )
-			); ?>
-		</p>
+		<?php if ( self::html_mail_enabled() ) : ?>
+			<p>
+				<?php printf(
+					__( 'You can use the following HTML tags inside the message: %s.', 'camptix' ),
+					esc_html( self::get_allowed_html_mail_tags( 'display' ) )
+				); ?>
+			</p>
+		<?php endif; ?>
 
 		<?php
 	}
@@ -2984,10 +2986,12 @@ class CampTix_Plugin {
 							</p>
 							<?php endif; ?>
 
-							<p>
-								<?php _e( 'You can use the following HTML tags:', 'camptix' ); ?>
-								<?php echo esc_html( self::get_allowed_html_mail_tags( 'display' ) ); ?>
-							</p>
+							<?php if ( self::html_mail_enabled() ) : ?>
+								<p>
+									<?php _e( 'You can use the following HTML tags:', 'camptix' ); ?>
+									<?php echo esc_html( self::get_allowed_html_mail_tags( 'display' ) ); ?>
+								</p>
+							<?php endif; ?>
 						</td>
 					</tr>
 					<?php if ( isset( $_POST['tix_notify_preview'], $form_data ) ) : ?>
