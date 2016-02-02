@@ -7381,8 +7381,11 @@ class CampTix_Plugin {
 			return;
 		}
 
-		if ( is_email( get_option( 'admin_email' ) ) && is_array( $headers ) )
-			$headers[] = sprintf( 'From: %s <%s>', $this->options['event_name'], get_option( 'admin_email' ) );
+		add_filter( 'wp_mail_from_name', array( $this, 'set_mail_from_name' ) );
+
+		if ( is_email( get_option( 'admin_email' ) ) ) {
+			$headers[] = sprintf( 'Reply-To: %s <%s>', $this->options['event_name'], get_option( 'admin_email' ) );
+		}
 		$message_data = array( 'to' => $to, 'subject' => $subject, 'message' => $message, 'headers' => $headers );
 
 		add_action( 'phpmailer_init', array( $this, 'maybe_send_html_email' ) );
@@ -7393,6 +7396,20 @@ class CampTix_Plugin {
 
 		do_action( 'camptix_wp_mail_finish' );
 		return $results;
+	}
+
+	/**
+	 * Set the name of the From header in outgoing e-mails
+	 *
+	 * In most WP installations, this just defaults to "WordPress", which could make attendees think that the
+	 * e-mail is from the WordPress project, or they might not realize it's from the event and then delete it.
+	 *
+	 * @param string $name
+	 *
+	 * @return string
+	 */
+	public function set_mail_from_name( $name ) {
+		return $this->options['event_name'];
 	}
 
 	/**
