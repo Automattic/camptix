@@ -1,0 +1,1800 @@
+# Copyright (C) 2014 CampTix Event Ticketing
+# This file is distributed under the same license as the CampTix Event Ticketing package.
+msgid ""
+msgstr ""
+"Project-Id-Version: CampTix Event Ticketing 1.4.1\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/camptix\n"
+"POT-Creation-Date: 2015-11-23 09:33+0100\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2016-03-14 08:55+0100\n"
+"Language-Team: \n"
+"X-Generator: Poedit 1.6.4\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: da_DK\n"
+
+#: addons/payment-blackhole.php:39
+msgid "Always Succeed"
+msgstr ""
+
+#: addons/payment-paypal.php:59
+msgid "Predefined Account"
+msgstr ""
+
+#: addons/payment-paypal.php:64
+msgid "API Username"
+msgstr ""
+
+#: addons/payment-paypal.php:65
+msgid "API Password"
+msgstr ""
+
+#: addons/payment-paypal.php:66
+msgid "API Signature"
+msgstr ""
+
+#: addons/payment-paypal.php:67
+msgid "Sandbox Mode"
+msgstr ""
+
+#: addons/payment-paypal.php:68
+msgid ""
+"The PayPal Sandbox is a way to test payments without using real accounts and "
+"transactions. If you'd like to use Sandbox Mode, you'll need to create a %s "
+"account and obtain the API credentials for your sandbox user."
+msgstr ""
+
+#: addons/payment-paypal.php:68
+msgid "PayPal Developer"
+msgstr ""
+
+#: addons/payment-paypal.php:88 camptix.php:433 camptix.php:2134
+#: camptix.php:3744
+msgid "None"
+msgstr "Ingen"
+
+#: addons/payment-paypal.php:479
+msgid "Unexpected total!"
+msgstr ""
+
+#: addons/payment-paypal.php:550
+msgid "The selected currency is not supported by this payment method."
+msgstr ""
+
+#: addons/payment-paypal.php:576
+msgctxt "PayPal locale code, leave default to guess"
+msgid "default"
+msgstr ""
+
+#: addons/payment-paypal.php:599 addons/payment-paypal.php:647
+msgid "PayPal error: %s (%d)"
+msgstr "PayPal fejl: %s (%d)"
+
+#: addons/payment-paypal.php:685
+msgid "Request did not complete successfully"
+msgstr "Ordren er ikke gennemført"
+
+#: addons/shortcodes.php:182
+msgid "Generated attendees list in %s seconds"
+msgstr ""
+
+#: addons/shortcodes.php:223
+msgid "Please fill in all fields."
+msgstr "Udfyld venligst alle felter."
+
+#: addons/shortcodes.php:226
+msgid "The e-mail address you have entered does not seem to be valid."
+msgstr "E-mail-adressen, du har indtastet ser ikke ud til at være gyldig."
+
+#: addons/shortcodes.php:266
+msgid "The information you have entered is incorrect. Please try again."
+msgstr "De oplysninger, du har indtastet, er forkerte. Prøv venligst igen."
+
+#: addons/shortcodes.php:284
+msgid "An error has occured."
+msgstr "Der opstod en fejl."
+
+#: addons/shortcodes.php:323
+msgid ""
+"Looks like you logged in from a different computer. Please log in again."
+msgstr ""
+"Ser ud til at dulogger på fra en anden computer, vær venlig at logge på igen."
+
+#: addons/shortcodes.php:345 addons/shortcodes.php:351
+msgid "Sorry, but your ticket does not allow you to view this content."
+msgstr ""
+"Beklager, men din billet giver ikke tilladelse til at se dette indhold."
+
+#: addons/shortcodes.php:357
+msgid "Success! Enjoy your content!"
+msgstr "Gennemført nyd dit indhold!"
+
+#: addons/shortcodes.php:362
+msgid ""
+"The content on this page is private. Please log in using the form below."
+msgstr "Indholdet på denne side er privat. Brug log in i feltet herunder."
+
+#: addons/shortcodes.php:387
+msgid "Have a ticket? Sign in"
+msgstr "Har du en billet? Log in"
+
+#: addons/shortcodes.php:390 camptix.php:2533 camptix.php:3803
+#: camptix.php:4742 camptix.php:5094
+msgid "First Name"
+msgstr "Fornavn"
+
+#: addons/shortcodes.php:394 camptix.php:2534 camptix.php:3804
+#: camptix.php:4747 camptix.php:5098
+msgid "Last Name"
+msgstr "Efternavn"
+
+#: addons/shortcodes.php:398 camptix.php:576 camptix.php:987 camptix.php:3805
+#: camptix.php:4752 camptix.php:5102 camptix.php:5272
+msgid "E-mail"
+msgstr "E-mail"
+
+#: addons/shortcodes.php:403
+msgid "Login &rarr;"
+msgstr ""
+
+#: addons/track-attendance.php:29 addons/track-attendance.php:60
+#: addons/track-attendance.php:87
+msgid "Attended the event"
+msgstr "Deltagelse til arrangement"
+
+#: addons/track-attendance.php:76
+msgid "Attended"
+msgstr "Deltagelse"
+
+#: camptix.php:183
+msgid "Once every 10 minutes"
+msgstr "en gang hvert 10. minut"
+
+#: camptix.php:445
+msgid "Please enter the e-mail addresses in the forms above."
+msgstr "Vær venlig at udfylde felterne med E-mail adr."
+
+#: camptix.php:516 camptix.php:4496 camptix.php:4677
+msgid "Price"
+msgstr "Pris"
+
+#: camptix.php:517 camptix.php:638 camptix.php:3407 camptix.php:3436
+#: camptix.php:4500 camptix.php:4676
+msgid "Quantity"
+msgstr "Antal"
+
+#: camptix.php:518
+msgid "Purchased"
+msgstr "Køb"
+
+#: camptix.php:519 camptix.php:640 camptix.php:703 camptix.php:2424
+#: camptix.php:2433 camptix.php:4498
+msgid "Remaining"
+msgstr "Tilbage"
+
+#: camptix.php:520 camptix.php:642 camptix.php:3149 camptix.php:3156
+msgid "Availability"
+msgstr "Tilgængelighed"
+
+#: camptix.php:553
+msgid "(%d reserved)"
+msgstr "(%d reserveret)"
+
+#: camptix.php:562 camptix.php:688
+msgid "Auto"
+msgstr "Auto"
+
+#. translators: 1: "from" date, 2: "to" date
+#: camptix.php:565 camptix.php:691
+msgid "%1$s &mdash; %2$s"
+msgstr ""
+
+#: camptix.php:577 camptix.php:847 camptix.php:3806
+msgid "Ticket"
+msgstr "Billet"
+
+#: camptix.php:578 camptix.php:951 camptix.php:2539 camptix.php:3833
+msgid "Coupon"
+msgstr "Billet"
+
+#: camptix.php:581 camptix.php:3845
+msgid "Reservation"
+msgstr "Reservation"
+
+#: camptix.php:583
+msgid "Ticket Price"
+msgstr "Billet pris"
+
+#: camptix.php:584 camptix.php:3836
+msgid "Order Total"
+msgstr "Ordre i alt"
+
+#: camptix.php:639 camptix.php:3408
+msgid "Used"
+msgstr "Brugt"
+
+#: camptix.php:641
+msgid "Discount"
+msgstr "Rabat"
+
+#: camptix.php:643 camptix.php:846 camptix.php:852 camptix.php:857
+msgid "Tickets"
+msgstr "Billet"
+
+#: camptix.php:702
+msgid "Sent"
+msgstr "Sendt"
+
+#: camptix.php:704
+msgid "Total"
+msgstr "I alt"
+
+#: camptix.php:848 camptix.php:851
+msgid "New Ticket"
+msgstr "Ny billet"
+
+#: camptix.php:849
+msgid "Add New Ticket"
+msgstr "Tilføj ny billet"
+
+#: camptix.php:850
+msgid "Edit Ticket"
+msgstr "Ret billet"
+
+#: camptix.php:853
+msgid "View Ticket"
+msgstr "Se billet"
+
+#: camptix.php:854
+msgid "Search Tickets"
+msgstr "Søg efter billetter"
+
+#: camptix.php:855
+msgid "No tickets found"
+msgstr "Ingen billetter fundet"
+
+#: camptix.php:856
+msgid "No tickets found in trash"
+msgstr "Ingen billet fundet i papirkurv"
+
+#: camptix.php:881 camptix.php:887 camptix.php:892 camptix.php:3150
+#: camptix.php:3849
+msgid "Questions"
+msgstr "Spørgsmål"
+
+#: camptix.php:882 camptix.php:3589
+msgid "Question"
+msgstr "Spørgsmål"
+
+#: camptix.php:883 camptix.php:886
+msgid "New Question"
+msgstr "Nyt spørgsmål"
+
+#: camptix.php:884
+msgid "Add New Question"
+msgstr "Tilføj nyt spørgsmål"
+
+#: camptix.php:885
+msgid "Edit Question"
+msgstr "Ret spørgsmål"
+
+#: camptix.php:888
+msgid "View Question"
+msgstr "Se spørgsmål"
+
+#: camptix.php:889
+msgid "Search Questions"
+msgstr "Søg spørgsmål"
+
+#: camptix.php:890
+msgid "No questions found"
+msgstr "Ingen spørgsmål fundet"
+
+#: camptix.php:891
+msgid "No questions found in trash"
+msgstr "Ingen spørgsmål fundet i papirkurv."
+
+#: camptix.php:910 camptix.php:916 camptix.php:921
+msgid "Attendees"
+msgstr "Deltagere"
+
+#: camptix.php:911
+msgid "Attendee"
+msgstr "deltager"
+
+#: camptix.php:912
+msgid "New Attendee"
+msgstr "Ny deltager"
+
+#: camptix.php:913
+msgid "Add New Attendee"
+msgstr "Tilføj ny deltager"
+
+#: camptix.php:914
+msgid "Edit Attendee"
+msgstr "Ret deltager"
+
+#: camptix.php:915
+msgid "Add Attendee"
+msgstr "Tilføj deltager"
+
+#: camptix.php:917
+msgid "View Attendee"
+msgstr "Se deltagere"
+
+#: camptix.php:918
+msgid "Search Attendees"
+msgstr "Søg efter Deltagere"
+
+#: camptix.php:919
+msgid "No attendees found"
+msgstr "Ingen deltagere fundet"
+
+#: camptix.php:920
+msgid "No attendees found in trash"
+msgstr "Ingen deltagere fundet i papirkurv"
+
+#: camptix.php:950 camptix.php:956 camptix.php:961
+msgid "Coupons"
+msgstr "Billetter"
+
+#: camptix.php:952 camptix.php:955
+msgid "New Coupon"
+msgstr "Ny billet"
+
+#: camptix.php:953
+msgid "Add New Coupon"
+msgstr "Tilføj ny billet"
+
+#: camptix.php:954
+msgid "Edit Coupon"
+msgstr "Ret billet"
+
+#: camptix.php:957
+msgid "View Coupon"
+msgstr "Se billet"
+
+#: camptix.php:958
+msgid "Search Coupons"
+msgstr "Søg efter billetter"
+
+#: camptix.php:959
+msgid "No coupons found"
+msgstr "Ingen billetter fundet"
+
+#: camptix.php:960
+msgid "No coupons found in trash"
+msgstr "Ingen billet fundet i papirkurv"
+
+#: camptix.php:986 camptix.php:992
+msgid "E-mails"
+msgstr "E-mails"
+
+#: camptix.php:988 camptix.php:991
+msgid "New E-mail"
+msgstr "Ny E-mail"
+
+#: camptix.php:989
+msgid "Add New E-mail"
+msgstr "Tilføj ny E-mail"
+
+#: camptix.php:990
+msgid "Edit E-mail"
+msgstr "Ret E-mail"
+
+#: camptix.php:993
+msgid "View E-mail"
+msgstr "Se E-mailadr"
+
+#: camptix.php:994
+msgid "Search E-mails"
+msgstr "Søg E-mailadr."
+
+#: camptix.php:995
+msgid "No e-mails found"
+msgstr "Ingen e-mails fundet"
+
+#: camptix.php:996
+msgid "No e-mails found in trash"
+msgstr "Ingen e-mails fundet i papirkurv"
+
+#: camptix.php:997
+msgid "E-mails (debug)"
+msgstr ""
+
+#: camptix.php:1010
+msgctxt "post"
+msgid "Cancelled"
+msgstr ""
+
+#: camptix.php:1011
+msgctxt "camptix"
+msgid "Cancelled <span class=\"count\">(%s)</span>"
+msgid_plural "Cancelled <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: camptix.php:1019
+msgctxt "post"
+msgid "Failed"
+msgstr ""
+
+#: camptix.php:1020
+msgctxt "camptix"
+msgid "Failed <span class=\"count\">(%s)</span>"
+msgid_plural "Failed <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: camptix.php:1028
+msgctxt "post"
+msgid "Timeout"
+msgstr ""
+
+#: camptix.php:1029
+msgctxt "camptix"
+msgid "Timeout <span class=\"count\">(%s)</span>"
+msgid_plural "Timeout <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: camptix.php:1037
+msgctxt "post"
+msgid "Refunded"
+msgstr ""
+
+#: camptix.php:1038
+msgctxt "camptix"
+msgid "Refunded <span class=\"count\">(%s)</span>"
+msgid_plural "Refunded <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: camptix.php:1052
+msgid "Timeout"
+msgstr "Timeout"
+
+#: camptix.php:1055
+msgid "Failed"
+msgstr "Fejl"
+
+#: camptix.php:1058
+msgid "Cancelled"
+msgstr "Annuller"
+
+#: camptix.php:1061
+msgid "Refunded"
+msgstr "Refunderet."
+
+#: camptix.php:1077
+msgid ""
+"Hi there!\n"
+"\n"
+"You have purchased the following ticket:\n"
+"\n"
+"[receipt]\n"
+"\n"
+"You can edit the information for the purchased ticket at any time before the "
+"event, by visiting the following link:\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Let us know if you have any questions!"
+msgstr ""
+"Hej!\n"
+"\n"
+"Du har købt følgende billet:\n"
+"\n"
+"[receipt]\n"
+"\n"
+"Du kan til en hver tid rette billetten før arrangementet, ved at gå ind på "
+"følgende link:\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Hvis du har spørgsmål, er du velkommen til sende dem til os!"
+
+#: camptix.php:1078
+msgid ""
+"Hi there!\n"
+"\n"
+"Thank you so much for purchasing a ticket and hope to see you soon at our "
+"event. You can edit your information at any time before the event, by "
+"visiting the following link:\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Let us know if you have any questions!"
+msgstr ""
+"Hej!\n"
+"\n"
+"Tak for at du har købt en billet hos os, vi håber at se dig til vores "
+"arrangement. Du kan til enhver tid, før arrangementet, rette dine "
+"oplysninger, ved at gå ind på følgende link:\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Kontakt os hvis du har spørgsmål!"
+
+#: camptix.php:1079
+msgid ""
+"Hi there!\n"
+"\n"
+"You have purchased the following tickets:\n"
+"\n"
+"[receipt]\n"
+"\n"
+"You can edit the information for all the purchased tickets at any time "
+"before the event, by visiting the following link:\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Let us know if you have any questions!"
+msgstr ""
+"Hej!\n"
+"\n"
+"Du har købt følgende billet:\n"
+"\n"
+"[receipt]\n"
+"\n"
+"Du kan til enhver tid før arrangementet, rette dine oplysninger for købet, "
+"ved at gå at gå ind på det følgende link:\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Kontakt os, hvis du har spørgsmål!"
+
+#: camptix.php:1080
+msgid ""
+"Hey there!\n"
+"\n"
+"Your payment for [event_name] has been completed, looking forward to seeing "
+"you at the event! You can access and change your tickets information by "
+"visiting the following link:\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Let us know if you need any help!"
+msgstr ""
+"Hej\n"
+"\n"
+"Din betaling for [event_name] er fuldført, ser frem til at se dig til "
+"arrangementet! Du kan gå ind og se og ændre din billet på følgende link\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Kontakt os hvis du har brug for hjælp!"
+
+#: camptix.php:1081
+msgid ""
+"Hey there!\n"
+"\n"
+"We're so sorry, but it looks like your payment for [event_name] has failed! "
+"Please check your payment transactions for more details. If you still wish "
+"to attend the event, feel free to purchase a new ticket using the following "
+"link:\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Let us know if you need any help!"
+msgstr ""
+"Hej!\n"
+"\n"
+"Vi beklager, men det ser ud til at betaling for [event_name] ikke er gået "
+"igennem! Vær venlig at kontrollerer dine betalings transaktioner for flere "
+"detaljer. Hvis du stadig ønsker at deltage i  arrangementet, brug det "
+"følgende link til at købe en ny billet\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Kontakt os hvis du har brug for hjælp!"
+
+#: camptix.php:1082
+msgid ""
+"Hey there!\n"
+"\n"
+"Your refund for [event_name] has been completed. If you change your mind and "
+"still wish to attend the event, feel free to purchase a new ticket using the "
+"following link:\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Let us know if you need any help!"
+msgstr ""
+"Hej!\n"
+"\n"
+" Din refundering for [event_name] er gennemført. Hvis du fortryder og "
+"alligevel vil  deltage, brug det følgende link:\n"
+" \n"
+"[ticket_url]\n"
+"\n"
+"Kontakt os hvis du har brug for hjælp!"
+
+#: camptix.php:1083
+msgid ""
+"Hey there!\n"
+"\n"
+"Your ticket for [event_name] has been refunded. If you change your mind and "
+"still wish to attend the event, feel free to purchase a new ticket using the "
+"following link:\n"
+"\n"
+"[ticket_url]\n"
+"\n"
+"Let us know if you need any help!"
+msgstr ""
+"Hej!\n"
+"\n"
+"Din billet til [event_name] er blevet refunderet. Hvis du fortryder og "
+"stadig vil deltage i arrangementet, er du velkommen til at købe en ny billet "
+"ved at bruge følgende link:\n"
+"[ticket_url]\n"
+"\v\n"
+"Kontakt os hvis du har brug for hjælp!"
+
+#: camptix.php:1404
+msgid "General Configuration"
+msgstr "General opsætning"
+
+#: camptix.php:1405
+msgid "Event Name"
+msgstr "Arrangements navn"
+
+#: camptix.php:1406
+msgid "Currency"
+msgstr "Valuta"
+
+#: camptix.php:1408
+msgid "Enable Refunds"
+msgstr "Tillad refundering indtil:"
+
+#: camptix.php:1409
+msgid ""
+"This will allows your customers to refund their tickets purchase by filling "
+"out a simple refund form."
+msgstr ""
+"Dette vil give jeres kunder mulighed for at få refunderet deres billetkøb, "
+"ved at udfylde en simpel formular."
+
+#: camptix.php:1418
+msgid "Enabled"
+msgstr "Tillad"
+
+#: camptix.php:1427 camptix.php:1903
+msgid "E-mail Templates"
+msgstr ""
+
+#: camptix.php:1428
+msgid "Single purchase"
+msgstr "Enkelt køb"
+
+#: camptix.php:1429
+msgid "Multiple purchase"
+msgstr "Flere køb"
+
+#: camptix.php:1430
+msgid "Multiple purchase (receipt)"
+msgstr "Flere køb"
+
+#: camptix.php:1431
+msgid "Pending Payment Succeeded"
+msgstr "Igangværende betaling lykkedes  "
+
+#: camptix.php:1432
+msgid "Pending Payment Failed"
+msgstr "Igangværende betaling mislykkedes"
+
+#: camptix.php:1433
+msgid "Single Refund"
+msgstr "Enkel refundering"
+
+#: camptix.php:1434
+msgid "Multiple Refund"
+msgstr "Flere refunderinger"
+
+#: camptix.php:1444
+msgid "Beta Features"
+msgstr ""
+
+#: camptix.php:1446
+msgid "Enable Reservations"
+msgstr "Tillad reservation"
+
+#: camptix.php:1447
+msgid ""
+"Reservations is a way to make sure that a certain group of people, can "
+"always purchase their tickets, even if you sell out fast."
+msgstr "Reservationer er en måde, der g"
+
+#: camptix.php:1451
+msgid "Enable Refund All"
+msgstr "Refunder alle køb"
+
+#: camptix.php:1452
+msgid "Allows to refund all purchased tickets by an admin via the Tools menu."
+msgstr ""
+"Tillad at alle købte billetter refunderes af en administrator via værktøjs "
+"linje."
+
+#: camptix.php:1456
+msgid "Archived Event"
+msgstr ""
+
+#: camptix.php:1457
+msgid "Archived events are read-only."
+msgstr ""
+
+#: camptix.php:1467
+msgid ""
+"Beta features are things that are being worked on in CampTix, but are not "
+"quite finished yet. You can try them out, but we do not recommend doing that "
+"in a live environment on a real event. If you have any kind of feedback on "
+"any of the beta features, please let us know."
+msgstr ""
+
+#: camptix.php:1471
+msgid ""
+"Customize your confirmation e-mail templates. You can use the following "
+"shortcodes inside the message: [event_name], [ticket_url], and [receipt]."
+msgstr ""
+
+#: camptix.php:1475
+msgid "General configuration."
+msgstr "General opsætning"
+
+#: camptix.php:1497
+msgid "Reset Default"
+msgstr ""
+
+#: camptix.php:1606 camptix.php:1620 camptix.php:3503
+#: inc/class-camptix-payment-method.php:212
+msgid "Yes"
+msgstr "Ja"
+
+#: camptix.php:1607 camptix.php:1621 inc/class-camptix-payment-method.php:213
+msgid "No"
+msgstr "Nej"
+
+#: camptix.php:1625
+msgid "Allow refunds until:"
+msgstr "Tillad refundering indtil:"
+
+#: camptix.php:1648
+msgid ""
+"Make sure you select a currency that is supported by all the payment methods "
+"you plan to use."
+msgstr ""
+"Vær sikker på at vælge en valuta der understøttes af den betalingsmåde du "
+"ønsker at benytte."
+
+#: camptix.php:1661
+msgid "Australian Dollar"
+msgstr "Australske Dollars"
+
+#: camptix.php:1665
+msgid "Canadian Dollar"
+msgstr "Canadiske Dollars"
+
+#: camptix.php:1669
+msgid "Euro"
+msgstr "Euro"
+
+#: camptix.php:1673
+msgid "Pound Sterling"
+msgstr "Engelske Pund Sterling"
+
+#: camptix.php:1677
+msgid "Japanese Yen"
+msgstr "Japanske Yen"
+
+#: camptix.php:1681 camptix.php:1771
+msgid "U.S. Dollar"
+msgstr "Amerikanske Dollar"
+
+#: camptix.php:1685
+msgid "N.Z. Dollar"
+msgstr "New Zealand Dollar"
+
+#: camptix.php:1689
+msgid "Swiss Franc"
+msgstr "Schweiziske franc"
+
+#: camptix.php:1693
+msgid "Hong Kong Dollar"
+msgstr "Hong Kong Dollar"
+
+#: camptix.php:1697
+msgid "Singapore Dollar"
+msgstr "Singapore Dollar"
+
+#: camptix.php:1701
+msgid "Swedish Krona"
+msgstr "Svenske Kroner"
+
+#: camptix.php:1705
+msgid "Danish Krone"
+msgstr "Danske Kroner"
+
+#: camptix.php:1709
+msgid "Polish Zloty"
+msgstr "Polske Zloty"
+
+#: camptix.php:1713
+msgid "Norwegian Krone"
+msgstr "Norske Kroner"
+
+#: camptix.php:1717
+msgid "Hungarian Forint"
+msgstr "Ungarske Forint"
+
+#: camptix.php:1721
+msgid "Czech Koruna"
+msgstr "Tjekiske Koruna"
+
+#: camptix.php:1725
+msgid "Israeli New Sheqel"
+msgstr "Israelske Nye Sheqel"
+
+#: camptix.php:1729
+msgid "Mexican Peso"
+msgstr "Mexicanske Peso"
+
+#: camptix.php:1733
+msgid "Brazilian Real"
+msgstr "Brasilianske Real"
+
+#: camptix.php:1737
+msgid "Malaysian Ringgit"
+msgstr "Malaysiske Ringgit"
+
+#: camptix.php:1741
+msgid "Philippine Peso"
+msgstr "Philippinske Peso"
+
+#: camptix.php:1745
+msgid "New Taiwan Dollar"
+msgstr "Nye Taiwan Dollar"
+
+#: camptix.php:1749
+msgid "Thai Baht"
+msgstr "Thailanske Bath"
+
+#: camptix.php:1753
+msgid "Turkish Lira"
+msgstr "Tyrkiske Lira"
+
+#: camptix.php:1813
+msgid "Tools"
+msgstr "Redskaber"
+
+#: camptix.php:1814
+msgid "Setup"
+msgstr "Setup"
+
+#: camptix.php:1860
+msgid "CampTix Setup"
+msgstr "CampTix setup"
+
+#: camptix.php:1876
+msgid "Current time on server: %s"
+msgstr "Aktuelt på server: %s"
+
+#: camptix.php:1901 camptix.php:3801
+msgid "General"
+msgstr "Generel"
+
+#: camptix.php:1902
+msgid "Payment"
+msgstr "Betalling"
+
+#: camptix.php:1907
+msgid "Beta"
+msgstr ""
+
+#: camptix.php:1924
+msgid "CampTix Tools"
+msgstr "CampTix redskaber"
+
+#: camptix.php:1963
+msgid "Summarize"
+msgstr "Opsumering"
+
+#: camptix.php:1964 camptix.php:2427 camptix.php:2436
+msgid "Revenue"
+msgstr ""
+
+#: camptix.php:1965 camptix.php:2481
+msgid "Export"
+msgstr "Exporter"
+
+#: camptix.php:1966
+msgid "Notify"
+msgstr "Bekræft"
+
+#: camptix.php:1970
+msgid "Refund"
+msgstr "Refundering"
+
+#: camptix.php:1993
+msgid "Summarize by"
+msgstr "Opsummering af"
+
+#: camptix.php:2013
+msgid "Show Summary"
+msgstr "Samlet ordre"
+
+#: camptix.php:2014
+msgid "Export Summary to CSV"
+msgstr ""
+
+#: camptix.php:2029 camptix.php:2067
+msgid "Count"
+msgstr "Antal"
+
+#: camptix.php:2155 camptix.php:2422 camptix.php:2431
+msgid "Ticket type"
+msgstr "Billet type"
+
+#: camptix.php:2156
+msgid "Coupon code"
+msgstr "Billet kode"
+
+#: camptix.php:2157 camptix.php:2536
+msgid "Purchase date"
+msgstr "Købs dato"
+
+#: camptix.php:2158
+msgid "Purchase time"
+msgstr "Købs tidspunkt"
+
+#: camptix.php:2159
+msgid "Purchase date and time"
+msgstr "Dato og tidspunkt for køb"
+
+#: camptix.php:2160
+msgid "Purchase day of week"
+msgstr "Tidspunkt for køb, ugedag"
+
+#: camptix.php:2305
+msgid ""
+"<strong>Woah!</strong> The revenue total does not match with the "
+"transactions total. The actual total is: <strong>%s</strong>. Something "
+"somewhere has gone wrong, please report this."
+msgstr ""
+
+#: camptix.php:2309
+msgid "Revenue report generated in %s seconds."
+msgstr ""
+
+#: camptix.php:2423 camptix.php:2432
+msgid "Sold"
+msgstr "Solgt"
+
+#: camptix.php:2425 camptix.php:2434
+msgid "Sub-Total"
+msgstr "I alt"
+
+#: camptix.php:2426 camptix.php:2435
+msgid "Discounted"
+msgstr "Rabat"
+
+#: camptix.php:2467
+msgid "Export all attendees data to"
+msgstr "Overfør alle deltageres data til"
+
+#: camptix.php:2472
+msgid "(coming soon)"
+msgstr "(kommer snart)"
+
+#: camptix.php:2501
+msgid "Format not supported."
+msgstr "Format ikke understøttet"
+
+#: camptix.php:2531
+msgid "Attendee ID"
+msgstr "Deltager ID"
+
+#: camptix.php:2532
+msgid "Ticket Type"
+msgstr "Billet type"
+
+#: camptix.php:2535
+msgid "E-mail Address"
+msgstr "E-mail adresse"
+
+#: camptix.php:2537 camptix.php:2851 camptix.php:3802
+msgid "Status"
+msgstr "Status"
+
+#: camptix.php:2538 camptix.php:3818
+msgid "Transaction ID"
+msgstr ""
+
+#: camptix.php:2669
+msgid "Please enter a subject line."
+msgstr "Lav en emne linie"
+
+#: camptix.php:2672
+msgid "Please enter the e-mail body."
+msgstr "Vær venlig at udfylde felterne med E-mail adr."
+
+#: camptix.php:2675
+msgid "Please select at least one ticket group."
+msgstr "Vælg mindst en billettype."
+
+#: camptix.php:2719
+msgid "Your e-mail job has been queued for %s recipients."
+msgstr ""
+
+#: camptix.php:2753
+msgid "To"
+msgstr "Til"
+
+#: camptix.php:2768 camptix.php:2848
+msgid "Subject"
+msgstr "Emne"
+
+#: camptix.php:2774
+msgid "Message"
+msgstr "Besked"
+
+#: camptix.php:2778
+msgid "You can use the following shortcodes:"
+msgstr "Du kan bruge følgende genvejstaster:"
+
+#: camptix.php:2822 camptix.php:2825
+msgid "Preview"
+msgstr "Gennemse"
+
+#: camptix.php:2824
+msgid "Send E-mails"
+msgstr "Send E-mail"
+
+#: camptix.php:2843
+msgid "History"
+msgstr ""
+
+#: camptix.php:2849
+msgid "Updated"
+msgstr "Opdateret den."
+
+#: camptix.php:2849
+msgid "%1$s at %2$s"
+msgstr ""
+
+#: camptix.php:2850
+msgid "Author"
+msgstr "Forfatter"
+
+#: camptix.php:2873 camptix.php:2875
+msgid "Refund all transactions"
+msgstr "Refunder alle køb"
+
+#: camptix.php:2876
+msgid "Seriously, refund them all"
+msgstr "Refunder alle køb"
+
+#: camptix.php:2877
+msgid "I know what I'm doing, please refund"
+msgstr "Jeg ved hvad jeg gør, venligst tilbagebetal"
+
+#: camptix.php:2878
+msgid "I know this may result in money loss, refund anyway"
+msgstr ""
+"Jeg er klar over at det kan betyde at jeg mister penge, men refunder "
+"alligevel "
+
+#: camptix.php:2879
+msgid "I will not blame Konstantin if something goes wrong"
+msgstr ""
+
+#: camptix.php:2887
+msgid "Refund Transactions"
+msgstr ""
+
+#: camptix.php:2907
+msgid ""
+"CampTix has finished attempting to refund all transactions. The results were:"
+"<br /><br /> &bull;Succeeded: %s<br /> &bull;Failed: %s"
+msgstr ""
+
+#: camptix.php:2932
+msgid "Looks like you have missed a checkbox or two. Try again!"
+msgstr ""
+"Ser ud til at du har undladt at udfylde et eller flere felter. Prøv igen!"
+
+#: camptix.php:2963
+msgid "A refund job has been queued for %d attendees."
+msgstr ""
+
+#: camptix.php:2986
+msgid ""
+"A refund job is in progress, with %d attendees left in the queue. Next run "
+"in %d seconds."
+msgstr ""
+
+#: camptix.php:3018
+msgid "None of the enabled payment modules support refunding all tickets."
+msgstr ""
+"Ingen af de tilladte betalingsmetoder understøtter refundering af alle "
+"billetter."
+
+#: camptix.php:3148
+msgid "Ticket Options"
+msgstr "Billet muligheder"
+
+#: camptix.php:3153
+msgid "Reservations"
+msgstr "Reserveret"
+
+#: camptix.php:3155
+msgid "Coupon Options"
+msgstr "Billet muligheder"
+
+#: camptix.php:3158 camptix.php:5085
+msgid "Attendee Information"
+msgstr "Oplysninger om deltagere"
+
+#: camptix.php:3160
+msgid "Publish"
+msgstr "Offentliggjort "
+
+#: camptix.php:3179
+msgid "Save"
+msgstr "Gem"
+
+#: camptix.php:3190
+msgid "Status:"
+msgstr "Status"
+
+#: camptix.php:3195
+msgid "Unknown status"
+msgstr "Status ukendt"
+
+#: camptix.php:3201
+msgid "M j, Y @ G:i"
+msgstr ""
+
+#: camptix.php:3203
+msgid "Created: <b>%1$s</b>"
+msgstr ""
+
+#: camptix.php:3206
+msgid "Publish <b>immediately</b>"
+msgstr ""
+
+#: camptix.php:3222
+msgid "Edit Attendee Info"
+msgstr ""
+
+#: camptix.php:3227
+msgid "Hide from public attendees list"
+msgstr ""
+
+#: camptix.php:3241
+msgid "Delete Permanently"
+msgstr "Slet permanent"
+
+#: camptix.php:3243
+msgid "Move to Trash"
+msgstr "Flyt til papirkurv"
+
+#: camptix.php:3250
+msgid "Save Attendee"
+msgstr "Gem oplysninger om deltagere"
+
+#: camptix.php:3271
+msgid "Price:"
+msgstr "Pris:"
+
+#: camptix.php:3276
+msgid ""
+"You can not change the price because one or more tickets have already been "
+"purchased."
+msgstr ""
+"Du kan ikke ændre prisen, fordi en eller flere billetter allerede er købt."
+
+#: camptix.php:3280 camptix.php:3735
+msgid "Quantity:"
+msgstr "Antal:"
+
+#: camptix.php:3283
+msgid ""
+"You can not set the quantity to less than the number of purchased tickets."
+msgstr "Du kan ikke se mindre end antallet af købte billetter."
+
+#: camptix.php:3298 camptix.php:3772
+msgid "Leave blank for auto-availability"
+msgstr "Undlad at skrive i feltet, det udfyldes automatisk "
+
+#: camptix.php:3301 camptix.php:3775
+msgid "Start:"
+msgstr "Start:"
+
+#: camptix.php:3305 camptix.php:3779
+msgid "End:"
+msgstr "Slut:"
+
+#: camptix.php:3406
+msgid "Name"
+msgstr "Navn"
+
+#: camptix.php:3409
+msgid "Token"
+msgstr ""
+
+#: camptix.php:3410
+msgid "Actions"
+msgstr ""
+
+#: camptix.php:3421
+msgid "Release"
+msgstr ""
+
+#: camptix.php:3422
+msgid "Cancel"
+msgstr "Annuller"
+
+#: camptix.php:3431
+msgid "Create a New Reservation:"
+msgstr "Lav en ny reservation:"
+
+#: camptix.php:3434
+msgid "Reservation Name"
+msgstr "Navn på reservertion"
+
+#: camptix.php:3438
+msgid "Create Reservation"
+msgstr "Lav en reservation"
+
+#: camptix.php:3440
+msgid ""
+"If you create a reservation with more quantity than available by the total "
+"ticket quantity, we'll bump the ticket quantity for you."
+msgstr ""
+"Hvis du laver en reservation der overskrider antallet af billetter, tilføjer "
+"vi ekstra billetter for dig."
+
+#: camptix.php:3450
+msgid "Text input"
+msgstr "Tekst"
+
+#: camptix.php:3451
+msgid "Text area"
+msgstr "Tekst felt"
+
+#: camptix.php:3452
+msgid "Dropdown select"
+msgstr "Vølg rullegardin"
+
+#: camptix.php:3453
+msgid "Radio select"
+msgstr "Vælg radio"
+
+#: camptix.php:3454
+msgid "Checkbox"
+msgstr "Kontrolboks"
+
+#: camptix.php:3542
+msgid "Default"
+msgstr ""
+
+#: camptix.php:3545
+msgid "First name, last name and e-mail address"
+msgstr "Fornavn, efternavn og e-mail adresse"
+
+#: camptix.php:3559
+msgid "Add a %1$s or an %2$s."
+msgstr ""
+
+#: camptix.php:3560
+msgid "new question"
+msgstr "Nyt spørgsmål:"
+
+#: camptix.php:3561
+msgid "existing one"
+msgstr "Tilføj allerede stillede spørgsmål:"
+
+#: camptix.php:3572
+msgid "Add a new question:"
+msgstr "Tilføj nyt spørgsmål"
+
+#: camptix.php:3577
+msgid "Type"
+msgstr "Emne"
+
+#: camptix.php:3597
+msgid "Values"
+msgstr "Værdi"
+
+#: camptix.php:3601
+msgid "Separate multiple values with a comma."
+msgstr "Adskil forskellige valutaer med et komma."
+
+#: camptix.php:3606
+msgid "Required"
+msgstr "Krav"
+
+#: camptix.php:3609
+msgid "This field is required"
+msgstr "Dette feldt skal udfyldes"
+
+#: camptix.php:3614
+msgid "Add Question"
+msgstr "Tilføj spøgsmål"
+
+#: camptix.php:3615 camptix.php:3652
+msgid "Close"
+msgstr "Luk"
+
+#: camptix.php:3616 camptix.php:3653
+msgid "Do not forget to update the ticket post to save changes."
+msgstr "Husk at opdaterer billetrubrikken for at gemmes ændringer."
+
+#: camptix.php:3622
+msgid "Add an existing question:"
+msgstr "Tilføj allerede stillede spørgsmål:"
+
+#: camptix.php:3626
+msgid "Available Questions"
+msgstr "Spørgsmål til rådedighed"
+
+#: camptix.php:3651
+msgid "Add Selected"
+msgstr "Tilføj valgte"
+
+#: camptix.php:3663
+msgid "Move"
+msgstr "Flyt"
+
+#: camptix.php:3664
+msgid "Edit"
+msgstr "Ret"
+
+#: camptix.php:3665
+msgid "Remove"
+msgstr "Fjern"
+
+#: camptix.php:3718
+msgid "Discount:"
+msgstr "Rabat:"
+
+#: camptix.php:3731
+msgid ""
+"You can not change the discount because one or more tickets have already "
+"been purchased using this coupon."
+msgstr ""
+"Rabatten kan ikke ændres, fordi en eller flere billetter er blevet købt, ved "
+"brug af denne kupon."
+
+#: camptix.php:3738
+msgid "The quantity can not be less than the number of coupons already used."
+msgstr "Antallet kan ikke være mindre end antallet af allerede brugte kuponer."
+
+#: camptix.php:3742
+msgid "Applies to:"
+msgstr ""
+
+#: camptix.php:3744
+msgid "All"
+msgstr "Alle"
+
+#: camptix.php:3807
+msgid "Edit Token"
+msgstr ""
+
+#: camptix.php:3808
+msgid "Access Token"
+msgstr ""
+
+#: camptix.php:3811
+msgid "Transaction"
+msgstr "Transaction"
+
+#: camptix.php:4256
+msgid "Discounted %s"
+msgstr "Rabat i %s"
+
+#: camptix.php:4259
+msgid "Discounted %s%%"
+msgstr "Rabat %s%%"
+
+#: camptix.php:4409
+msgid "An error has occurred."
+msgstr "En fejl er opstået."
+
+#: camptix.php:4426
+msgid "Sorry, but the coupon you have entered seems to be invalid or expired."
+msgstr ""
+"Beklager, men den billet du har opgivet, er enten forkert eller udløbet."
+
+#: camptix.php:4429
+msgid ""
+"Sorry, but the reservation you are trying to use seems to be invalid or "
+"expired."
+msgstr ""
+"Beklager, men den reservation du bruger ser ud til at være forkert eller "
+"udløbet."
+
+#: camptix.php:4432
+msgid ""
+"Sorry, but there are currently no tickets for sale. Please try again later."
+msgstr ""
+"Beklager, der er i øjeblikket ingen billetter til salg. Prøv igen senere."
+
+#: camptix.php:4435
+msgid "You are using a reservation, cool!"
+msgstr "Du bruger en reservering - sejt!"
+
+#: camptix.php:4439
+msgid "Please select at least one ticket."
+msgstr "Vær venlig at vælge mindst en billet."
+
+#: camptix.php:4442
+msgid ""
+"It looks like somebody took that last ticket before you, sorry! You try a "
+"different ticket."
+msgstr ""
+"Det ser ud til at der er en der har købt den sidste billet før dig, "
+"beklager! Prøv en anden billet."
+
+#: camptix.php:4445
+msgid "Payment methods have not been configured yet. Please try again later."
+msgstr "Betalingsmetoden er ikke blevet oprette endnu. Venligst prøv senere."
+
+#: camptix.php:4453
+msgid ""
+"An error has occurred and your payment has failed. Please try again later."
+msgstr "En fejl opstod og din betaling er ikke gennemført. Prøv igen senere."
+
+#: camptix.php:4457
+msgid ""
+"It looks like somebody grabbed those tickets before you could complete the "
+"purchase. You have not been charged, please try again."
+msgstr ""
+"Det ser ud til en anden fik købt billetterne før dig. Købet er ikke "
+"gennemført, prøv igen."
+
+#: camptix.php:4460
+msgid ""
+"It looks like somebody has used the coupon before you could complete your "
+"purchase. You have not been charged, please try again."
+msgstr ""
+"Det ser ud til en anden har benyttet denne kupon før dig. Købet er ikke "
+"gennemført, prøv igen."
+
+#: camptix.php:4463
+msgid ""
+"It looks like the coupon you are trying to use has expired before you could "
+"complete your purchase. You have not been charged, please try again."
+msgstr ""
+"Det ser ud til at den kupon du har forsøgt at benytte er udløbet før du "
+"gennemførte dit køb. Der er ikke blevet opkrævet nogen penge. Prøv venligst "
+"igen."
+
+#: camptix.php:4466
+msgid "Your access token does not seem to be valid."
+msgstr "Din access token er ikke gyldig."
+
+#: camptix.php:4469
+msgid "Your payment has been cancelled. Feel free to try again!"
+msgstr ""
+"Din betaling er blevet annulleret, du er velkommen til at komme tilbage og "
+"prøve igen senere!"
+
+#: camptix.php:4472
+msgid "The edit link you are trying to use is either invalid or has expired."
+msgstr ""
+"Det link du ønsker at bruge, er enten forkert eller ophørt med at virke."
+
+#: camptix.php:4475
+msgid ""
+"Your refund request can not be processed. Please try again later or contact "
+"support."
+msgstr ""
+"Dit ønske om refundering kan ikke gennemføres, Prøv igen senere eller "
+"kontakt support."
+
+#: camptix.php:4478
+msgid ""
+"Sorry, but the reservation you are trying to use has been cancelled or has "
+"expired."
+msgstr ""
+"Beklager, den reservation du prøver at bruge er blevet annulleret eller er "
+"udløbet."
+
+#: camptix.php:4495 camptix.php:4674
+msgid "Description"
+msgstr "Beskrivelse"
+
+#: camptix.php:4569 camptix.php:4717
+msgid "Coupon Applied: <strong>%s</strong>, %s discount"
+msgstr "Kupon benyttet: <strong>%s</strong>, %s rabat"
+
+#: camptix.php:4571
+msgid "Click here to enter a coupon code"
+msgstr "Klik her for at indtaste en billetkode"
+
+#: camptix.php:4574
+msgid "Apply Coupon"
+msgstr "Tilføj billet"
+
+#: camptix.php:4594
+msgid "Register &rarr;"
+msgstr "Registrer &rarr;"
+
+#: camptix.php:4621
+msgid ""
+"It looks like you have chosen more tickets than we have left! We have "
+"stripped the extra ones."
+msgstr ""
+"Det ser ud til, at du har valgt flere billetter end vi har tilbage! vi "
+"sletter de overskydende."
+
+#: camptix.php:4623
+msgid ""
+"It looks like somebody purchased a ticket before you could finish your "
+"purchase. Please review your order and try again."
+msgstr ""
+"Det ser ud til at der var nogen der købte en billet, før at du var færdig "
+"med dit køb. Find en anden billet og prøv igen."
+
+#: camptix.php:4627
+msgid ""
+"You have exceeded the coupon limits, so we have stripped down the extra "
+"tickets."
+msgstr ""
+"Du har overskredet grænsen for køb, så vi har fjernet de for mange købte "
+"billetter."
+
+#: camptix.php:4629
+msgid ""
+"It looks like somebody used the same coupon before you could finish your "
+"purchase. Please review your order and try again."
+msgstr ""
+"Det ser ud til at der er en anden der har brugt den samme billet før at du "
+"fik afsluttet dit køb. Venligst gennemse din ordre og prøv igen."
+
+#: camptix.php:4632 camptix.php:5037 camptix.php:5053
+msgid "Please fill in all required fields."
+msgstr "Vær venlig at udfylde de ønskede felter."
+
+#: camptix.php:4635
+msgid "The e-mail address you have entered seems to be invalid."
+msgstr "Du har skrevet en forkert e-mail adresse, prøv igen"
+
+#: camptix.php:4638
+msgid "The chosen receipt e-mail address is either empty or invalid."
+msgstr "Modtageres E-mail adresse er enten nedlagt eller forkert."
+
+#: camptix.php:4641
+msgid ""
+"A payment error has occurred, looks like chosen payment method is not "
+"responding. Please try again later."
+msgstr ""
+"En betalingsfejl er opstået, det ser ud til at den valgte betalingsmetode "
+"ikke svarer. Prøv igen senere."
+
+#: camptix.php:4644
+msgid "You have selected an invalid payment method. Please try again."
+msgstr "Du har valgt en ikke gylgig betalingsmetode. Prøv venligst igen."
+
+#: camptix.php:4647
+msgid "Looks like you're trying to use an invalid or expired coupon."
+msgstr "Ser ud til at du bruger en forkert eller udløbet kupon."
+
+#: camptix.php:4670
+msgid "Order Summary"
+msgstr "Samlet ordre"
+
+#: camptix.php:4675
+msgid "Per Ticket"
+msgstr "Pr. billet"
+
+#: camptix.php:4725
+msgid "Registration Information"
+msgstr "Registrations oplysninger"
+
+#: camptix.php:4761
+msgid "Send the receipt to this address"
+msgstr "Send forespørgselen til denne adresse."
+
+#: camptix.php:4800
+msgid "Receipt"
+msgstr "Forespørgsel  "
+
+#: camptix.php:4803
+msgid "E-mail the receipt to"
+msgstr "Send en e-mail med forespørgsel til "
+
+#: camptix.php:4821
+msgid "Checkout &rarr;"
+msgstr "Gå til betaling &rarr;"
+
+#: camptix.php:4823
+msgid "Claim Tickets &rarr;"
+msgstr "Resever billetter &rarr;"
+
+#: camptix.php:4878
+msgid "Please note that the payment for this set of tickets is still pending."
+msgstr "Vær opmærksom på at betalingen for billetten stadig er i gang."
+
+#: camptix.php:4885
+msgid "Tickets Summary"
+msgstr "Samlet ordre"
+
+#: camptix.php:4886
+msgid "Purchase Date"
+msgstr "Købs dato"
+
+#: camptix.php:4941
+msgid "Edit information"
+msgstr "Ret oplysninger"
+
+#: camptix.php:4958
+msgid "Change of plans? Made a mistake? Don't worry, you can %s."
+msgstr ""
+"Ændring af planer? Lavet en fejl? Ingen grund til bekymring, du kan %s."
+
+#: camptix.php:4958
+msgid "request a refund"
+msgstr "Ønske om refundering"
+
+#: camptix.php:5003
+msgid "This attendee is not published."
+msgstr "Oplysninger om deltagere er ikke offentliggjort."
+
+#: camptix.php:5017
+msgid "Please note that the payment for this ticket is still pending."
+msgstr "Vær opmærksom på at betalingen for billetten stadig er i gang."
+
+#: camptix.php:5040
+msgid "You have entered an invalid e-mail, please try again."
+msgstr "Du har skrevet en forkert e-mail adresse, prøv igen"
+
+#: camptix.php:5058
+msgid "Your information has not been changed!"
+msgstr "Dine oplysninger er ikke blevet ændret!"
+
+#: camptix.php:5073
+msgid "Your information has been saved!"
+msgstr "Dine oplysninger er gemt!"
+
+#: camptix.php:5126
+msgid "Save Attendee Information"
+msgstr "Gem oplysninger om deltagere"
+
+#: camptix.php:5223
+msgid "You have to agree to the terms to request a refund."
+msgstr "Du må acceptere betingelserne for at få refunderet."
+
+#: camptix.php:5248
+msgid "Your tickets have been successfully refunded."
+msgstr "Din billet er blevet refunderet."
+
+#: camptix.php:5251
+msgid "Can not refund the transaction at this time. Please try again later."
+msgstr "Kan ikke gennemføre refunderingen i øjeblikket. Prøv igen senere."
+
+#: camptix.php:5263
+msgid "Refund Request"
+msgstr "Forespørgelse om refundering"
+
+#: camptix.php:5268
+msgid "Request Details"
+msgstr "Ønsker detaljer"
+
+#: camptix.php:5276
+msgid "Original Payment"
+msgstr "Oprindelig betaling"
+
+#: camptix.php:5280
+msgid "Purchased Tickets"
+msgstr "Køb billet"
+
+#: camptix.php:5288
+msgid "Refund Amount"
+msgstr "Beløb refunderet"
+
+#: camptix.php:5292
+msgid "Refund Reason"
+msgstr "Begrundelse for rufundering"
+
+#: camptix.php:5298
+msgid ""
+"Refunds can take up to several days to process. All of the tickets you "
+"purchased in the original transaction will be cancelled. We are not able to "
+"provide partial refunds and/or refunds to a different account than the "
+"original purchaser. You must agree to these terms before requesting a refund."
+msgstr ""
+"Refundering kan tage op til flere dage. Alle billetter købt i det "
+"oprindelige køb vil blive annulleret. Vi kan ikke udføre delvis refundering "
+"eller refundere til en anden konto end den oprindelige købers. Du må "
+"accepterer disse betingelser før refundering kan gennemføres."
+
+#: camptix.php:5300
+msgid "I agree to the above terms"
+msgstr "Jeg accepterer de ovenstående betingelser "
+
+#: camptix.php:5301
+msgid "Send Request"
+msgstr "Send forespørgelse"
+
+#: camptix.php:6347
+msgid "Coupon used: %s"
+msgstr "Benyttet kupon: %s"
+
+#: camptix.php:6349
+msgid "Total: %s"
+msgstr "I alt: %s"
+
+#: camptix.php:6350
+msgid "Let us know if you have any questions!"
+msgstr "Kontakt os hvis du har spørgsmål"
+
+#: camptix.php:6371 camptix.php:6429
+msgid "Your Ticket to %s"
+msgstr "Dine billetter til %s"
+
+#: camptix.php:6391 camptix.php:6470
+msgid "Your Refund for %s"
+msgstr "Din tilbagebetaling for %s"
+
+#: camptix.php:6423
+msgid ""
+"Your payment status is: %s. You will receive a notification e-mail once your "
+"payment is completed."
+msgstr ""
+"Din betalings status: %s. du vil modtage en mail, når din betaling er "
+"gennemført."
+
+#: camptix.php:6440
+msgid "Your Tickets to %s"
+msgstr "Dine bbilletter til %s"
+
+#: camptix.php:6452 camptix.php:6461
+msgid "Your Payment for %s"
+msgstr "Din betaling for %s"
+
+#: camptix.php:6589
+msgid ""
+"CampTix is in <strong>archive mode</strong>. Please do not make any changes."
+msgstr ""
+
+#: camptix.php:6722
+msgid "Please register your CampTix addons before CampTix is initialized."
+msgstr ""
+
+#: camptix.php:6727
+msgid "The CampTix addon you are trying to register does not exist."
+msgstr "Den CamTix-udvidelse du forsøger at registrere findes ikke."
+
+#: inc/class-camptix-payment-method.php:60
+msgid "Supported currencies: <code>%s</code>."
+msgstr "Understøttede valutaer: <code>%s</code>."
+
+#: inc/class-camptix-payment-method.php:67
+msgid "Disabled"
+msgstr "Afbrudt"
+
+#: inc/class-camptix-payment-method.php:69
+msgid "%s is not supported by this payment method."
+msgstr "%s er ikke understøttet ved denne betalingsmetode."
+
+#. Plugin Name of the plugin/theme
+msgid "CampTix Event Ticketing"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+#. Author URI of the plugin/theme
+msgid "http://wordcamp.org"
+msgstr "http://wordcamp.org"
+
+#. Description of the plugin/theme
+msgid "Simple and flexible event ticketing for WordPress."
+msgstr "Enkelt og fleksibelt billetsystem til WordPress"
+
+#. Author of the plugin/theme
+msgid "Automattic"
+msgstr "Automattic"
