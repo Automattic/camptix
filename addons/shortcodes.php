@@ -148,9 +148,10 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 						// Disable object cache for prepared metadata.
 						$camptix->filter_post_meta = $camptix->prepare_metadata_for( $attendees_raw );
 
+						$attendees = array();
 						foreach ( $attendees_raw as $attendee ) {
 							$email = get_post_meta( $attendee, 'tix_email', true );
-							$attendees[$email] = $attendee;
+							$attendees[ $email ] = $attendee;
 						}
 
 						foreach ( $attendees as $attendee_id ) {
