@@ -155,8 +155,10 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 							// Skip attendees marked as private.
 							$privacy = get_post_meta( $attendee_id, 'tix_privacy', true );
-							if ( $privacy == 'private' )
+							if ( $privacy == 'private' ) {
+								$printed++;
 								continue;
+							}
 
 							echo '<li>';
 
