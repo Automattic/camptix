@@ -4400,6 +4400,13 @@ class CampTix_Plugin {
 		$ticket = get_post( $ticket_id );
 		if ( ! $ticket ) return;
 
+		$resend_receipt_url = add_query_arg( 'resend_receipt', true );
+
+		if ( isset( $_GET['resend_receipt'] ) && true == $_GET['resend_receipt'] ) {
+			$this->send_email_receipt( $post );
+			echo sprintf( __('<div class="updated fade"><p>%s</p></div>' ), 'Receipt successfully resent.' );
+		}
+
 		$access_token = get_post_meta( $post->ID, 'tix_access_token', true );
 		$edit_token = get_post_meta( $post->ID, 'tix_edit_token', true );
 		$rows = array();
@@ -4444,6 +4451,8 @@ class CampTix_Plugin {
 		}
 
 		$rows[] = array( __( 'Order Total', 'camptix' ), $this->append_currency( get_post_meta( $post->ID, 'tix_order_total', true ) ) );
+
+		$rows[] = array( __( 'Receipt', 'camptix' ), sprintf( '<a href="%s">%s</a>', $resend_receipt_url, 'Re-send receipt' ) );
 
 		// Reservation
 		if ( $this->options['reservations_enabled'] ) {
@@ -6994,8 +7003,6 @@ class CampTix_Plugin {
 	}
 
 	function email_tickets( $payment_token = false, $from_status = 'draft', $to_status = 'publish' ) {
-		global $shortcode_tags;
-
 		if ( ! $payment_token )
 			return;
 
@@ -7016,31 +7023,6 @@ class CampTix_Plugin {
 		if ( ! $attendees )
 			return;
 
-		// Remove all shortcodes before sending the e-mails, but bring them back later.
-		$this->removed_shortcodes = $shortcode_tags;
-		remove_all_shortcodes();
-
-		do_action( 'camptix_init_email_templates_shortcodes' );
-
-		$access_token = get_post_meta( $attendees[0]->ID, 'tix_access_token', true );
-		$receipt_email = get_post_meta( $attendees[0]->ID, 'tix_receipt_email', true );
-		$order = get_post_meta( $attendees[0]->ID, 'tix_order', true );
-
-		$receipt_content = '';
-		foreach ( $order['items'] as $item ) {
-			$ticket = get_post( $item['id'] );
-			$receipt_content .= sprintf( "* %s (%s) x%d = %s\n", $ticket->post_title, $this->append_currency( $item['price'], false ), $item['quantity'], $this->append_currency( $item['price'] * $item['quantity'], false ) );
-		}
-
-		if ( isset( $order['coupon'] ) && $order['coupon'] )
-			$receipt_content .= sprintf( '* ' . __( 'Coupon used: %s', 'camptix' ) . "\n", $order['coupon'] );
-
-		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $order['total'], false ) );
-		$signature = apply_filters( 'camptix_ticket_email_signature', __( 'Let us know if you have any questions!', 'camptix' ) );
-
-		// Set the tmp receipt for shortcodes use.
-		$this->tmp( 'receipt', $receipt_content );
-
 		foreach ( $attendees as $attendee ) {
 			$attendee_email = $this->get_attendee_email( $attendee->ID );
 
@@ -7056,22 +7038,7 @@ class CampTix_Plugin {
 		 */
 		if ( count( $attendees ) > 1 && $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
 			foreach ( $attendees as $attendee ) {
-				$attendee_email = $this->get_attendee_email( $attendee->ID );
-				$edit_token = get_post_meta( $attendee->ID, 'tix_edit_token', true );
-				$edit_link = $this->get_edit_attendee_link( $attendee->ID, $edit_token );
-
-				$this->tmp( 'attendee_id', $attendee->ID );
-				$this->tmp( 'ticket_url', $edit_link );
-
-				$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_multiple_purchase', $attendee );
-				$content = do_shortcode( $this->options[ $email_template ] );
-
-				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
-
-				$this->log( sprintf( 'Sent ticket e-mail to %s and receipt to %s.', $attendee_email, $receipt_email ), $attendee->ID );
-				$this->wp_mail( $attendee_email, $subject, $content );
-
-				do_action( 'camptix_ticket_emailed', $attendee->ID );
+				$this->send_email_receipt( $attendee );
 			}
 		}
 
@@ -7123,25 +7090,12 @@ class CampTix_Plugin {
 
 			if ( count( $attendees ) == 1 ) {
 
-				$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_single_purchase', $attendees[0] );
-				$content = do_shortcode( $this->options[ $email_template ] );
-
-				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
-
-				$this->log( sprintf( 'Sent a ticket and receipt to %s.', $receipt_email ), $receipt_attendee->ID );
-				$this->wp_mail( $receipt_email, $subject, $content );
-
-				do_action( 'camptix_ticket_emailed', $receipt_attendee->ID );
+				$this->send_email_receipt( $receipt_attendee );
 
 			} elseif ( count( $attendees ) > 1 ) {
 
-				$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_multiple_purchase_receipt', $attendees[0] );
-				$content = do_shortcode( $this->options[ $email_template ] );
+				$this->send_email_receipt( $receipt_attendee, 'email_template_multiple_purchase_receipt' );
 
-				$subject = sprintf( __( "Your Tickets to %s", 'camptix' ), $this->options['event_name'] );
-
-				$this->log( sprintf( 'Sent a receipt to %s.', $receipt_email ), $receipt_attendee->ID );
-				$this->wp_mail( $receipt_email, $subject, $content );
 			}
 		}
 
@@ -7177,6 +7131,59 @@ class CampTix_Plugin {
 			$this->log( sprintf( 'Sending refund e-mail notification to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
+
+		$this->tmp( 'attendee_id', false );
+		$this->tmp( 'ticket_url', false );
+		$this->tmp( 'receipt', false );
+
+		// Bring the original shortcodes back.
+		$shortcode_tags = $this->removed_shortcodes;
+		$this->removed_shortcodes = array();
+	}
+
+	function send_email_receipt( $attendee, $email_template_name = 'email_template_single_purchase' ) {
+		global $shortcode_tags;
+
+		// Remove all shortcodes before sending the e-mails, but bring them back later.
+		$this->removed_shortcodes = $shortcode_tags;
+		remove_all_shortcodes();
+
+		do_action( 'camptix_init_email_templates_shortcodes' );
+
+		$access_token = get_post_meta( $attendee->ID, 'tix_access_token', true );
+		$attendee_email = $this->get_attendee_email( $attendee->ID );
+		$order = get_post_meta( $attendee->ID, 'tix_order', true );
+
+		$receipt_content = '';
+
+		foreach ( $order['items'] as $item ) {
+			$ticket = get_post( $item['id'] );
+			$receipt_content .= sprintf( "* %s (%s) x%d = %s\n", $ticket->post_title, $this->append_currency( $item['price'], false ), $item['quantity'], $this->append_currency( $item['price'] * $item['quantity'], false ) );
+		}
+
+		if ( isset( $order['coupon'] ) && $order['coupon'] ) {
+			$receipt_content .= sprintf( '* ' . __( 'Coupon used: %s', 'camptix' ) . "\n", $order['coupon'] );
+		}
+
+		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $order['total'], false ) );
+
+		$signature = apply_filters( 'camptix_ticket_email_signature', __( 'Let us know if you have any questions!', 'camptix' ) );
+
+		// Set the tmp receipt for shortcodes use.
+		$this->tmp( 'receipt', $receipt_content );
+		$this->tmp( 'ticket_url', $this->get_access_tickets_link( $access_token ) );
+
+		$email_template = apply_filters( 'camptix_email_tickets_template', $email_template_name, $attendee->ID );
+		
+		$content = do_shortcode( $this->options[ $email_template ] );
+		
+		$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
+
+		$this->log( sprintf( 'Sent a ticket and receipt to %s.', $attendee_email ), $attendee->ID );
+		
+		$this->wp_mail( $attendee_email, $subject, $content );
+		
+		do_action( 'camptix_ticket_emailed', $attendee->ID );
 
 		$this->tmp( 'attendee_id', false );
 		$this->tmp( 'ticket_url', false );
