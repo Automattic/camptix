@@ -4400,11 +4400,9 @@ class CampTix_Plugin {
 		$ticket = get_post( $ticket_id );
 		if ( ! $ticket ) return;
 
-		$access_token      = get_post_meta( $post->ID, 'tix_access_token', true );
-		$edit_token        = get_post_meta( $post->ID, 'tix_edit_token', true );
-		$payment_method_id = get_post_meta( $post->ID, 'tix_payment_method', true );
-		$payment_methods   = $this->get_enabled_payment_methods();
-		$payment_method    = isset( $payment_methods[ $payment_method_id ]['name'] ) ? $payment_methods[ $payment_method_id ]['name'] : $payment_method_id;
+		$access_token   = get_post_meta( $post->ID, 'tix_access_token', true );
+		$edit_token     = get_post_meta( $post->ID, 'tix_edit_token', true );
+		$payment_method = $this->get_payment_method_name_by_attendee_id( $post->ID );
 
 		$rows = array();
 
@@ -6818,6 +6816,19 @@ class CampTix_Plugin {
 	function get_payment_method_by_id( $id ) {
 		$payment_method = apply_filters( 'camptix_get_payment_method_by_id', null, $id );
 		return $payment_method;
+	}
+
+	/**
+	 * Get payment method name by attendee id
+	 *
+	 * @param int $attendee_id
+	 * @return string
+	 */
+	function get_payment_method_name_by_attendee_id( $attendee_id ) {
+		$id     = get_post_meta( absint( $attendee_id ), 'tix_payment_method', true );
+		$method = $this->get_payment_method_by_id( $id );
+
+		return isset( $method->name ) ? $method->name : $id;
 	}
 
 	function get_available_payment_methods() {
