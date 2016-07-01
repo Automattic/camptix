@@ -2711,6 +2711,7 @@ class CampTix_Plugin {
 			'coupon' => __( 'Coupon', 'camptix' ),
 			'buyer_name' => __( 'Ticket Buyer Name', 'camptix' ),
 			'buyer_email' => __( 'Ticket Buyer E-mail Address', 'camptix' ),
+			'payment_method' => __( 'Payment Method', 'camptix' ),
 		);
 		foreach ( $questions as $question )
 			$columns[ 'tix_q_' . $question->ID ] = apply_filters( 'the_title', $question->post_title );
@@ -2779,6 +2780,7 @@ class CampTix_Plugin {
 					'coupon' => get_post_meta( $attendee_id, 'tix_coupon', true ),
 					'buyer_name' => empty( $buyer[0]->post_title ) ? '' : $buyer[0]->post_title,
 					'buyer_email' => get_post_meta( $attendee_id, 'tix_receipt_email', true ),
+					'payment_method' => $this->get_payment_method_name_by_attendee_id( $attendee_id ),
 				);
 
 				$answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
