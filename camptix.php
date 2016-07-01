@@ -4400,8 +4400,12 @@ class CampTix_Plugin {
 		$ticket = get_post( $ticket_id );
 		if ( ! $ticket ) return;
 
-		$access_token = get_post_meta( $post->ID, 'tix_access_token', true );
-		$edit_token = get_post_meta( $post->ID, 'tix_edit_token', true );
+		$access_token      = get_post_meta( $post->ID, 'tix_access_token', true );
+		$edit_token        = get_post_meta( $post->ID, 'tix_edit_token', true );
+		$payment_method_id = get_post_meta( $post->ID, 'tix_payment_method', true );
+		$payment_methods   = $this->get_enabled_payment_methods();
+		$payment_method    = isset( $payment_methods[ $payment_method_id ]['name'] ) ? $payment_methods[ $payment_method_id ]['name'] : $payment_method_id;
+
 		$rows = array();
 
 		// General
@@ -4419,6 +4423,7 @@ class CampTix_Plugin {
 
 		// Transaction
 		$rows[] = array( __( 'Transaction', 'camptix' ), '' );
+		$rows[] = array( __( 'Payment Method', 'camptix' ), $payment_method );
 		$txn_id = get_post_meta( $post->ID, 'tix_transaction_id', true );
 		if ( $txn_id ) {
 			$txn = get_post_meta( $post->ID, 'tix_transaction_details', true );
