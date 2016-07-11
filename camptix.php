@@ -2711,6 +2711,7 @@ class CampTix_Plugin {
 			'coupon' => __( 'Coupon', 'camptix' ),
 			'buyer_name' => __( 'Ticket Buyer Name', 'camptix' ),
 			'buyer_email' => __( 'Ticket Buyer E-mail Address', 'camptix' ),
+			'payment_method' => __( 'Payment Method', 'camptix' ),
 		);
 		foreach ( $questions as $question )
 			$columns[ 'tix_q_' . $question->ID ] = apply_filters( 'the_title', $question->post_title );
@@ -2779,6 +2780,7 @@ class CampTix_Plugin {
 					'coupon' => get_post_meta( $attendee_id, 'tix_coupon', true ),
 					'buyer_name' => empty( $buyer[0]->post_title ) ? '' : $buyer[0]->post_title,
 					'buyer_email' => get_post_meta( $attendee_id, 'tix_receipt_email', true ),
+					'payment_method' => $this->get_payment_method_name_by_attendee_id( $attendee_id ),
 				);
 
 				$answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
@@ -4400,8 +4402,10 @@ class CampTix_Plugin {
 		$ticket = get_post( $ticket_id );
 		if ( ! $ticket ) return;
 
-		$access_token = get_post_meta( $post->ID, 'tix_access_token', true );
-		$edit_token = get_post_meta( $post->ID, 'tix_edit_token', true );
+		$access_token   = get_post_meta( $post->ID, 'tix_access_token', true );
+		$edit_token     = get_post_meta( $post->ID, 'tix_edit_token', true );
+		$payment_method = $this->get_payment_method_name_by_attendee_id( $post->ID );
+
 		$rows = array();
 
 		// General
@@ -4419,6 +4423,7 @@ class CampTix_Plugin {
 
 		// Transaction
 		$rows[] = array( __( 'Transaction', 'camptix' ), '' );
+		$rows[] = array( __( 'Payment Method', 'camptix' ), $payment_method );
 		$txn_id = get_post_meta( $post->ID, 'tix_transaction_id', true );
 		if ( $txn_id ) {
 			$txn = get_post_meta( $post->ID, 'tix_transaction_details', true );
@@ -6813,6 +6818,19 @@ class CampTix_Plugin {
 	function get_payment_method_by_id( $id ) {
 		$payment_method = apply_filters( 'camptix_get_payment_method_by_id', null, $id );
 		return $payment_method;
+	}
+
+	/**
+	 * Get payment method name by attendee id
+	 *
+	 * @param int $attendee_id
+	 * @return string
+	 */
+	function get_payment_method_name_by_attendee_id( $attendee_id ) {
+		$id     = get_post_meta( absint( $attendee_id ), 'tix_payment_method', true );
+		$method = $this->get_payment_method_by_id( $id );
+
+		return isset( $method->name ) ? $method->name : $id;
 	}
 
 	function get_available_payment_methods() {
