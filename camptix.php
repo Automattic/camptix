@@ -7608,6 +7608,39 @@ class CampTix_Plugin {
 		return make_clickable( wpautop( wp_kses( $message, self::get_allowed_html_mail_tags() ) ) );
 	}
 
+	/*
+	 * Get a substring by bytes
+	 *
+	 * substr() truncates by characters rather than bytes, and mb_strcut() isn't always enabled.
+	 *
+	 * @param string $string
+	 * @param int    $start
+	 * @param int    $length
+	 *
+	 * @return string
+	 */
+	public static function substr_bytes( $string, $start, $length ) {
+		$substr_function = 'mb_strcut';
+
+		// Fall back to substr() when the `mbstring` extension is not enabled
+		if ( ! function_exists( 'mb_strcut' ) ) {
+			$substr_function = 'substr';
+
+			// Some Unicode encodings use up to 6 bytes per character
+			$length = ceil( $length / 6 );
+
+			/*
+			 * substr() is not multibyte-safe, so it can cut a character in half. The risk of that is reduced
+			 * when using an even-numbered length.
+			 */
+			if ( $length > 2 && 0 !== $length % 2 ) {
+				$length--;
+			}
+		}
+
+		return call_user_func( $substr_function, $string, $start, $length );
+	}
+
 	/**
 	 * Fired before $this->init()
 	 * @todo maybe check $classname's inheritance tree and signal if it's not a CampTix_Addon

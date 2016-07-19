@@ -701,6 +701,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * @return array
 	 */
 	function fill_payload_with_order( &$payload, $order ) {
+		/** @var $camptix CampTix_Plugin */
+		global $camptix;
+
 		$event_name = 'Event';
 		if ( isset( $this->camptix_options['event_name'] ) ) {
 			$event_name = $this->camptix_options['event_name'];
@@ -708,8 +711,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		$i = 0;
 		foreach ( $order['items'] as $item ) {
-			$payload['L_PAYMENTREQUEST_0_NAME'   . $i] = substr( strip_tags( $event_name . ': ' . $item['name'] ), 0, 127 );
-			$payload['L_PAYMENTREQUEST_0_DESC'   . $i] = substr( strip_tags( $item['description'] ), 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_NAME'   . $i] = $camptix->substr_bytes( strip_tags( $event_name . ': ' . $item['name'] ), 0, 127 );
+			$payload['L_PAYMENTREQUEST_0_DESC'   . $i] = $camptix->substr_bytes( strip_tags( $item['description'] ),               0, 127 );
 			$payload['L_PAYMENTREQUEST_0_NUMBER' . $i] = $item['id'];
 			$payload['L_PAYMENTREQUEST_0_AMT'    . $i] = $item['price'];
 			$payload['L_PAYMENTREQUEST_0_QTY'    . $i] = $item['quantity'];
