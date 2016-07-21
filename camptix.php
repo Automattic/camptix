@@ -714,7 +714,7 @@ class CampTix_Plugin {
 				$applies_to = get_post_meta( $post_id, 'tix_applies_to' );
 				foreach ( $applies_to as $ticket_id )
 					if ( $this->is_ticket_valid_for_display( $ticket_id ) )
-						edit_post_link( $this->get_ticket_title( $ticket_id ), '', '<br />', $ticket_id );
+						edit_post_link( esc_html( $this->get_ticket_title( $ticket_id ) ), '', '<br />', $ticket_id );
 				break;
 			case 'tix_availability':
 				$start = get_post_meta( $post_id, 'tix_coupon_start', true );
