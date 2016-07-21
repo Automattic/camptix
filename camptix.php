@@ -2184,9 +2184,11 @@ class CampTix_Plugin {
 
 			$stream = fopen( "php://output", 'w' );
 
-			fputcsv( $stream, array( $summary_title, __( 'Count', 'camptix' ) ) );
-			foreach ( $summary as $entry )
-				fputcsv( $stream, $entry, ',', '"' );
+			$headers = array( $summary_title, __( 'Count', 'camptix' ) );
+			fputcsv( $stream, self::esc_csv( $headers ) );
+			foreach ( $summary as $entry ) {
+				fputcsv( $stream, self::esc_csv( $entry ), ',', '"' );
+			}
 
 			fclose( $stream );
 			die();
@@ -2722,7 +2724,7 @@ class CampTix_Plugin {
 		if ( 'csv' == $format ) {
 			ob_start();
 			$report = fopen( "php://output", 'w' );
-			fputcsv( $report, $columns );
+			fputcsv( $report, self::esc_csv( $columns ) );
 		}
 
 		if ( 'xml' == $format )
@@ -2804,8 +2806,9 @@ class CampTix_Plugin {
 				foreach ( $columns as $key => $caption )
 					$clean_line[$key] = isset( $line[$key] ) ? $line[$key] : '';
 
-				if ( 'csv' == $format )
-					fputcsv( $report, $clean_line );
+				if ( 'csv' == $format ) {
+					fputcsv( $report, self::esc_csv( $clean_line ) );
+				}
 
 				if ( 'xml' == $format ) {
 					$report .= "\t<attendee>" . PHP_EOL;
@@ -2838,6 +2841,31 @@ class CampTix_Plugin {
 
 		$this->log( sprintf( 'Finished %s data export in %s seconds.', $format, microtime(true) - $time_start ) );
 		return $report;
+	}
+
+	/**
+	 * Escape a string to be used in a CSV context
+	 *
+	 * Malicious input can inject formulas into CSV files, opening up the possibility for phishing attacks,
+	 * information disclosure, and arbitrary command execution.
+	 *
+	 * @see http://www.contextis.com/resources/blog/comma-separated-vulnerabilities/
+	 * @see https://hackerone.com/reports/72785
+	 *
+	 * @param array $fields
+	 *
+	 * @return array
+	 */
+	public static function esc_csv( $fields ) {
+		$active_content_triggers = array( '=', '+', '-', '@' );
+
+		foreach( $fields as $index => $field ) {
+			if ( in_array( mb_substr( $field, 0, 1 ), $active_content_triggers, true ) ) {
+				$fields[ $index ] = "'" . $field;
+			}
+		}
+
+		return $fields;
 	}
 
 	/**
