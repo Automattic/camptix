@@ -548,7 +548,7 @@ class CampTix_Plugin {
 	function manage_columns_ticket_action( $column, $post_id ) {
 		switch ( $column ) {
 			case 'tix_price':
-				echo $this->append_currency( get_post_meta( $post_id, 'tix_price', true ) );
+				echo esc_html( $this->append_currency( get_post_meta( $post_id, 'tix_price', true ) ) );
 				break;
 			case 'tix_quantity':
 				echo intval( get_post_meta( $post_id, 'tix_quantity', true ) );
@@ -559,7 +559,7 @@ class CampTix_Plugin {
 				printf( '<a href="%s">%d</a>', esc_url( $attendees_url ), intval( $this->get_purchased_tickets_count( $post_id ) ) );
 				break;
 			case 'tix_remaining':
-				echo $this->get_remaining_tickets( $post_id );
+				echo absint( $this->get_remaining_tickets( $post_id ) );
 
 				if ( $this->options['reservations_enabled'] ) {
 					$reserved = 0;
@@ -568,7 +568,7 @@ class CampTix_Plugin {
 						$reserved += $reservation['quantity'] - $this->get_purchased_tickets_count( $post_id, $reservation_token );
 
 					if ( $reserved > 0 )
-						printf( ' ' . __( '(%d reserved)', 'camptix' ), $reserved );
+						printf( ' ' . __( '(%d reserved)', 'camptix' ), absint( $reserved ) );
 				}
 
 				break;
@@ -580,7 +580,7 @@ class CampTix_Plugin {
 					echo __( 'Auto', 'camptix' );
 				} else {
 					// translators: 1: "from" date, 2: "to" date
-					printf( __( '%1$s &mdash; %2$s', 'camptix' ), $start, $end );
+					printf( __( '%1$s &mdash; %2$s', 'camptix' ), esc_html( $start ), esc_html( $end ) );
 				}
 
 				break;
@@ -658,11 +658,11 @@ class CampTix_Plugin {
 				break;
 			case 'tix_order_total':
 				$order_total = (float) get_post_meta( $post_id, 'tix_order_total', true );
-				echo $this->append_currency( $order_total );
+				echo esc_html( $this->append_currency( $order_total ) );
 				break;
 			case 'tix_ticket_price':
 				$ticket_price = (float) get_post_meta( $post_id, 'tix_ticket_price', true );
-				echo $this->append_currency( $ticket_price );
+				echo esc_html( $this->append_currency( $ticket_price ) );
 				break;
 		}
 	}
@@ -695,7 +695,7 @@ class CampTix_Plugin {
 			case 'tix_used':
 				$attendees_url = get_admin_url( 0, '/edit.php?post_type=tix_attendee' );
 				$attendees_url = add_query_arg( 's', 'tix_coupon_id:' . intval( $post_id ), $attendees_url );
-				printf( '<a href="%s">%d</a>', esc_url( $attendees_url ), $this->get_used_coupons_count( $post_id ) );
+				printf( '<a href="%s">%d</a>', esc_url( $attendees_url ), absint( $this->get_used_coupons_count( $post_id ) ) );
 				break;
 			case 'tix_remaining':
 				echo (int) $this->get_remaining_coupons( $post_id );
@@ -704,9 +704,9 @@ class CampTix_Plugin {
 				$discount_price = (float) get_post_meta( $post_id, 'tix_discount_price', true );
 				$discount_percent = (int) get_post_meta( $post_id, 'tix_discount_percent', true );
 				if ( $discount_price > 0 ) {
-					echo $this->append_currency( $discount_price );
+					echo esc_html( $this->append_currency( $discount_price ) );
 				} elseif ( $discount_percent > 0 ) {
-					echo $discount_percent . '%';
+					echo esc_html( $discount_percent . '%' );
 				}
 				break;
 			case 'tix_tickets':
@@ -724,7 +724,7 @@ class CampTix_Plugin {
 					echo __( 'Auto', 'camptix' );
 				} else {
 					// translators: 1: "from" date, 2: "to" date
-					printf( __( '%1$s &mdash; %2$s', 'camptix' ), $start, $end );
+					printf( __( '%1$s &mdash; %2$s', 'camptix' ), esc_html( $start ), esc_html( $end ) );
 				}
 
 				break;
@@ -1731,7 +1731,7 @@ class CampTix_Plugin {
 		<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="0" <?php checked( $args['value'], false ); ?>> <?php _e( 'No', 'camptix' ); ?></label>
 
 		<?php if ( isset( $args['description'] ) ) : ?>
-		<p class="description"><?php echo $args['description']; ?></p>
+		<p class="description"><?php echo esc_html( $args['description'] ); ?></p>
 		<?php endif; ?>
 		<?php
 	}
@@ -2031,7 +2031,7 @@ class CampTix_Plugin {
 		foreach ( $sections as $section_key => $section_caption ) {
 			$active = $current_section === $section_key ? 'nav-tab-active' : '';
 			$url = add_query_arg( 'tix_section', $section_key );
-			echo '<a class="nav-tab ' . $active . '" href="' . esc_url( $url ) . '">' . esc_html( $section_caption ) . '</a>';
+			echo '<a class="nav-tab ' . esc_attr( $active ) . '" href="' . esc_url( $url ) . '">' . esc_html( $section_caption ) . '</a>';
 		}
 	}
 
@@ -2092,7 +2092,7 @@ class CampTix_Plugin {
 		foreach ( $sections as $section_key => $section_caption ) {
 			$active = $current_section === $section_key ? 'nav-tab-active' : '';
 			$url = add_query_arg( 'tix_section', $section_key );
-			echo '<a class="nav-tab ' . $active . '" href="' . esc_url( $url ) . '">' . esc_html( $section_caption ) . '</a>';
+			echo '<a class="nav-tab ' . esc_attr( $active ) . '" href="' . esc_url( $url ) . '">' . esc_html( $section_caption ) . '</a>';
 		}
 	}
 
@@ -2475,7 +2475,13 @@ class CampTix_Plugin {
 		$results = $this->generate_revenue_report_data();
 
 		if ( $results['totals']->revenue != $results['actual_total'] ) {
-			printf( '<div class="updated settings-error below-h2"><p>%s</p></div>', sprintf( __( '<strong>Woah!</strong> The revenue total does not match with the transactions total. The actual total is: <strong>%s</strong>. Something somewhere has gone wrong, please report this.', 'camptix' ), $this->append_currency( $results['actual_total'] ) ) );
+			printf(
+				'<div class="updated settings-error below-h2"><p>%s</p></div>',
+				sprintf(
+					__( '<strong>Woah!</strong> The revenue total does not match with the transactions total. The actual total is: <strong>%s</strong>. Something somewhere has gone wrong, please report this.', 'camptix' ),
+					esc_html( $this->append_currency( $results['actual_total'] ) )
+				)
+			);
 		}
 
 		$this->table( $results['rows'], 'widefat tix-revenue-summary' );
@@ -3826,7 +3832,7 @@ class CampTix_Plugin {
 						<label for="post_status"><?php _e('Status:') ?></label>
 						<span id="post-status-display">
 							<?php if ( $post_status_object ) : ?>
-							<?php echo $post_status_object->label; ?>
+							<?php echo esc_html( $post_status_object->label ); ?>
 							<?php else: ?>
 								<?php _e( 'Unknown status', 'camptix' ); ?>
 							<?php endif; ?>
@@ -3880,7 +3886,7 @@ class CampTix_Plugin {
 					else
 						$delete_text = __( 'Move to Trash', 'camptix' );
 					?>
-				<a class="submitdelete deletion" href="<?php echo get_delete_post_link( $post->ID ); ?>"><?php echo $delete_text; ?></a><?php
+				<a class="submitdelete deletion" href="<?php echo get_delete_post_link( $post->ID ); ?>"><?php echo esc_html( $delete_text ); ?></a><?php
 				} ?>
 				</div>
 
@@ -4053,11 +4059,13 @@ class CampTix_Plugin {
 				<tr>
 					<td><span><?php echo esc_html( isset( $reservation['name'] ) ? $reservation['name'] : urldecode( $reservation['id'] ) ); ?></span></td>
 					<td class="column-quantity"><span><?php echo intval( $reservation['quantity'] ); ?></span></td>
-					<td class="column-used"><span><?php echo $this->get_purchased_tickets_count( get_the_ID(), $reservation['token'] ); ?></span></td>
-					<td class="column-token"><span><a href="<?php echo esc_url( $this->get_reservation_link( $reservation['id'], $reservation['token'] ) ); ?>"><?php echo $reservation['token']; ?></a></span></td>
+					<td class="column-used"><span><?php echo absint( $this->get_purchased_tickets_count( get_the_ID(), $reservation['token'] ) ); ?></span></td>
+					<td class="column-token"><span><a href="<?php echo esc_url( $this->get_reservation_link( $reservation['id'], $reservation['token'] ) ); ?>">
+						<?php echo esc_html( $reservation['token'] ); ?>
+					</a></span></td>
 					<td class="column-actions"><span>
-						<input type="submit" class="button" name="tix_reservation_release[<?php echo $reservation['token']; ?>]" value="<?php esc_attr_e( 'Release', 'camptix' ); ?>" />
-						<input type="submit" class="button" name="tix_reservation_cancel[<?php echo $reservation['token']; ?>]" value="<?php esc_attr_e( 'Cancel', 'camptix' ); ?>" />
+						<input type="submit" class="button" name="tix_reservation_release[<?php echo esc_attr( $reservation['token'] ); ?>]" value="<?php esc_attr_e( 'Release', 'camptix' ); ?>" />
+						<input type="submit" class="button" name="tix_reservation_cancel[<?php echo esc_attr( $reservation['token'] ); ?>]" value="<?php esc_attr_e( 'Cancel', 'camptix' ); ?>" />
 					</span></td>
 				</tr>
 			<?php endforeach; ?>
@@ -4135,7 +4143,15 @@ class CampTix_Plugin {
 		?>
 		<?php if ( $values ) : ?>
 			<?php foreach ( (array) $values as $question_value ) : ?>
-				<label><input <?php checked( in_array( $question_value, (array) $user_value ) ); ?> name="<?php echo esc_attr( $name ); ?>[<?php echo sanitize_title_with_dashes( $question_value ); ?>]" type="checkbox" value="<?php echo esc_attr( $question_value ); ?>" /> <?php echo esc_html( $question_value ); ?></label><br />
+				<label>
+					<input
+						<?php checked( in_array( $question_value, (array) $user_value ) ); ?>
+						name="<?php echo esc_attr( $name ); ?>[<?php echo esc_attr( sanitize_title_with_dashes( $question_value ) ); ?>]"
+						type="checkbox"
+						value="<?php echo esc_attr( $question_value ); ?>"
+					/>
+					<?php echo esc_html( $question_value ); ?>
+				</label><br />
 			<?php endforeach; ?>
 		<?php else : ?>
 			<label><input <?php checked( $user_value, 'Yes' ); ?> name="<?php echo esc_attr( $name ); ?>" type="checkbox" value="Yes" /> <?php _e( 'Yes', 'camptix' ); ?></label>
@@ -4361,9 +4377,9 @@ class CampTix_Plugin {
 			<?php else: ?>
 				<span>
 				<?php if ( $discount_price ) : ?>
-					<?php echo $this->append_currency( $discount_price ); ?>
+					<?php echo esc_html( $this->append_currency( $discount_price ) ); ?>
 				<?php else : ?>
-					<?php echo $discount_percent; ?>%
+					<?php echo esc_html( $discount_percent ); ?>%
 				<?php endif; ?>
 				</span>
 				<p class="description" style="margin-top: 10px;"><?php _e( 'You can not change the discount because one or more tickets have already been purchased using this coupon.', 'camptix' ); ?></p>
@@ -5162,7 +5178,7 @@ class CampTix_Plugin {
 							<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
 								<th class="tix-column-remaining"><?php _e( 'Remaining', 'camptix' ); ?></th>
 							<?php endif; ?>
-							<th class="<?php echo implode( ' ', apply_filters( 'camptix_quantity_row_classes', array( 'tix-column-quantity' ) ) ); ?>">
+							<th class="<?php echo esc_attr( implode( ' ', apply_filters( 'camptix_quantity_row_classes', array( 'tix-column-quantity' ) ) ) ); ?>">
 								<?php _e( 'Quantity', 'camptix' ); ?>
 							</th>
 						</tr>
@@ -5192,7 +5208,7 @@ class CampTix_Plugin {
 							?>
 							<tr class="tix-ticket-<?php echo absint( $ticket->ID ); ?>">
 								<td class="tix-column-description">
-									<strong class="tix-ticket-title"><?php echo $ticket->post_title; ?></strong>
+									<strong class="tix-ticket-title"><?php echo esc_html( $ticket->post_title ); ?></strong>
 									<?php if ( $ticket->post_excerpt ) : ?>
 										<br /><span class="tix-ticket-excerpt"><?php echo $ticket->post_excerpt; ?></span>
 									<?php endif; ?>
@@ -5202,16 +5218,16 @@ class CampTix_Plugin {
 								</td>
 								<td class="tix-column-price" style="vertical-align: middle;">
 									<?php if ( $price > 0 ) : ?>
-										<?php echo $this->append_currency( $price ); ?>
+										<?php echo esc_html( $this->append_currency( $price ) ); ?>
 									<?php else : ?>
 										<?php _e( 'Free', 'camptix' ); ?>
 									<?php endif; ?>
 								</td>
 								<?php if ( apply_filters( 'camptix_show_remaining_tickets', true ) ) : ?>
-									<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo apply_filters( 'camptix_form_start_tix_remaining', $ticket->tix_remaining, $ticket ); ?></td>
+									<td class="tix-column-remaining" style="vertical-align: middle;"><?php echo esc_html( apply_filters( 'camptix_form_start_tix_remaining', $ticket->tix_remaining, $ticket ) ); ?></td>
 								<?php endif; ?>
-								<td class="<?php echo implode( ' ', apply_filters( 'camptix_quantity_row_classes', array( 'tix-column-quantity' ) ) ); ?>" style="vertical-align: middle;">
-									<select name="tix_tickets_selected[<?php echo $ticket->ID; ?>]">
+								<td class="<?php echo esc_attr( implode( ' ', apply_filters( 'camptix_quantity_row_classes', array( 'tix-column-quantity' ) ) ) ); ?>" style="vertical-align: middle;">
+									<select name="tix_tickets_selected[<?php echo esc_attr( $ticket->ID ); ?>]">
 										<?php foreach ( range( 0, $max ) as $value ) : ?>
 											<option <?php selected( $selected, $value ); ?> value="<?php echo esc_attr( $value ); ?>"><?php echo esc_html( $value ); ?></option>
 										<?php endforeach; ?>
@@ -5233,9 +5249,9 @@ class CampTix_Plugin {
 											$discount_text = $discount_percent . '%';
 										}
 										?>
-										<?php printf( __( 'Coupon Applied: <strong>%s</strong>, %s discount', 'camptix' ), esc_html( $this->coupon->post_title ), $discount_text ); ?>
+										<?php printf( __( 'Coupon Applied: <strong>%s</strong>, %s discount', 'camptix' ), esc_html( $this->coupon->post_title ), esc_html( $discount_text ) ); ?>
 									<?php else : ?>
-										<a href="#" id="tix-coupon-link" class="<?php echo implode( ' ', apply_filters( 'camptix_coupon_link_classes', array() ) ); ?>">
+										<a href="#" id="tix-coupon-link" class="<?php echo esc_attr( implode( ' ', apply_filters( 'camptix_coupon_link_classes', array() ) ) ); ?>">
 											<?php _e( 'Click here to enter a coupon code', 'camptix' ); ?>
 										</a>
 										<div id="tix-coupon-container" style="display: none;">
@@ -5260,7 +5276,7 @@ class CampTix_Plugin {
 				</table>
 
 				<p>
-					<input type="submit" value="<?php esc_attr_e( 'Register &rarr;', 'camptix' ); ?>" style="float: right; cursor: pointer;" class="<?php echo implode( ' ', apply_filters( 'camptix_register_button_classes', array() ) ); ?>" />
+					<input type="submit" value="<?php esc_attr_e( 'Register &rarr;', 'camptix' ); ?>" style="float: right; cursor: pointer;" class="<?php echo esc_attr( implode( ' ', apply_filters( 'camptix_register_button_classes', array() ) ) ); ?>" />
 					<br class="tix-clear" />
 				</p>
 				</form>
@@ -5336,7 +5352,7 @@ class CampTix_Plugin {
 					<input type="hidden" name="tix_tickets_selected[<?php echo intval( $ticket_id ); ?>]" value="<?php echo intval( $count ); ?>" />
 				<?php endforeach; ?>
 
-				<h2><?php echo apply_filters( 'camptix_register_order_summary_header', __( 'Order Summary', 'camptix' ) ); ?></h2>
+				<h2><?php echo esc_html( apply_filters( 'camptix_register_order_summary_header', __( 'Order Summary', 'camptix' ) ) ); ?></h2>
 				<table class="tix_tickets_table tix-order-summary">
 					<thead>
 						<tr>
@@ -5355,20 +5371,20 @@ class CampTix_Plugin {
 							?>
 							<tr>
 								<td class="tix-column-description">
-									<strong><?php echo $ticket->post_title; ?></strong>
+									<strong><?php echo esc_html( $ticket->post_title ); ?></strong>
 									<?php if ( $ticket->tix_coupon_applied ) : ?>
-									<br /><small><?php echo $ticket->tix_discounted_text; ?></small>
+									<br /><small><?php echo esc_html( $ticket->tix_discounted_text ); ?></small>
 									<?php endif; ?>
 								</td>
 								<td class="tix-column-per-ticket">
 								<?php if ( $price > 0 ) : ?>
-									<?php echo $this->append_currency( $price ); ?>
+									<?php echo esc_html( $this->append_currency( $price ) ); ?>
 								<?php else : ?>
 									<?php _e( 'Free', 'camptix' ); ?>
 								<?php endif; ?>
 								</td>
 								<td class="tix-column-quantity"><?php echo intval( $count ); ?></td>
-								<td class="tix-column-price"><?php echo $this->append_currency( $price  * intval( $count ) ); ?></td>
+								<td class="tix-column-price"><?php echo esc_html( $this->append_currency( $price  * intval( $count ) ) ); ?></td>
 							</tr>
 						<?php endforeach; ?>
 						<tr class="tix-row-total">
@@ -5383,15 +5399,15 @@ class CampTix_Plugin {
 											$discount_text = $discount_percent . '%';
 										}
 									?>
-									<small><?php printf( __( 'Coupon Applied: <strong>%s</strong>, %s discount', 'camptix' ), esc_html( $this->coupon->post_title ), $discount_text ); ?></small>
+									<small><?php printf( __( 'Coupon Applied: <strong>%s</strong>, %s discount', 'camptix' ), esc_html( $this->coupon->post_title ), esc_html( $discount_text ) ); ?></small>
 								<?php endif; ?>
 							</td>
-							<td><strong><?php echo $this->append_currency( $total ); ?></strong></td>
+							<td><strong><?php echo esc_html( $this->append_currency( $total ) ); ?></strong></td>
 						</tr>
 					</tbody>
 				</table>
 
-				<h2 id="tix-registration-information"><?php echo apply_filters( 'camptix_register_registration_info_header', __( 'Registration Information', 'camptix' ) ); ?></h2>
+				<h2 id="tix-registration-information"><?php echo esc_html( apply_filters( 'camptix_register_registration_info_header', __( 'Registration Information', 'camptix' ) ) ); ?></h2>
 				<?php foreach ( $this->tickets_selected as $ticket_id => $count ) : ?>
 					<?php foreach ( range( 1, $count ) as $looping_count_times ) : ?>
 
@@ -5399,12 +5415,12 @@ class CampTix_Plugin {
 							$ticket = $this->tickets[$ticket_id];
 							$questions = $this->get_sorted_questions( $ticket->ID );
 						?>
-						<input type="hidden" name="tix_attendee_info[<?php echo $i; ?>][ticket_id]" value="<?php echo intval( $ticket->ID ); ?>" />
+						<input type="hidden" name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][ticket_id]" value="<?php echo intval( $ticket->ID ); ?>" />
 						<table class="tix_tickets_table tix-attendee-form">
 							<tbody>
 								<tr>
 									<th colspan="2">
-										<?php echo $i; ?>. <?php echo $ticket->post_title; ?>
+										<?php echo esc_html( $i ); ?>. <?php echo esc_html( $ticket->post_title ); ?>
 									</th>
 								</tr>
 
@@ -5414,7 +5430,7 @@ class CampTix_Plugin {
 								<tr class="tix-row-first-name">
 									<td class="tix-required tix-left"><?php _e( 'First Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['first_name'] ) ? $this->form_data['tix_attendee_info'][$i]['first_name'] : apply_filters( 'camptix_attendee_info_default_value', '', 'first_name', $this->form_data, $ticket, $i ); ?>
-									<td class="tix-right"><input name="tix_attendee_info[<?php echo $i; ?>][first_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
+									<td class="tix-right"><input name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][first_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
 								</tr>
 								<?php $first = ob_get_clean(); ?>
 
@@ -5422,7 +5438,7 @@ class CampTix_Plugin {
 								<tr class="tix-row-last-name">
 									<td class="tix-required tix-left"><?php _e( 'Last Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['last_name'] ) ? $this->form_data['tix_attendee_info'][$i]['last_name'] : apply_filters( 'camptix_attendee_info_default_value', '', 'last_name', $this->form_data, $ticket, $i ); ?>
-									<td class="tix-right"><input name="tix_attendee_info[<?php echo $i; ?>][last_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
+									<td class="tix-right"><input name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][last_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
 								</tr>
 								<?php $last = ob_get_clean(); ?>
 
@@ -5434,12 +5450,12 @@ class CampTix_Plugin {
 									<td class="tix-required tix-left"><?php _e( 'E-mail', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['email'] ) ? $this->form_data['tix_attendee_info'][$i]['email'] : apply_filters( 'camptix_attendee_info_default_value', '', 'email', $this->form_data, $ticket, $i ); ?>
 									<td class="tix-right">
-										<input class="tix-field-email" name="tix_attendee_info[<?php echo $i; ?>][email]" type="email" value="<?php echo esc_attr( $value ); ?>" />
+										<input class="tix-field-email" name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][email]" type="email" value="<?php echo esc_attr( $value ); ?>" />
 										<?php $tix_receipt_email = isset( $this->form_data['tix_receipt_email'] ) ? $this->form_data['tix_receipt_email'] : 1; ?>
 
 										<?php if ( $this->tickets_selected_count > 1 ) : ?>
 											<div class="tix-hide-if-js">
-												<label><input name="tix_receipt_email" <?php checked( $tix_receipt_email, $i ); ?> value="<?php echo $i; ?>" type="radio" /> <?php _e( 'Send the receipt to this address', 'camptix' ); ?></label>
+												<label><input name="tix_receipt_email" <?php checked( $tix_receipt_email, $i ); ?> value="<?php echo esc_attr( $i ); ?>" type="radio" /> <?php _e( 'Send the receipt to this address', 'camptix' ); ?></label>
 											</div>
 										<?php else: ?>
 											<input name="tix_receipt_email" type="hidden" value="1" />
@@ -5619,10 +5635,10 @@ class CampTix_Plugin {
 					<tr>
 						<td>
 							<strong><?php echo esc_html( $this->format_name_string( "%first% %last%", $first_name, $last_name ) ); ?></strong><br />
-							<?php echo $this->get_ticket_title( intval( get_post_meta( $attendee->ID, 'tix_ticket_id', true ) ) ); ?>
+							<?php echo esc_html( $this->get_ticket_title( intval( get_post_meta( $attendee->ID, 'tix_ticket_id', true ) ) ) ); ?>
 						</td>
 						<td>
-							<?php echo mysql2date( get_option( 'date_format' ), $attendee->post_date ); ?>
+							<?php echo esc_html( mysql2date( get_option( 'date_format' ), $attendee->post_date ) ); ?>
 						</td>
 						<td>
 							<?php
@@ -5784,7 +5800,7 @@ class CampTix_Plugin {
 					<tbody>
 						<tr>
 							<th colspan="2">
-								<?php echo $ticket->post_title; ?>
+								<?php echo esc_html( $ticket->post_title ); ?>
 							</th>
 						</tr>
 						<tr>
@@ -5981,7 +5997,7 @@ class CampTix_Plugin {
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Original Payment', 'camptix' ); ?></td>
-							<td class="tix-right"><?php printf( "%s %s", $this->options['currency'], $transaction['payment_amount'] ); ?></td>
+							<td class="tix-right"><?php printf( "%s %s", esc_html( $this->options['currency'] ), esc_html( $transaction['payment_amount'] ) ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Purchased Tickets', 'camptix' ); ?></td>
@@ -5993,7 +6009,7 @@ class CampTix_Plugin {
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Refund Amount', 'camptix' ); ?></td>
-							<td class="tix-right"><?php printf( "%s %s", $this->options['currency'], $transaction['payment_amount'] ); ?></td>
+							<td class="tix-right"><?php printf( "%s %s", esc_html( $this->options['currency'] ), esc_html( $transaction['payment_amount'] ) ); ?></td>
 						</tr>
 						<tr>
 							<td class="tix-left"><?php _e( 'Refund Reason', 'camptix' ); ?></td>
@@ -7409,12 +7425,12 @@ class CampTix_Plugin {
 
 		$alt = '';
 		?>
-		<table class="tix-table <?php echo $classes; ?>">
+		<table class="tix-table <?php echo esc_attr( $classes ); ?>">
 			<?php if ( ! is_numeric( implode( '', array_keys( $rows[0] ) ) ) ) : ?>
 			<thead>
 			<tr>
 				<?php foreach ( array_keys( $rows[0] ) as $column ) : ?>
-					<th class="tix-<?php echo sanitize_title_with_dashes( $column ); ?>"><?php echo $column; ?></th>
+					<th class="tix-<?php echo esc_attr( sanitize_title_with_dashes( $column ) ); ?>"><?php echo $column; ?></th>
 				<?php endforeach; ?>
 			</tr>
 			</thead>
@@ -7426,9 +7442,9 @@ class CampTix_Plugin {
 						$alt = ( $alt == '' ) ? 'alternate' : '';
 						$values = array_values( $row );
 					?>
-					<tr class="<?php echo $alt; ?> tix-row-<?php echo sanitize_title_with_dashes( array_shift( $values ) ); ?>">
+					<tr class="<?php echo esc_attr( $alt ); ?> tix-row-<?php echo sanitize_title_with_dashes( array_shift( $values ) ); ?>">
 						<?php foreach ( $row as $column => $value ) : ?>
-						<td class="tix-<?php echo sanitize_title_with_dashes( $column ); ?>"><span><?php echo $value; ?></span></td>
+						<td class="tix-<?php echo esc_attr( sanitize_title_with_dashes( $column ) ); ?>"><span><?php echo $value; ?></span></td>
 						<?php endforeach; ?>
 					</tr>
 				<?php endforeach; ?>
