@@ -2,8 +2,8 @@
 Contributors:      automattic, kovshenin, andreamiddleton, iandunn
 Tags:              ticketing, event ticketing
 Requires at least: 3.5
-Tested up to:      4.3
-Stable tag:        1.4.2
+Tested up to:      4.6
+Stable tag:        1.5
 Donate link:       http://wordpressfoundation.org/donate/
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
@@ -46,6 +46,18 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.5 (2016-08-10) =
+* [SECURITY] Fixed [CSV injection vulnerability](https://hackerone.com/reports/151516) with CVSS score of [8.3](https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:H/A:H). Props to [Zawad Bin Hafiz](https://hackerone.com/thezawad) for discovery and coordinated disclosure.
+* [SECURITY] Fixed [XSS vulnerability](https://hackerone.com/reports/152958) with CVSS score of [4.8](https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:N/AC:L/PR:H/UI:R/S:C/C:L/I:L/A:N). Props to [Zawad Bin Hafiz](https://hackerone.com/thezawad) for discovery and coordinated disclosure.
+* [NEW] Added ability to send Notify emails to segments of attendees.
+* [NEW] Added a built-in Ticket Question for attendee's country.
+* [NEW] Added partial support for HTML emails (requires custom template).
+* [NEW] Added `payment method` field to Attendee Information meta box and CSV export.
+* [FIX] Improved currency formatting in non-English locales.
+* [FIX] Fixed bug where PayPal transactions would sometimes be rejected in multibyte languages.
+* [FIX] Fixed bug where not all attendees were displayed in the Attendees shortcode.
+* [Full changelog](https://github.com/Automattic/camptix/compare/30b2d16...294552c41f88704c85dd126d17d89df2523b7cb4)
 
 = 1.4.2 =
 * Added a nonce check for privacy and attendance toggles for better security
