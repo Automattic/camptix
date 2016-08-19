@@ -1150,10 +1150,12 @@ class CampTix_Plugin {
 			'refund_all_enabled' => false,
 			'archived' => false,
 			'payment_methods' => array(),
+			'edit_information_enabled' => true,
 
 			'email_template_single_purchase' => __( "Hi there!\n\nYou have purchased the following ticket:\n\n[receipt]\n\nYou can edit the information for the purchased ticket at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
 			'email_template_multiple_purchase' => __( "Hi there!\n\nThank you so much for purchasing a ticket and hope to see you soon at our event. You can edit your information at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
 			'email_template_multiple_purchase_receipt' => __( "Hi there!\n\nYou have purchased the following tickets:\n\n[receipt]\n\nYou can edit the information for all the purchased tickets at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' ),
+			'email_template_no_edit_information' => __( "Hi there [buyer_full_name]!\n\nYou have purchased the following ticket(s):\n\n[receipt]\n\nLet us know if you have any questions!", 'camptix' ),
 			'email_template_pending_succeeded' => __( "Hey there!\n\nYour payment for [event_name] has been completed, looking forward to seeing you at the event! You can access and change your tickets information by visiting the following link:\n\n[ticket_url]\n\nLet us know if you need any help!", 'camptix' ),
 			'email_template_pending_failed' => __( "Hey there!\n\nWe're so sorry, but it looks like your payment for [event_name] has failed! Please check your payment transactions for more details. If you still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n[ticket_url]\n\nLet us know if you need any help!", 'camptix' ),
 			'email_template_single_refund' => __( "Hey there!\n\nYour refund for [event_name] has been completed. If you change your mind and still wish to attend the event, feel free to purchase a new ticket using the following link:\n\n[ticket_url]\n\nLet us know if you need any help!", 'camptix' ),
@@ -1266,6 +1268,7 @@ class CampTix_Plugin {
 			// Disable refunds (beta).
 			$options['refunds_enabled'] = false;
 			$options['refund_all_enabled'] = false;
+			$options['edit_information_enabled'] = true;
 
 			$this->log( 'Going to update options', null, $options, 'upgrade' );
 
@@ -1485,6 +1488,10 @@ class CampTix_Plugin {
 				$this->add_settings_field_helper( 'refunds_enabled', __( 'Enable Refunds', 'camptix' ), 'field_enable_refunds', false,
 					__( "This will allows your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
 				);
+				
+				$this->add_settings_field_helper( 'edit_information_enabled', __( 'Enable Edit Information', 'camptix' ), 'field_yesno', false,
+					__( "This will allows your customers to edit the information they submitted with their ticket.", 'camptix' )
+				);
 
 				break;
 			case 'payment':
@@ -1505,6 +1512,7 @@ class CampTix_Plugin {
 				$this->add_settings_field_helper( 'email_template_single_purchase', __( 'Single purchase', 'camptix' ), 'field_textarea' );
 				$this->add_settings_field_helper( 'email_template_multiple_purchase', __( 'Multiple purchase', 'camptix' ), 'field_textarea' );
 				$this->add_settings_field_helper( 'email_template_multiple_purchase_receipt', __( 'Multiple purchase (receipt)', 'camptix' ), 'field_textarea' );
+				$this->add_settings_field_helper( 'email_template_no_edit_information', __( 'Purchase No Edit Information (receipt)', 'camptix' ), 'field_textarea' );
 				$this->add_settings_field_helper( 'email_template_pending_succeeded', __( 'Pending Payment Succeeded', 'camptix' ), 'field_textarea' );
 				$this->add_settings_field_helper( 'email_template_pending_failed', __( 'Pending Payment Failed', 'camptix' ), 'field_textarea' );
 				$this->add_settings_field_helper( 'email_template_single_refund', __( 'Single Refund', 'camptix' ), 'field_textarea' );
@@ -1612,6 +1620,7 @@ class CampTix_Plugin {
 			$output['refunds_date_end'] = $input['refunds_date_end'];
 
 		$yesno_fields = array( 'refunds_enabled' );
+		$yesno_fields = array( 'edit_information_enabled' );
 
 		// Beta features checkboxes
 		if ( $this->beta_features_enabled )
@@ -1637,6 +1646,7 @@ class CampTix_Plugin {
 				'email_template_single_purchase',
 				'email_template_multiple_purchase',
 				'email_template_multiple_purchase_receipt',
+				'email_template_no_edit_information',
 				'email_template_pending_succeeded',
 				'email_template_pending_failed',
 				'email_template_single_refund',
@@ -5051,7 +5061,17 @@ class CampTix_Plugin {
 				return $this->shortcode_contents = $this->form_access_tickets();
 
 			if ( 'edit_attendee' == $_GET['tix_action'] )
-				return $this->shortcode_contents = $this->form_edit_attendee();
+			{
+				// Only a person with the capability of managing the attendees can edit the information if disabled
+				if( $this->options['edit_information_enabled'] || current_user_can( $this->caps['manage_attendees'] ) )
+				{
+					return $this->shortcode_contents = $this->form_edit_attendee();
+				}
+				else
+				{
+					return $this->shortcode_contents = "\n\nCannot edit information. Please contact us directly.";
+				}
+			}	
 
 			if ( 'refund_request' == $_GET['tix_action'] && $this->options['refunds_enabled'] )
 				return $this->shortcode_contents = $this->form_refund_request();
@@ -5642,11 +5662,14 @@ class CampTix_Plugin {
 						</td>
 						<td>
 							<?php
-								echo apply_filters(
-									'camptix_edit_info_cell_content',
-									sprintf( '<a href="%s">%s</a>', esc_url( $edit_link ), __( 'Edit information', 'camptix' ) ),
-									$attendee
-								);
+								if($this->options['edit_information_enabled'] == true)
+								{
+									echo apply_filters(
+										'camptix_edit_info_cell_content',
+										sprintf( '<a href="%s">%s</a>', esc_url( $edit_link ), __( 'Edit information', 'camptix' ) ),
+										$attendee
+									);
+								}
 							?>
 						</td>
 					</tr>
@@ -5692,6 +5715,11 @@ class CampTix_Plugin {
 			$this->error_flags['invalid_edit_token'] = true;
 			$this->redirect_with_error_flags();
 		}
+		
+		/*if( ! current_user_can( remove_user )) {
+			$this->error_flags['invalid_edit_token'] = true;
+			$this->redirect_with_error_flags();
+		}*/
 
 		$attendee_id = intval( $_REQUEST['tix_attendee_id'] );
 		$attendee = get_post( $attendee_id );
@@ -7183,9 +7211,23 @@ class CampTix_Plugin {
 			if ( 'pending' == $to_status )
 				$payment_status =  sprintf( __( 'Your payment status is: %s. You will receive a notification e-mail once your payment is completed.', 'camptix' ), 'pending' ) . "\n\n";
 
-			if ( count( $attendees ) == 1 ) {
+			if( $this->options['edit_information_enabled'] == false )
+			{
+				$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_no_edit_information', $attendees[0] );
+				
+				$content = do_shortcode( $this->options[ $email_template ] );
+
+				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
+
+				$this->log( sprintf( 'Sent a ticket and receipt without edit to %s.', $receipt_email ), $receipt_attendee->ID );
+				$this->wp_mail( $receipt_email, $subject, $content );
+
+				do_action( 'camptix_ticket_emailed', $receipt_attendee->ID );
+			}
+			else if ( count( $attendees ) == 1 ) {
 
 				$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_single_purchase', $attendees[0] );
+
 				$content = do_shortcode( $this->options[ $email_template ] );
 
 				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
