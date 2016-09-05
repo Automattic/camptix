@@ -5211,7 +5211,7 @@ class CampTix_Plugin {
 								<td class="tix-column-description">
 									<strong class="tix-ticket-title"><?php echo esc_html( $ticket->post_title ); ?></strong>
 									<?php if ( $ticket->post_excerpt ) : ?>
-										<br /><span class="tix-ticket-excerpt"><?php echo $ticket->post_excerpt; ?></span>
+										<br /><span class="tix-ticket-excerpt"><?php echo esc_html( $ticket->post_excerpt ); ?></span>
 									<?php endif; ?>
 									<?php if ( $ticket->tix_coupon_applied ) : ?>
 										<br /><small class="tix-discount"><?php echo esc_html( $ticket->tix_discounted_text ); ?></small>
@@ -7431,7 +7431,9 @@ class CampTix_Plugin {
 			<thead>
 			<tr>
 				<?php foreach ( array_keys( $rows[0] ) as $column ) : ?>
-					<th class="tix-<?php echo esc_attr( sanitize_title_with_dashes( $column ) ); ?>"><?php echo $column; ?></th>
+					<th class="tix-<?php echo esc_attr( sanitize_title_with_dashes( $column ) ); ?>">
+						<?php echo wp_kses( $column, 'post' ); ?>
+					</th>
 				<?php endforeach; ?>
 			</tr>
 			</thead>
@@ -7445,7 +7447,9 @@ class CampTix_Plugin {
 					?>
 					<tr class="<?php echo esc_attr( $alt ); ?> tix-row-<?php echo sanitize_title_with_dashes( array_shift( $values ) ); ?>">
 						<?php foreach ( $row as $column => $value ) : ?>
-						<td class="tix-<?php echo esc_attr( sanitize_title_with_dashes( $column ) ); ?>"><span><?php echo $value; ?></span></td>
+							<td class="tix-<?php echo esc_attr( sanitize_title_with_dashes( $column ) ); ?>">
+								<span><?php echo wp_kses( $value, 'post' ); ?></span>
+							</td>
 						<?php endforeach; ?>
 					</tr>
 				<?php endforeach; ?>
