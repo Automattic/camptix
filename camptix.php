@@ -4140,12 +4140,13 @@ class CampTix_Plugin {
 	 */
 	function question_field_checkbox( $name, $user_value, $question ) {
 		$values = get_post_meta( $question->ID, 'tix_values', true );
+		$user_value_esc = array_map( 'esc_attr', (array) $user_value );
 		?>
 		<?php if ( $values ) : ?>
 			<?php foreach ( (array) $values as $question_value ) : ?>
 				<label>
 					<input
-						<?php checked( in_array( $question_value, (array) $user_value ) ); ?>
+						<?php checked( in_array( $question_value, array_merge( (array) $user_value, array_values( $user_value_esc ) ) ) ); ?>
 						name="<?php echo esc_attr( $name ); ?>[<?php echo esc_attr( sanitize_title_with_dashes( $question_value ) ); ?>]"
 						type="checkbox"
 						value="<?php echo esc_attr( $question_value ); ?>"
