@@ -2869,14 +2869,23 @@ class CampTix_Plugin {
 		 * Formulas that follow all common delimiters need to be escaped, because the user may choose any delimiter
 		 * when importing a file into their spreadsheet program. Different delimiters are also used as the default
 		 * in different locales. For example, Windows + Russian uses `;` as the delimiter, rather than a `,`.
+		 *
+		 * The file encoding can also effect the behavior; e.g., opening/importing as UTF-8 will enable newline
+		 * characters as delimiters.
 		 */
 		$delimiters = array(
 			',', ';', ':', '|', '^',
+			"\n", "\t", " "
 		);
 
 		foreach( $fields as $index => $field ) {
-			if ( in_array( mb_substr( $field, 0, 1 ), $active_content_triggers, true ) ) {
-				$fields[ $index ] = "'" . $field;
+			// Escape trigger characters at the start of a new field
+			$first_cell_character = mb_substr( $field, 0, 1 );
+			$is_trigger_character = in_array( $first_cell_character, $active_content_triggers, true );
+			$is_delimiter         = in_array( $first_cell_character, $delimiters,              true );
+
+			if ( $is_trigger_character || $is_delimiter ) {
+				$field = "'" . $field;
 			}
 
 			// Escape trigger characters that follow delimiters
