@@ -2865,10 +2865,28 @@ class CampTix_Plugin {
 	public static function esc_csv( $fields ) {
 		$active_content_triggers = array( '=', '+', '-', '@' );
 
+		/*
+		 * Formulas that follow all common delimiters need to be escaped, because the user may choose any delimiter
+		 * when importing a file into their spreadsheet program. Different delimiters are also used as the default
+		 * in different locales. For example, Windows + Russian uses `;` as the delimiter, rather than a `,`.
+		 */
+		$delimiters = array(
+			',', ';', ':', '|', '^',
+		);
+
 		foreach( $fields as $index => $field ) {
 			if ( in_array( mb_substr( $field, 0, 1 ), $active_content_triggers, true ) ) {
 				$fields[ $index ] = "'" . $field;
 			}
+
+			// Escape trigger characters that follow delimiters
+			foreach ( $delimiters as $delimiter ) {
+				foreach ( $active_content_triggers as $trigger ) {
+					$field = str_replace( $delimiter . $trigger, $delimiter . "'" . $trigger, $field );
+				}
+			}
+
+			$fields[ $index ] = $field;
 		}
 
 		return $fields;
