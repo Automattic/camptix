@@ -1990,13 +1990,6 @@ class CampTix_Plugin {
 					<?php do_action( 'camptix_setup_buttons' ); ?>
 				</p>
 			</form>
-			<?php if ( $this->debug ) : ?>
-			<pre><?php
-				echo wp_kses( print_r( $this->options, true ), wp_kses_allowed_html( 'post' ) );
-				printf( __( 'Current time on server: %s', 'camptix' ) . PHP_EOL, date( 'r' ) );
-				print_r( get_option( 'camptix_stats' ) );
-			?></pre>
-			<?php endif; ?>
 		</div>
 		<?php
 	}
