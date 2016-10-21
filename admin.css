@@ -312,6 +312,10 @@ body.post-type-tix_attendee table.posts td.attended div.spinner {
 	.fixed .column-tix_order_total {
 		display: none;
 	}
+
+	body.post-type-tix_attendee table.posts.fixed .column-attended::before {
+		content: "";
+	}
 }
 
 @media screen and ( max-width: 535px ) {
