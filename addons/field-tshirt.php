@@ -10,10 +10,6 @@ class CampTix_Addon_Tshirt_Field extends CampTix_Addon {
 	function camptix_init() {
 		global $camptix;
 
-		// Enable on testing only for now.
-		if ( $_SERVER['HTTP_HOST'] != 'testing.wordcamp.org' )
-			return;
-
 		add_filter( 'camptix_question_field_types', array( $this, 'question_field_types' ) );
 		add_action( 'camptix_question_field_tshirt', array( $this, 'question_field_tshirt' ), 10, 3 );
 	}
