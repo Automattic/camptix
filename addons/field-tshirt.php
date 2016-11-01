@@ -64,7 +64,7 @@ class CampTix_Addon_Tshirt_Field extends CampTix_Addon {
 
 		$sites = get_sites( array(
 			'fields'  => 'ids',
-			'number'  => 50,
+			'number'  => 200,
 			'orderby' => 'id',
 			'order'   => 'DESC',
 		) );
