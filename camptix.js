@@ -5,6 +5,18 @@
  */
 var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*"+encodeURIComponent(e).replace(/[\-\.\+\*]/g,"\\$&")+"\\s*\\=\\s*([^;]*).*$)|^.*$"),"$1"))||null},setItem:function(e,o,n,t,c,r){if(!e||/^(?:expires|max\-age|path|domain|secure)$/i.test(e))return!1;var s="";if(n)switch(n.constructor){case Number:s=1/0===n?"; expires=Fri, 31 Dec 9999 23:59:59 GMT":"; max-age="+n;break;case String:s="; expires="+n;break;case Date:s="; expires="+n.toUTCString()}return document.cookie=encodeURIComponent(e)+"="+encodeURIComponent(o)+s+(c?"; domain="+c:"")+(t?"; path="+t:"")+(r?"; secure":""),!0},removeItem:function(e,o,n){return e&&this.hasItem(e)?(document.cookie=encodeURIComponent(e)+"=; expires=Thu, 01 Jan 1970 00:00:00 GMT"+(n?"; domain="+n:"")+(o?"; path="+o:""),!0):!1},hasItem:function(e){return new RegExp("(?:^|;\\s*)"+encodeURIComponent(e).replace(/[\-\.\+\*]/g,"\\$&")+"\\s*\\=").test(document.cookie)},keys:function(){for(var e=document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g,"").split(/\s*(?:\=[^;]*)?;\s*/),o=0;o<e.length;o++)e[o]=decodeURIComponent(e[o]);return e}};
 
+/*
+ * jQuery appear plugin
+ *
+ * Copyright (c) 2012 Andrey Sidorov
+ * licensed under MIT license.
+ *
+ * https://github.com/morr/jquery.appear/
+ *
+ * Version: 0.3.6
+ */
+!function(e){function r(r){return e(r).filter(function(){return e(this).is(":appeared")})}function t(){a=!1;for(var e=0,t=i.length;t>e;e++){var n=r(i[e]);if(n.trigger("appear",[n]),p[e]){var o=p[e].not(n);o.trigger("disappear",[o])}p[e]=n}}function n(e){i.push(e),p.push()}var i=[],o=!1,a=!1,f={interval:250,force_process:!1},u=e(window),p=[];e.expr[":"].appeared=function(r){var t=e(r);if(!t.is(":visible"))return!1;var n=u.scrollLeft(),i=u.scrollTop(),o=t.offset(),a=o.left,f=o.top;return f+t.height()<i||f-(t.data("appear-top-offset")||0)>i+u.height()||a+t.width()<n||a-(t.data("appear-left-offset")||0)>n+u.width()?!1:!0},e.fn.extend({appear:function(r){var i=e.extend({},f,r||{}),u=this.selector||this;if(!o){var p=function(){a||(a=!0,setTimeout(t,i.interval))};e(window).scroll(p).resize(p),o=!0}return i.force_process&&setTimeout(t,i.interval),n(u),e(u)}}),e.extend({force_appear:function(){return o?(t(),!0):!1}})}(function(){return"undefined"!=typeof module?require("jquery"):jQuery}());
+
 /**
  * CampTix Javascript
  *
@@ -153,4 +165,65 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 			} );
 		}
 	}
+
+	/**
+	 * Lazy load camptix_attendees avatars
+	 *
+	 * @uses jQuery appear plugin
+	 * @uses Jetpack's jquery.spin
+	 */
+	var lazyLoad = {
+		cache: {
+			$document:  $(document),
+			$attendees: $('#tix-attendees')
+		},
+
+		init: function() {
+			if ('undefined' == typeof $.fn.appear) {
+				return;
+			}
+
+			var spinner = 'undefined' !== typeof $.fn.spin;
+
+			lazyLoad.cache.$placeholders = lazyLoad.cache.$attendees.find('.avatar-placeholder');
+
+			lazyLoad.cache.$placeholders.appear();
+
+			lazyLoad.cache.$placeholders.one('appear', function(event) {
+				var $placeholder = $(event.target);
+
+				$placeholder.each(function() {
+					if (spinner) {
+						$(this).spin('medium');
+					}
+					lazyLoad.convertPlaceholder($(this));
+				});
+			});
+
+			// Trigger appear event for the placeholders in the initial viewport
+			$.force_appear();
+		},
+
+		convertPlaceholder: function($placeholder) {
+			var hash = $placeholder.data('tix-avatar-hash'),
+				request;
+
+			request = $.post(
+				camptix_l10n.ajaxURL,
+				{
+					action: 'camptix_attendees_load_avatar',
+					'tix-avatar-hash': hash
+				}
+			);
+
+			request.done(function(content) {
+				if (content) {
+					$placeholder.after(content).remove();
+				}
+			});
+		}
+	};
+
+	$(document).ready(lazyLoad.init)
+
 }(jQuery));

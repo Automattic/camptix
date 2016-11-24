@@ -16,10 +16,14 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	function camptix_init() {
 		add_action( 'save_post', array( $this, 'save_post' ) );
 		add_action( 'shutdown', array( $this, 'shutdown' ) );
+		add_action( 'template_redirect', array( $this, 'shortcode_private_template_redirect' ) );
+
+		add_action( 'wp_ajax_camptix_attendees_load_avatar', array( $this, 'avatar_ajax' ) );
+		add_action( 'wp_ajax_nopriv_camptix_attendees_load_avatar', array( $this, 'avatar_ajax' ) );
+
 		add_shortcode( 'camptix_attendees', array( $this, 'shortcode_attendees' ) );
 		add_shortcode( 'camptix_stats', array( $this, 'shortcode_stats' ) );
 		add_shortcode( 'camptix_private', array( $this, 'shortcode_private' ) );
-		add_action( 'template_redirect', array( $this, 'shortcode_private_template_redirect' ) );
 	}
 
 	function log( $message, $post_id = 0, $data = null, $module = 'shortcode' ) {
@@ -74,6 +78,11 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 		$camptix_options = $camptix->get_options();
 
+		// Enqueue Jetpack's spinner script if available
+		if ( wp_script_is( 'jquery.spin', 'registered' ) ) {
+			wp_enqueue_script( 'jquery.spin' );
+		}
+
 		// Lazy load the camptix js.
 		wp_enqueue_script( 'camptix' );
 
@@ -92,6 +101,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 		// Cache for a month if archived or less if active.
 		$cache_time = ( $camptix_options['archived'] ) ? DAY_IN_SECONDS * 30 : HOUR_IN_SECONDS;
+
 		$query_args = array();
 		ob_start();
 
@@ -127,10 +137,11 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 				<?php
 					while ( true && $printed < $attr['posts_per_page'] ) {
 						$paged++;
+
 						$attendee_args = apply_filters( 'camptix_attendees_shortcode_query_args', array_merge(
 							array(
 								'post_type'      => 'tix_attendee',
-								'posts_per_page' => 200,
+								'posts_per_page' => 50,
 								'post_status'    => array( 'publish', 'pending' ),
 								'paged'          => $paged,
 								'order'          => $attr['order'],
@@ -142,8 +153,9 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 						), $attr );
 						$attendees_raw = get_posts( $attendee_args );
 
-						if ( ! is_array( $attendees_raw ) || count( $attendees_raw ) < 1 )
+						if ( ! is_array( $attendees_raw ) || count( $attendees_raw ) < 1 ) {
 							break; // life saver!
+						}
 
 						// Disable object cache for prepared metadata.
 						$camptix->filter_post_meta = $camptix->prepare_metadata_for( $attendees_raw );
@@ -171,7 +183,12 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 							$first = get_post_meta( $attendee_id, 'tix_first_name', true );
 							$last = get_post_meta( $attendee_id, 'tix_last_name', true );
 
-							echo get_avatar( get_post_meta( $attendee_id, 'tix_email', true ) );
+							if ( $paged > 1 ) {
+								// Use avatar placeholders for subsequent batches of attendees
+								echo $this->get_avatar_placeholder( get_post_meta( $attendee_id, 'tix_email', true ) );
+							} else {
+								echo get_avatar( get_post_meta( $attendee_id, 'tix_email', true ) );
+							}
 							?>
 
 							<div class="tix-field tix-attendee-name">
@@ -203,13 +220,59 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 			</ul>
 		</div>
 		<br class="tix-clear" />
+
 		<?php
 		$this->log( sprintf( __( 'Generated attendees list in %s seconds', 'camptix' ), microtime(true) - $start ) );
 		wp_reset_postdata();
+
 		$content = ob_get_contents();
 		ob_end_clean();
+
 		set_transient( $transient_key, array( 'content' => $content, 'time' => time() ), $cache_time );
+
 		return $content;
+	}
+
+	/**
+	 * Generate an avatar placeholder element with a data attribute that contains
+	 * the Gravatar hash so the real avatar can be loaded asynchronously.
+	 *
+	 * @param $id_or_email
+	 *
+	 * @return string
+	 */
+	protected function get_avatar_placeholder( $id_or_email ) {
+		$url = get_avatar_url( $id_or_email );
+
+		// Remove query args
+		$url = substr_replace( $url, '', strpos( $url, '?' ) );
+
+		// Isolate the hash
+		$gravatar_hash = substr( $url, strpos( $url, '/avatar/' ) + 8 );
+
+		return sprintf(
+			'<div class="avatar avatar-placeholder" data-tix-avatar-hash="%s" data-appear-top-offset="500"></div>',
+			$gravatar_hash
+		);
+	}
+
+	/**
+	 * Ajax callback to retrieve the avatar markup for a given md5 hash.
+	 *
+	 * @see get_avatar_data() in wp-includes/link-template.php
+	 *
+	 * @uses get_avatar()
+	 */
+	public function avatar_ajax() {
+		if ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
+			wp_die();
+		}
+
+		if ( isset( $_POST['tix-avatar-hash'] ) && preg_match( '/^[a-f0-9]{32}$/', $_POST['tix-avatar-hash'] ) ) {
+			echo get_avatar( $_POST['tix-avatar-hash'] . '@md5.gravatar.com' );
+		}
+
+		wp_die();
 	}
 
 	/**

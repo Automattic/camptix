@@ -81,6 +81,10 @@ body.admin-bar #tix {
 	height: 50px;
 }
 
+#tix-attendees .avatar-placeholder {
+	/*color: #eee;*/ /* Change this to change the color of the loading spinner */
+}
+
 #tix-attendees .tix-field {
 	display: block;
 	margin-left: 70px;
