@@ -179,7 +179,7 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 		},
 
 		init: function() {
-			if ('undefined' == typeof $.fn.appear) {
+			if ('undefined' == typeof $.fn.appear || lazyLoad.cache.$attendees.length < 1) {
 				return;
 			}
 
@@ -187,7 +187,7 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 
 			lazyLoad.cache.$placeholders = lazyLoad.cache.$attendees.find('.avatar-placeholder');
 
-			lazyLoad.cache.$placeholders.appear();
+			lazyLoad.cache.$placeholders.appear({ interval: 500 });
 
 			lazyLoad.cache.$placeholders.one('appear', function(event) {
 				var $placeholder = $(event.target);
