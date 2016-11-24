@@ -18,9 +18,6 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		add_action( 'shutdown', array( $this, 'shutdown' ) );
 		add_action( 'template_redirect', array( $this, 'shortcode_private_template_redirect' ) );
 
-		add_action( 'wp_ajax_camptix_attendees_load_avatar', array( $this, 'avatar_ajax' ) );
-		add_action( 'wp_ajax_nopriv_camptix_attendees_load_avatar', array( $this, 'avatar_ajax' ) );
-
 		add_shortcode( 'camptix_attendees', array( $this, 'shortcode_attendees' ) );
 		add_shortcode( 'camptix_stats', array( $this, 'shortcode_stats' ) );
 		add_shortcode( 'camptix_private', array( $this, 'shortcode_private' ) );
@@ -82,6 +79,9 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		if ( wp_script_is( 'jquery.spin', 'registered' ) ) {
 			wp_enqueue_script( 'jquery.spin' );
 		}
+
+		// For wp.template()
+		wp_enqueue_script( 'wp-util' );
 
 		// Lazy load the camptix js.
 		wp_enqueue_script( 'camptix' );
@@ -189,6 +189,11 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 							} else {
 								echo get_avatar( get_post_meta( $attendee_id, 'tix_email', true ) );
 							}
+
+							// Only print the JS template once.
+							if ( ! has_action( 'wp_print_footer_scripts', array( $this, 'avatar_js_template' ) ) ) {
+								add_action( 'wp_print_footer_scripts', array( $this, 'avatar_js_template' ) );
+							}
 							?>
 
 							<div class="tix-field tix-attendee-name">
@@ -242,37 +247,27 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	 * @return string
 	 */
 	protected function get_avatar_placeholder( $id_or_email ) {
-		$url = get_avatar_url( $id_or_email );
-
-		// Remove query args
-		$url = substr_replace( $url, '', strpos( $url, '?' ) );
-
-		// Isolate the hash
-		$gravatar_hash = substr( $url, strpos( $url, '/avatar/' ) + 8 );
+		// @todo Allow customization of avatar and placeholder size
+		$size = 96;
 
 		return sprintf(
-			'<div class="avatar avatar-placeholder" data-tix-avatar-hash="%s" data-appear-top-offset="500"></div>',
-			$gravatar_hash
+			'<div class="avatar avatar-placeholder" data-url="%s" data-url2x="%s" data-size="%s" data-alt="%s" data-appear-top-offset="500"></div>',
+			get_avatar_url( $id_or_email ),
+			get_avatar_url( $id_or_email, array( 'size' => $size * 2  ) ),
+			$size,
+			''
 		);
 	}
 
 	/**
-	 * Ajax callback to retrieve the avatar markup for a given md5 hash.
-	 *
-	 * @see get_avatar_data() in wp-includes/link-template.php
-	 *
-	 * @uses get_avatar()
+	 * An Underscore.js template for the attendee avatar.
 	 */
-	public function avatar_ajax() {
-		if ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
-			wp_die();
-		}
-
-		if ( isset( $_POST['tix-avatar-hash'] ) && preg_match( '/^[a-f0-9]{32}$/', $_POST['tix-avatar-hash'] ) ) {
-			echo get_avatar( $_POST['tix-avatar-hash'] . '@md5.gravatar.com' );
-		}
-
-		wp_die();
+	public function avatar_js_template() {
+		?>
+		<script type="text/html" id="tmpl-tix-attendee-avatar">
+			<img alt="{{ data.alt }}" src="{{ data.url }}" srcset="{{ data.url2x }} 2x" class="avatar avatar-{{ data.size }} photo" height="{{ data.size }}" width="{{ data.size }}">
+		</script>
+	<?php
 	}
 
 	/**

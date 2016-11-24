@@ -179,11 +179,20 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 		},
 
 		init: function() {
-			if ('undefined' == typeof $.fn.appear || lazyLoad.cache.$attendees.length < 1) {
+			// Dependencies
+			if (
+				lazyLoad.cache.$attendees.length < 1
+				||
+				'undefined' == typeof $.fn.appear
+				||
+				'undefined' == typeof wp
+			) {
 				return;
 			}
 
 			var spinner = 'undefined' !== typeof $.fn.spin;
+
+			lazyLoad.avatarTemplate = wp.template('tix-attendee-avatar');
 
 			lazyLoad.cache.$placeholders = lazyLoad.cache.$attendees.find('.avatar-placeholder');
 
@@ -205,22 +214,11 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 		},
 
 		convertPlaceholder: function($placeholder) {
-			var hash = $placeholder.data('tix-avatar-hash'),
-				request;
+			var content = lazyLoad.avatarTemplate( $placeholder.data() );
 
-			request = $.post(
-				camptix_l10n.ajaxURL,
-				{
-					action: 'camptix_attendees_load_avatar',
-					'tix-avatar-hash': hash
-				}
-			);
-
-			request.done(function(content) {
-				if (content) {
-					$placeholder.after(content).remove();
-				}
-			});
+			if (content) {
+				$placeholder.after(content).remove();
+			}
 		}
 	};
 
