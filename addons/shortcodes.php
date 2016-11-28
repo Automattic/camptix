@@ -16,10 +16,11 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	function camptix_init() {
 		add_action( 'save_post', array( $this, 'save_post' ) );
 		add_action( 'shutdown', array( $this, 'shutdown' ) );
+		add_action( 'template_redirect', array( $this, 'shortcode_private_template_redirect' ) );
+
 		add_shortcode( 'camptix_attendees', array( $this, 'shortcode_attendees' ) );
 		add_shortcode( 'camptix_stats', array( $this, 'shortcode_stats' ) );
 		add_shortcode( 'camptix_private', array( $this, 'shortcode_private' ) );
-		add_action( 'template_redirect', array( $this, 'shortcode_private_template_redirect' ) );
 	}
 
 	function log( $message, $post_id = 0, $data = null, $module = 'shortcode' ) {
@@ -74,8 +75,21 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 		$camptix_options = $camptix->get_options();
 
+		// Enqueue Jetpack's spinner script if available
+		if ( wp_script_is( 'jquery.spin', 'registered' ) ) {
+			wp_enqueue_script( 'jquery.spin' );
+		}
+
+		// For wp.template()
+		wp_enqueue_script( 'wp-util' );
+
 		// Lazy load the camptix js.
 		wp_enqueue_script( 'camptix' );
+
+		// Only print the JS template once.
+		if ( ! has_action( 'wp_print_footer_scripts', array( $this, 'avatar_js_template' ) ) ) {
+			add_action( 'wp_print_footer_scripts', array( $this, 'avatar_js_template' ) );
+		}
 
 		$start = microtime(true);
 
@@ -92,6 +106,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 		// Cache for a month if archived or less if active.
 		$cache_time = ( $camptix_options['archived'] ) ? DAY_IN_SECONDS * 30 : HOUR_IN_SECONDS;
+
 		$query_args = array();
 		ob_start();
 
@@ -127,6 +142,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 				<?php
 					while ( true && $printed < $attr['posts_per_page'] ) {
 						$paged++;
+
 						$attendee_args = apply_filters( 'camptix_attendees_shortcode_query_args', array_merge(
 							array(
 								'post_type'      => 'tix_attendee',
@@ -142,8 +158,9 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 						), $attr );
 						$attendees_raw = get_posts( $attendee_args );
 
-						if ( ! is_array( $attendees_raw ) || count( $attendees_raw ) < 1 )
+						if ( ! is_array( $attendees_raw ) || count( $attendees_raw ) < 1 ) {
 							break; // life saver!
+						}
 
 						// Disable object cache for prepared metadata.
 						$camptix->filter_post_meta = $camptix->prepare_metadata_for( $attendees_raw );
@@ -171,7 +188,8 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 							$first = get_post_meta( $attendee_id, 'tix_first_name', true );
 							$last = get_post_meta( $attendee_id, 'tix_last_name', true );
 
-							echo get_avatar( get_post_meta( $attendee_id, 'tix_email', true ) );
+							// Avatar placeholder
+							echo $this->get_avatar_placeholder( get_post_meta( $attendee_id, 'tix_email', true ) );
 							?>
 
 							<div class="tix-field tix-attendee-name">
@@ -203,13 +221,63 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 			</ul>
 		</div>
 		<br class="tix-clear" />
+
 		<?php
 		$this->log( sprintf( __( 'Generated attendees list in %s seconds', 'camptix' ), microtime(true) - $start ) );
 		wp_reset_postdata();
+
 		$content = ob_get_contents();
 		ob_end_clean();
+
 		set_transient( $transient_key, array( 'content' => $content, 'time' => time() ), $cache_time );
+
 		return $content;
+	}
+
+	/**
+	 * Generate an avatar placeholder element with a data attribute that contains
+	 * the Gravatar hash so the real avatar can be loaded asynchronously.
+	 *
+	 * @param string $id_or_email
+	 *
+	 * @return string
+	 */
+	protected function get_avatar_placeholder( $id_or_email ) {
+		// @todo Allow customization of avatar and placeholder size
+		$size = 96;
+
+		return sprintf(
+			'<div 
+                class="avatar avatar-placeholder" 
+                data-url="%s" 
+                data-url2x="%s" 
+                data-size="%s" 
+                data-alt="%s" 
+                data-appear-top-offset="500"
+                ></div>',
+			get_avatar_url( $id_or_email ),
+			get_avatar_url( $id_or_email, array( 'size' => $size * 2  ) ),
+			$size,
+			''
+		);
+	}
+
+	/**
+	 * An Underscore.js template for the attendee avatar.
+	 */
+	public function avatar_js_template() {
+		?>
+		<script type="text/html" id="tmpl-tix-attendee-avatar">
+			<img
+                    alt="{{ data.alt }}"
+                    src="{{ data.url }}"
+                    srcset="{{ data.url2x }} 2x"
+                    class="avatar avatar-{{ data.size }} photo"
+                    height="{{ data.size }}"
+                    width="{{ data.size }}"
+            >
+		</script>
+	<?php
 	}
 
 	/**
