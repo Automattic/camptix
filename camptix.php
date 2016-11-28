@@ -22,7 +22,7 @@ class CampTix_Plugin {
 	public $beta_features_enabled;
 	public $version     = 20140325;
 	public $css_version = 20150311;
-	public $js_version  = 20150311;
+	public $js_version  = 20161128;
 	public $caps;
 
 	public $addons = array();
