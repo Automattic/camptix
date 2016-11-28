@@ -174,38 +174,37 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 	 */
 	var lazyLoad = {
 		cache: {
-			$document:  $(document),
-			$attendees: $('#tix-attendees')
+			$document:  $( document ),
+			$attendees: $( '#tix-attendees' )
 		},
 
+        /**
+		 * Initialize placeholders to be lazy-loaded into avatars.
+         */
 		init: function() {
 			// Dependencies
-			if (
-				lazyLoad.cache.$attendees.length < 1
-				||
-				'undefined' == typeof $.fn.appear
-				||
-				'undefined' == typeof wp
-			) {
+			if ( lazyLoad.cache.$attendees.length < 1 ||
+				'undefined' === typeof $.fn.appear ||
+				'undefined' === typeof wp ) {
 				return;
 			}
 
 			var spinner = 'undefined' !== typeof $.fn.spin;
 
-			lazyLoad.avatarTemplate = wp.template('tix-attendee-avatar');
+			lazyLoad.avatarTemplate = wp.template( 'tix-attendee-avatar' );
 
-			lazyLoad.cache.$placeholders = lazyLoad.cache.$attendees.find('.avatar-placeholder');
+			lazyLoad.cache.$placeholders = lazyLoad.cache.$attendees.find( '.avatar-placeholder' );
 
 			lazyLoad.cache.$placeholders.appear({ interval: 500 });
 
-			lazyLoad.cache.$placeholders.one('appear', function(event) {
-				var $placeholder = $(event.target);
+			lazyLoad.cache.$placeholders.one( 'appear', function(event) {
+				var $placeholder = $( event.target );
 
 				$placeholder.each(function() {
-					if (spinner) {
-						$(this).spin('medium');
+					if ( spinner ) {
+						$( this ).spin( 'medium' );
 					}
-					lazyLoad.convertPlaceholder($(this));
+					lazyLoad.convertPlaceholder( $( this ) );
 				});
 			});
 
@@ -213,15 +212,20 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 			$.force_appear();
 		},
 
-		convertPlaceholder: function($placeholder) {
+        /**
+		 * Replace a placeholder with an instance of the avatar template.
+		 *
+         * @param {Object} $placeholder
+         */
+		convertPlaceholder: function( $placeholder ) {
 			var content = lazyLoad.avatarTemplate( $placeholder.data() );
 
-			if (content) {
-				$placeholder.after(content).remove();
+			if ( content ) {
+				$placeholder.after( content ).remove();
 			}
 		}
 	};
 
-	$(document).ready(lazyLoad.init)
+	$( document ).ready( lazyLoad.init )
 
 }(jQuery));

@@ -238,7 +238,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	 * Generate an avatar placeholder element with a data attribute that contains
 	 * the Gravatar hash so the real avatar can be loaded asynchronously.
 	 *
-	 * @param $id_or_email
+	 * @param string $id_or_email
 	 *
 	 * @return string
 	 */
@@ -247,7 +247,14 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		$size = 96;
 
 		return sprintf(
-			'<div class="avatar avatar-placeholder" data-url="%s" data-url2x="%s" data-size="%s" data-alt="%s" data-appear-top-offset="500"></div>',
+			'<div 
+                class="avatar avatar-placeholder" 
+                data-url="%s" 
+                data-url2x="%s" 
+                data-size="%s" 
+                data-alt="%s" 
+                data-appear-top-offset="500"
+                ></div>',
 			get_avatar_url( $id_or_email ),
 			get_avatar_url( $id_or_email, array( 'size' => $size * 2  ) ),
 			$size,
@@ -261,7 +268,14 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	public function avatar_js_template() {
 		?>
 		<script type="text/html" id="tmpl-tix-attendee-avatar">
-			<img alt="{{ data.alt }}" src="{{ data.url }}" srcset="{{ data.url2x }} 2x" class="avatar avatar-{{ data.size }} photo" height="{{ data.size }}" width="{{ data.size }}">
+			<img
+                    alt="{{ data.alt }}"
+                    src="{{ data.url }}"
+                    srcset="{{ data.url2x }} 2x"
+                    class="avatar avatar-{{ data.size }} photo"
+                    height="{{ data.size }}"
+                    width="{{ data.size }}"
+            >
 		</script>
 	<?php
 	}
