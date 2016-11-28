@@ -141,7 +141,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 						$attendee_args = apply_filters( 'camptix_attendees_shortcode_query_args', array_merge(
 							array(
 								'post_type'      => 'tix_attendee',
-								'posts_per_page' => 50,
+								'posts_per_page' => 200,
 								'post_status'    => array( 'publish', 'pending' ),
 								'paged'          => $paged,
 								'order'          => $attr['order'],
@@ -183,12 +183,8 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 							$first = get_post_meta( $attendee_id, 'tix_first_name', true );
 							$last = get_post_meta( $attendee_id, 'tix_last_name', true );
 
-							if ( $paged > 1 ) {
-								// Use avatar placeholders for subsequent batches of attendees
-								echo $this->get_avatar_placeholder( get_post_meta( $attendee_id, 'tix_email', true ) );
-							} else {
-								echo get_avatar( get_post_meta( $attendee_id, 'tix_email', true ) );
-							}
+							// Avatar placeholders
+							echo $this->get_avatar_placeholder( get_post_meta( $attendee_id, 'tix_email', true ) );
 
 							// Only print the JS template once.
 							if ( ! has_action( 'wp_print_footer_scripts', array( $this, 'avatar_js_template' ) ) ) {
