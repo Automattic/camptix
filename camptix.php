@@ -1888,7 +1888,6 @@ class CampTix_Plugin {
 	function append_currency( $price, $nbsp = true, $currency_key = false ) {
 		$currencies = $this->get_currencies();
 		$currency = $currencies[ $this->options['currency'] ];
-		$locale = $currency['locale'];
 		if ( $currency_key )
 			$currency = $currencies[ $currency_key ];
 
