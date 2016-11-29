@@ -13,7 +13,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	 * Runs during camptix_init, @see CampTix_Addon
 	 */
 	function camptix_init() {
-	    global $camptix;
+		global $camptix;
 
 		add_action( 'save_post', array( $this, 'save_post' ) );
 		add_action( 'shutdown', array( $this, 'shutdown' ) );
@@ -23,14 +23,14 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		add_shortcode( 'camptix_stats', array( $this, 'shortcode_stats' ) );
 		add_shortcode( 'camptix_private', array( $this, 'shortcode_private' ) );
 
-        // Pre-cache attendees for active sites only
+		// Pre-cache attendees for active sites only
 		$camptix_options = $camptix->get_options();
 		if ( ! $camptix_options['archived'] ) {
-			if ( ! wp_next_scheduled ( 'camptix_cache_all_attendees_shortcodes' ) ) {
+			if ( ! wp_next_scheduled( 'camptix_cache_all_attendees_shortcodes' ) ) {
 				wp_schedule_event( time(), 'hourly', 'camptix_cache_all_attendees_shortcodes' );
 			}
-        }
-        add_action( 'camptix_cache_all_attendees_shortcodes', array( $this, 'cache_all_attendees_shortcodes' ) );
+		}
+		add_action( 'camptix_cache_all_attendees_shortcodes', array( $this, 'cache_all_attendees_shortcodes' ) );
 	}
 
 	/**
@@ -78,10 +78,10 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 	/**
 	 * Routine to preemptively cache the content for all of a site's instances of
-     * the [camptix_attendees] shortcode.
+	 * the [camptix_attendees] shortcode.
 	 */
 	public function cache_all_attendees_shortcodes() {
-        // Get posts containing the `camptix_attendees` shortcode
+		// Get posts containing the `camptix_attendees` shortcode
 		$params = array(
 			'post_type'              => 'page',
 			'post_status'            => 'publish',
@@ -109,7 +109,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 				$attr = shortcode_parse_atts( $match[3] );
 				$attr = $this->sanitize_attendees_atts( $attr );
 
-                $this->get_attendees_shortcode_content( $attr );
+				$this->get_attendees_shortcode_content( $attr );
 			}
 		}
 	}
@@ -144,9 +144,9 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	 * Generate the key for a particular configuration to use when
 	 * setting or retrieving a cached value.
 	 *
-	 * @param array $attr    Sanitized shortcode attributes
+	 * @param array $attr Sanitized shortcode attributes
 	 *
-	 * @return string        The cache key
+	 * @return string     The cache key
 	 */
 	protected function generate_attendees_cache_key( $attr ) {
 		return 'camptix-attendees-' . md5( maybe_serialize( $attr ) );
@@ -158,8 +158,8 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	 * This checks for a cached version first. If none is found, it generates
 	 * the content and caches it before returning.
 	 *
-	 * @param array $attr             Sanitized shortcode attributes
-	 * @param bool  $force_refresh    True to generate the content even if cached value is found.
+	 * @param array $attr Sanitized shortcode attributes
+	 * @param bool $force_refresh True to generate the content even if cached value is found.
 	 *
 	 * @return string                 Rendered shortcode content
 	 */
@@ -168,7 +168,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 		// Cache duration. Day for active sites, month for archived sites.
 		$camptix_options = $camptix->get_options();
-		$cache_time = ( $camptix_options['archived'] ) ? DAY_IN_SECONDS * 30 : DAY_IN_SECONDS;
+		$cache_time      = ( $camptix_options['archived'] ) ? DAY_IN_SECONDS * 30 : DAY_IN_SECONDS;
 
 		$cache_key = $this->generate_attendees_cache_key( $attr );
 
@@ -194,12 +194,11 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	}
 
 	/**
-     * Normalize, sanitize, and validate attribute values for
-     * the [camptix_attendees] shortcode.
-     *
-	 * @param array $attr    Raw attributes
+	 * Normalize, sanitize, and validate attribute values for the [camptix_attendees] shortcode.
 	 *
-	 * @return array         Sanitized attributes
+	 * @param array $attr Raw attributes
+	 *
+	 * @return array      Sanitized attributes
 	 */
 	public function sanitize_attendees_atts( $attr ) {
 		$attr = shortcode_atts(
@@ -235,11 +234,11 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	}
 
 	/**
-     * Render the HTML markup for an instance of [camptix_attendees].
-     *
-	 * @param array $attr    Sanitized shortcode attributes
+	 * Render the HTML markup for an instance of [camptix_attendees].
 	 *
-	 * @return string        HTML
+	 * @param array $attr Sanitized shortcode attributes
+	 *
+	 * @return string     HTML
 	 */
 	protected function render_attendees_list( $attr ) {
 		global $camptix;
