@@ -133,7 +133,9 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		$attr = $this->sanitize_attendees_atts( $attr );
 
 		/**
-		 *
+		 * Action: Fires before the [camptix_attendees] shortcode is rendered.
+         *
+         * @param array $attr The shortcode instance's attributes
 		 */
 		do_action( 'camptix_attendees_shortcode_init', $attr );
 
@@ -331,7 +333,9 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 						<?php
 						/**
-						 *
+						 * Action: Fires at the end of each item in the [camptix_attendees] list.
+                         *
+                         * @param WP_Post $attendee_id The post object for the attendee
 						 */
 						do_action( 'camptix_attendees_shortcode_item', $attendee_id );
 
