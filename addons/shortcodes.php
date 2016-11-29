@@ -176,6 +176,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 		// Return the cached value if nothing has changed since it was generated
 		if ( ! $force_refresh && false !== ( $cached = get_transient( $cache_key ) ) ) {
+			// Since key changed, backcompat with non-array cache values no longer necessary
 			if ( $cached['time'] > $camptix->get_stats( 'last_modified' ) ) {
 				return $cached['content'];
 			}
