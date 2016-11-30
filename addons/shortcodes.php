@@ -23,12 +23,11 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		add_shortcode( 'camptix_stats', array( $this, 'shortcode_stats' ) );
 		add_shortcode( 'camptix_private', array( $this, 'shortcode_private' ) );
 
-		// Pre-cache attendees for active sites only
-		$camptix_options = $camptix->get_options();
-		if ( ! $camptix_options['archived'] ) {
-			if ( ! wp_next_scheduled( 'camptix_cache_all_attendees_shortcodes' ) ) {
-				wp_schedule_event( time(), 'hourly', 'camptix_cache_all_attendees_shortcodes' );
-			}
+		// Pre-cache attendees list markup
+		if ( ! wp_next_scheduled( 'camptix_cache_all_attendees_shortcodes' ) ) {
+			$camptix_options = $camptix->get_options();
+			$interval        = ( $camptix_options['archived'] ) ? 'daily' : 'hourly';
+			wp_schedule_event( time(), $interval, 'camptix_cache_all_attendees_shortcodes' );
 		}
 		add_action( 'camptix_cache_all_attendees_shortcodes', array( $this, 'cache_all_attendees_shortcodes' ) );
 	}
@@ -168,16 +167,20 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	public function get_attendees_shortcode_content( $attr, $force_refresh = false ) {
 		global $camptix;
 
-		// Cache duration. Day for active sites, month for archived sites.
-		$camptix_options = $camptix->get_options();
-		$cache_time      = ( $camptix_options['archived'] ) ? DAY_IN_SECONDS * 30 : DAY_IN_SECONDS;
-
 		$cache_key = $this->generate_attendees_cache_key( $attr );
 
+		// Cache duration. Day for active sites, month for archived sites.
+		$camptix_options = $camptix->get_options();
+		$cache_time      = ( $camptix_options['archived'] ) ? MONTH_IN_SECONDS : DAY_IN_SECONDS;
+
+		// Timestamp for last change in Camptix purchases/profile edits.
+		$last_modified = $camptix->get_stats( 'last_modified' );
+
 		// Return the cached value if nothing has changed since it was generated
+		// Since key changed, backcompat with non-array cache values is no longer necessary
 		if ( ! $force_refresh && false !== ( $cached = get_transient( $cache_key ) ) ) {
-			// Since key changed, backcompat with non-array cache values no longer necessary
-			if ( $cached['time'] > $camptix->get_stats( 'last_modified' ) ) {
+			// Allow outdated cached content on non-cronjob requests to avoid long page loads for visitors
+			if ( $cached['time'] > $last_modified || ! defined( 'DOING_CRON' ) || ! DOING_CRON ) {
 				return $cached['content'];
 			}
 		}
