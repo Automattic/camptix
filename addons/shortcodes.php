@@ -9,11 +9,12 @@
  */
 
 class CampTix_Addon_Shortcodes extends CampTix_Addon {
-
 	/**
 	 * Runs during camptix_init, @see CampTix_Addon
 	 */
 	function camptix_init() {
+		global $camptix;
+
 		add_action( 'save_post', array( $this, 'save_post' ) );
 		add_action( 'shutdown', array( $this, 'shutdown' ) );
 		add_action( 'template_redirect', array( $this, 'shortcode_private_template_redirect' ) );
@@ -21,8 +22,24 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		add_shortcode( 'camptix_attendees', array( $this, 'shortcode_attendees' ) );
 		add_shortcode( 'camptix_stats', array( $this, 'shortcode_stats' ) );
 		add_shortcode( 'camptix_private', array( $this, 'shortcode_private' ) );
+
+		// Pre-cache attendees list markup
+		if ( ! wp_next_scheduled( 'camptix_cache_all_attendees_shortcodes' ) ) {
+			$camptix_options = $camptix->get_options();
+			$interval        = ( $camptix_options['archived'] ) ? 'daily' : 'hourly';
+			wp_schedule_event( time(), $interval, 'camptix_cache_all_attendees_shortcodes' );
+		}
+		add_action( 'camptix_cache_all_attendees_shortcodes', array( $this, 'cache_all_attendees_shortcodes' ) );
 	}
 
+	/**
+	 * @param $message
+	 * @param int $post_id
+	 * @param null $data
+	 * @param string $module
+	 *
+	 * @return mixed
+	 */
 	function log( $message, $post_id = 0, $data = null, $module = 'shortcode' ) {
 		global $camptix;
 		return $camptix->log( $message, $post_id, $data, $module );
@@ -59,31 +76,52 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	}
 
 	/**
-	 * Callback for the [camptix_attendees] shortcode.
+	 * Routine to preemptively cache the content for all of a site's instances of
+	 * the [camptix_attendees] shortcode.
 	 */
-	function shortcode_attendees( $attr ) {
-		global $post, $camptix;
+	public function cache_all_attendees_shortcodes() {
+		// Get posts containing the `camptix_attendees` shortcode
+		$params = array(
+			'post_type'              => 'page',
+			'post_status'            => 'publish',
+			's'                      => '[camptix_attendees',
+			'posts_per_page'         => 50,
+			'update_post_term_cache' => false,
+			'update_post_meta_cache' => false,
+		);
+		$posts  = get_posts( $params );
 
-		$attr = shortcode_atts( array(
-			'order' => 'ASC',
-			'orderby' => 'title',
-			'posts_per_page' => 10000,
-			'tickets' => false,
-			'columns' => 3,
-			'questions' => '',
-		), $attr, 'camptix_attendees' );
-
-		$camptix_options = $camptix->get_options();
-
-		// Enqueue Jetpack's spinner script if available
-		if ( wp_script_is( 'jquery.spin', 'registered' ) ) {
-			wp_enqueue_script( 'jquery.spin' );
+		if ( ! $posts ) {
+			return;
 		}
 
-		// For wp.template()
-		wp_enqueue_script( 'wp-util' );
+		$regex = get_shortcode_regex( array( 'camptix_attendees' ) );
 
-		// Lazy load the camptix js.
+		foreach ( $posts as $post ) {
+			$matches = array();
+
+			if ( ! preg_match_all( $regex, $post->post_content, $matches, PREG_SET_ORDER ) ) {
+				continue;
+			}
+
+			foreach ( $matches as $match ) {
+				$attr = shortcode_parse_atts( $match[3] );
+				$attr = $this->sanitize_attendees_atts( $attr );
+
+				$this->get_attendees_shortcode_content( $attr );
+			}
+		}
+	}
+
+	/**
+	 * Callback for the [camptix_attendees] shortcode.
+	 */
+	public function shortcode_attendees( $attr ) {
+		// Required scripts
+		wp_enqueue_script( 'wp-util' ); // For wp.template()
+		if ( wp_script_is( 'jquery.spin', 'registered' ) ) {
+			wp_enqueue_script( 'jquery.spin' ); // Enqueue Jetpack's spinner script if available
+		}
 		wp_enqueue_script( 'camptix' );
 
 		// Only print the JS template once.
@@ -91,147 +129,235 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 			add_action( 'wp_print_footer_scripts', array( $this, 'avatar_js_template' ) );
 		}
 
-		$start = microtime(true);
+		$attr = $this->sanitize_attendees_atts( $attr );
 
-		// Serve from cache if cached copy is fresh.
-		$transient_key = md5( 'tix-attendees' . serialize( $attr ) );
-		if ( false !== ( $cached = get_transient( $transient_key ) ) ) {
-			if ( ! is_array( $cached ) )
-				return $cached; // back-compat
+		/**
+		 * Action: Fires before the [camptix_attendees] shortcode is rendered.
+         *
+         * @param array $attr The shortcode instance's attributes
+		 */
+		do_action( 'camptix_attendees_shortcode_init', $attr );
 
-			// Compare the cached time to the last modified time from stats.
-			elseif ( $cached['time'] > $camptix->get_stats( 'last_modified' ) )
+		return $this->get_attendees_shortcode_content( $attr );
+	}
+
+	/**
+	 * Generate the key for a particular configuration to use when
+	 * setting or retrieving a cached value.
+	 *
+	 * @param array $attr Sanitized shortcode attributes
+	 *
+	 * @return string     The cache key
+	 */
+	protected function generate_attendees_cache_key( $attr ) {
+		return 'camptix-attendees-' . md5( maybe_serialize( $attr ) );
+	}
+
+	/**
+	 * Get the content for an instance of the [camptix_attendees] shortcode.
+	 *
+	 * This checks for a cached version first. If none is found, it generates
+	 * the content and caches it before returning.
+	 *
+	 * @param array $attr Sanitized shortcode attributes
+	 * @param bool $force_refresh True to generate the content even if cached value is found.
+	 *
+	 * @return string                 Rendered shortcode content
+	 */
+	public function get_attendees_shortcode_content( $attr, $force_refresh = false ) {
+		global $camptix;
+
+		$cache_key = $this->generate_attendees_cache_key( $attr );
+
+		// Cache duration. Day for active sites, month for archived sites.
+		$camptix_options = $camptix->get_options();
+		$cache_time      = ( $camptix_options['archived'] ) ? MONTH_IN_SECONDS : DAY_IN_SECONDS;
+
+		// Timestamp for last change in Camptix purchases/profile edits.
+		$last_modified = $camptix->get_stats( 'last_modified' );
+
+		// Return the cached value if nothing has changed since it was generated
+		// Since key changed, backcompat with non-array cache values is no longer necessary
+		if ( ! $force_refresh && false !== ( $cached = get_transient( $cache_key ) ) ) {
+			// Allow outdated cached content on non-cronjob requests to avoid long page loads for visitors
+			if ( $cached['time'] > $last_modified || ! defined( 'DOING_CRON' ) || ! DOING_CRON ) {
 				return $cached['content'];
+			}
 		}
 
-		// Cache for a month if archived or less if active.
-		$cache_time = ( $camptix_options['archived'] ) ? DAY_IN_SECONDS * 30 : HOUR_IN_SECONDS;
+		$content = $this->render_attendees_list( $attr );
 
-		$query_args = array();
-		ob_start();
+		set_transient(
+			$cache_key,
+			array(
+				'time'    => time(),
+				'content' => $content,
+			),
+			$cache_time
+		);
+
+		return $content;
+	}
+
+	/**
+	 * Normalize, sanitize, and validate attribute values for the [camptix_attendees] shortcode.
+	 *
+	 * @param array $attr Raw attributes
+	 *
+	 * @return array      Sanitized attributes
+	 */
+	public function sanitize_attendees_atts( $attr ) {
+		$attr = shortcode_atts(
+			array(
+				'order'          => 'asc',
+				'orderby'        => 'title',
+				'posts_per_page' => 10000,
+				'tickets'        => false,
+				'columns'        => 3,
+				'questions'      => '',
+			),
+			$attr,
+			'camptix_attendees'
+		);
 
 		// @todo validate atts here
-		if ( ! in_array( strtolower( $attr['order'] ), array( 'asc', 'desc' ) ) )
-			$attr['order'] = 'asc';
 
-		if ( ! in_array( strtolower( $attr['orderby'] ), array( 'title', 'date' ) ) )
+		if ( ! in_array( strtolower( $attr['order'] ), array( 'asc', 'desc' ) ) ) {
+			$attr['order'] = 'asc';
+		}
+
+		if ( ! in_array( strtolower( $attr['orderby'] ), array( 'title', 'date' ) ) ) {
 			$attr['orderby'] = 'title';
+		}
 
 		if ( $attr['tickets'] ) {
 			$attr['tickets'] = array_map( 'intval', explode( ',', $attr['tickets'] ) );
-			if ( count( $attr['tickets'] ) > 0 ) {
-				$query_args['meta_query'] = array( array(
-					'key' => 'tix_ticket_id',
-					'compare' => 'IN',
-					'value' => $attr['tickets'],
-				) );
-			}
 		}
 
 		$attr['posts_per_page'] = absint( $attr['posts_per_page'] );
 
+		return $attr;
+	}
+
+	/**
+	 * Render the HTML markup for an instance of [camptix_attendees].
+	 *
+	 * @param array $attr Sanitized shortcode attributes
+	 *
+	 * @return string     HTML
+	 */
+	protected function render_attendees_list( $attr ) {
+		global $camptix;
+
+		$query_args = array();
+		if ( is_array( $attr['tickets'] ) && count( $attr['tickets'] ) > 0 ) {
+			$query_args['meta_query'] = array(
+				array(
+					'key'     => 'tix_ticket_id',
+					'compare' => 'IN',
+					'value'   => $attr['tickets'],
+				)
+			);
+		}
+
 		$questions = $this->get_questions_from_titles( $attr['questions'] );
 
-		$paged = 0;
+		$paged   = 0;
 		$printed = 0;
-		do_action( 'camptix_attendees_shortcode_init' );
+
+		ob_start();
 		?>
-
-		<div id="tix-attendees">
-			<ul class="tix-attendee-list tix-columns-<?php echo absint( $attr['columns'] ); ?>">
+        <div id="tix-attendees">
+            <ul class="tix-attendee-list tix-columns-<?php echo absint( $attr['columns'] ); ?>">
 				<?php
-					while ( true && $printed < $attr['posts_per_page'] ) {
-						$paged++;
+				while ( true && $printed < $attr['posts_per_page'] ) {
+					$paged ++;
 
-						$attendee_args = apply_filters( 'camptix_attendees_shortcode_query_args', array_merge(
-							array(
-								'post_type'      => 'tix_attendee',
-								'posts_per_page' => 200,
-								'post_status'    => array( 'publish', 'pending' ),
-								'paged'          => $paged,
-								'order'          => $attr['order'],
-								'orderby'        => $attr['orderby'],
-								'fields'         => 'ids', // ! no post objects
-								'cache_results'  => false,
-							),
-							$query_args
-						), $attr );
-						$attendees_raw = get_posts( $attendee_args );
+					$attendee_args = apply_filters( 'camptix_attendees_shortcode_query_args', array_merge(
+						array(
+							'post_type'      => 'tix_attendee',
+							'posts_per_page' => 200,
+							'post_status'    => array( 'publish', 'pending' ),
+							'paged'          => $paged,
+							'order'          => $attr['order'],
+							'orderby'        => $attr['orderby'],
+							'fields'         => 'ids', // ! no post objects
+							'cache_results'  => false,
+						),
+						$query_args
+					), $attr );
+					$attendees_raw = get_posts( $attendee_args );
 
-						if ( ! is_array( $attendees_raw ) || count( $attendees_raw ) < 1 ) {
-							break; // life saver!
+					if ( ! is_array( $attendees_raw ) || count( $attendees_raw ) < 1 ) {
+						break; // life saver!
+					}
+
+					// Disable object cache for prepared metadata.
+					$camptix->filter_post_meta = $camptix->prepare_metadata_for( $attendees_raw );
+
+					$attendees = array();
+					foreach ( $attendees_raw as $attendee ) {
+						$email               = get_post_meta( $attendee, 'tix_email', true );
+						$attendees[ $email ] = $attendee;
+					}
+
+					foreach ( $attendees as $attendee_id ) {
+						$attendee_answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
+						if ( $printed >= $attr['posts_per_page'] ) {
+							break;
 						}
 
-						// Disable object cache for prepared metadata.
-						$camptix->filter_post_meta = $camptix->prepare_metadata_for( $attendees_raw );
-
-						$attendees = array();
-						foreach ( $attendees_raw as $attendee ) {
-							$email = get_post_meta( $attendee, 'tix_email', true );
-							$attendees[ $email ] = $attendee;
+						// Skip attendees marked as private.
+						$privacy = get_post_meta( $attendee_id, 'tix_privacy', true );
+						if ( $privacy == 'private' ) {
+							$printed ++;
+							continue;
 						}
 
-						foreach ( $attendees as $attendee_id ) {
-							$attendee_answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
-							if ( $printed >= $attr['posts_per_page'] )
-								break;
+						echo '<li>';
 
-							// Skip attendees marked as private.
-							$privacy = get_post_meta( $attendee_id, 'tix_privacy', true );
-							if ( $privacy == 'private' ) {
-								$printed++;
-								continue;
-							}
+						$first = get_post_meta( $attendee_id, 'tix_first_name', true );
+						$last  = get_post_meta( $attendee_id, 'tix_last_name', true );
 
-							echo '<li>';
+						// Avatar placeholder
+						echo $this->get_avatar_placeholder( get_post_meta( $attendee_id, 'tix_email', true ) );
+						?>
 
-							$first = get_post_meta( $attendee_id, 'tix_first_name', true );
-							$last = get_post_meta( $attendee_id, 'tix_last_name', true );
+                        <div class="tix-field tix-attendee-name">
+							<?php echo $camptix->format_name_string( '<span class="tix-first">%first%</span> <span class="tix-last">%last%</span>', esc_html( $first ), esc_html( $last ) ); ?>
+                        </div>
 
-							// Avatar placeholder
-							echo $this->get_avatar_placeholder( get_post_meta( $attendee_id, 'tix_email', true ) );
-							?>
+						<?php foreach ( $questions as $question ) :
+							if ( ! empty ( $attendee_answers[ $question->ID ] ) ) : ?>
+                                <div class="tix-field tix-<?php echo esc_attr( $question->post_name ); ?>">
+									<?php echo esc_html( $attendee_answers[ $question->ID ] ); ?>
+                                </div>
+							<?php endif; ?>
+						<?php endforeach; ?>
 
-							<div class="tix-field tix-attendee-name">
-								<?php echo $GLOBALS['camptix']->format_name_string( '<span class="tix-first">%first%</span> <span class="tix-last">%last%</span>', esc_html( $first ), esc_html( $last ) ); ?>
-							</div>
+						<?php
+						/**
+						 * Action: Fires at the end of each item in the [camptix_attendees] list.
+                         *
+                         * @param WP_Post $attendee_id The post object for the attendee
+						 */
+						do_action( 'camptix_attendees_shortcode_item', $attendee_id );
 
-							<?php foreach ( $questions as $question ) :
-								if ( ! empty ( $attendee_answers[ $question->ID ] ) ) : ?>
-									<div class="tix-field tix-<?php echo esc_attr( $question->post_name ); ?>">
-										<?php echo esc_html( $attendee_answers[ $question->ID ] ); ?>
-									</div>
-								<?php endif; ?>
-							<?php endforeach; ?>
+						echo '</li>';
 
-							<?php
-							do_action( 'camptix_attendees_shortcode_item', $attendee_id );
-							echo '</li>';
+						$printed ++;
+					} // foreach
 
-							// clean_post_cache( $attendee_id );
-							// wp_cache_delete( $attendee_id, 'posts');
-							// wp_cache_delete( $attendee_id, 'post_meta');
-							$printed++;
-
-						} // foreach
-
-						$camptix->filter_post_meta = false; // cleanup
-					} // while true
+					$camptix->filter_post_meta = false; // cleanup
+				} // while true
 				?>
-			</ul>
-		</div>
-		<br class="tix-clear" />
-
-		<?php
-		$this->log( sprintf( __( 'Generated attendees list in %s seconds', 'camptix' ), microtime(true) - $start ) );
+            </ul>
+        </div>
+        <br class="tix-clear"/>
+	<?php
 		wp_reset_postdata();
 
-		$content = ob_get_contents();
-		ob_end_clean();
-
-		set_transient( $transient_key, array( 'content' => $content, 'time' => time() ), $cache_time );
-
-		return $content;
+		return ob_get_clean();
 	}
 
 	/**
@@ -256,7 +382,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
                 data-appear-top-offset="500"
                 ></div>',
 			get_avatar_url( $id_or_email ),
-			get_avatar_url( $id_or_email, array( 'size' => $size * 2  ) ),
+			get_avatar_url( $id_or_email, array( 'size' => $size * 2 ) ),
 			$size,
 			''
 		);
@@ -267,8 +393,8 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	 */
 	public function avatar_js_template() {
 		?>
-		<script type="text/html" id="tmpl-tix-attendee-avatar">
-			<img
+        <script type="text/html" id="tmpl-tix-attendee-avatar">
+            <img
                     alt="{{ data.alt }}"
                     src="{{ data.url }}"
                     srcset="{{ data.url2x }} 2x"
@@ -276,7 +402,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
                     height="{{ data.size }}"
                     width="{{ data.size }}"
             >
-		</script>
+        </script>
 	<?php
 	}
 
@@ -315,7 +441,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	 */
 	function shortcode_stats( $atts ) {
 		global $camptix;
-		
+
 		return isset( $atts['stat'] ) ? $camptix->get_stats( $atts['stat'] ) : '';
 	}
 
