@@ -100,7 +100,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		foreach ( $posts as $post ) {
 			$matches = array();
 
-			if ( ! preg_match_all( $regex, $post->post_content, $matches, PREG_SET_ORDER ) ) {
+			if ( ! preg_match_all( "/$regex/", $post->post_content, $matches, PREG_SET_ORDER ) ) {
 				continue;
 			}
 
