@@ -131,13 +131,6 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 		$attr = $this->sanitize_attendees_atts( $attr );
 
-		/**
-		 * Action: Fires before the [camptix_attendees] shortcode is rendered.
-         *
-         * @param array $attr The shortcode instance's attributes
-		 */
-		do_action( 'camptix_attendees_shortcode_init', $attr );
-
 		return $this->get_attendees_shortcode_content( $attr );
 	}
 
@@ -166,6 +159,13 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 	 */
 	public function get_attendees_shortcode_content( $attr, $force_refresh = false ) {
 		global $camptix;
+
+		/**
+		 * Action: Fires just before the [camptix_attendees] shortcode is rendered.
+		 *
+		 * @param array $attr The shortcode instance's attributes
+		 */
+		do_action( 'camptix_attendees_shortcode_init', $attr );
 
 		$cache_key = $this->generate_attendees_cache_key( $attr );
 
