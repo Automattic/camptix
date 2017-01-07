@@ -1004,7 +1004,7 @@ msgstr "nouvelle question"
 
 #: camptix.php:3119
 msgid "existing one"
-msgstr "question existente"
+msgstr "question existante"
 
 #: camptix.php:3133 camptix.php:3153
 msgid "Type"
