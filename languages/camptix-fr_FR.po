@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: CampTix\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/camptix\n"
 "POT-Creation-Date: 2017-01-07 21:45+0100\n"
-"PO-Revision-Date: 2017-01-08 10:07+0100\n"
+"PO-Revision-Date: 2017-01-09 09:23+0100\n"
 "Last-Translator: FX Bénard <fx@fxbenard.com>\n"
 "Language-Team: WordPress-Francophone <traduction@wordpress-fr.net>\n"
 "Language: fr_FR\n"
@@ -1572,7 +1572,7 @@ msgstr "nouvelle question"
 
 #: camptix.php:4235
 msgid "existing one"
-msgstr "question existente"
+msgstr "question existante"
 
 #: camptix.php:4246
 msgid "Add a new question:"
