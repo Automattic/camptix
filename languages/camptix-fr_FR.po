@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: CampTix\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/camptix\n"
 "POT-Creation-Date: 2017-01-07 21:45+0100\n"
-"PO-Revision-Date: 2017-01-09 09:23+0100\n"
+"PO-Revision-Date: 2017-01-09 18:03+0100\n"
 "Last-Translator: FX Bénard <fx@fxbenard.com>\n"
 "Language-Team: WordPress-Francophone <traduction@wordpress-fr.net>\n"
 "Language: fr_FR\n"
@@ -616,14 +616,14 @@ msgstr[1] "Temps dépassé <span class=\"count\">(%s)</span>"
 #: camptix.php:1114
 msgctxt "post"
 msgid "Refunded"
-msgstr "Rembousé"
+msgstr "Remboursé"
 
 #: camptix.php:1115
 #, php-format
 msgctxt "camptix"
 msgid "Refunded <span class=\"count\">(%s)</span>"
 msgid_plural "Refunded <span class=\"count\">(%s)</span>"
-msgstr[0] "Rembousé <span class=\"count\">(%s)</span>"
+msgstr[0] "Remboursé <span class=\"count\">(%s)</span>"
 msgstr[1] "Rembousés <span class=\"count\">(%s)</span>"
 
 #: camptix.php:1129
@@ -640,7 +640,7 @@ msgstr "Annulé"
 
 #: camptix.php:1138
 msgid "Refunded"
-msgstr "Rembousé"
+msgstr "Remboursé"
 
 #: camptix.php:1154
 msgid ""
@@ -757,10 +757,10 @@ msgid ""
 msgstr ""
 "Bonjour !\n"
 "\n"
-"Nous sommes désolé, mais il semble que votre paiement pour [event_name] a "
-"échoué. Veuillez vérifier vos transactions de paiement pour plus de détails. "
-"Si vous souhaitez toujours assister à l’évènement, n’hésitez pas à acheter "
-"un nouveau billet en suivant ce lien :\n"
+"Nous sommes désolés, mais il semble que votre paiement pour le [event_name] "
+"a échoué. Veuillez vérifier vos transactions de paiement pour plus de "
+"détails. Si vous souhaitez toujours assister à l’évènement, n’hésitez pas à "
+"acheter un nouveau billet en suivant ce lien :\n"
 "\n"
 "[ticket_url]\n"
 "\n"
@@ -1336,7 +1336,7 @@ msgstr "Auteur"
 
 #: camptix.php:3534 camptix.php:3536
 msgid "Refund all transactions"
-msgstr "Rembouser toutes les transactions"
+msgstr "Rembourser toutes les transactions"
 
 #: camptix.php:3537
 msgid "Seriously, refund them all"
