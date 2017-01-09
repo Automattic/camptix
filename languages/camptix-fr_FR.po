@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: CampTix\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/camptix\n"
 "POT-Creation-Date: 2017-01-07 21:45+0100\n"
-"PO-Revision-Date: 2017-01-09 19:43+0100\n"
+"PO-Revision-Date: 2017-01-09 20:05+0100\n"
 "Last-Translator: FX Bénard <fx@fxbenard.com>\n"
 "Language-Team: WordPress-Francophone <traduction@wordpress-fr.net>\n"
 "Language: fr_FR\n"
@@ -2112,7 +2112,7 @@ msgstr "Pourcentage"
 
 #. Plugin Name of the plugin/theme
 msgid "CampTix Event Ticketing"
-msgstr "Billeterie évènementielle CampTix"
+msgstr "CampTix Event Ticketing"
 
 #. Plugin URI of the plugin/theme
 #. Author URI of the plugin/theme
