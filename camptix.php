@@ -4,6 +4,9 @@
  * Plugin URI:  http://wordcamp.org
  * Description: Simple and flexible event ticketing for WordPress.
  * Version:     1.5.1
+ * Text Domain: camptix
+ * Domain Path: /languages/
+ *
  * Author:      Automattic
  * Author URI:  http://wordcamp.org
  * License:     GPLv2
@@ -77,7 +80,7 @@ class CampTix_Plugin {
 		add_action( 'shutdown', array( $this, 'shutdown' ) );
 
 		// Load a text domain
-		load_plugin_textdomain( 'camptix', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 	}
 
 	/**
@@ -182,6 +185,13 @@ class CampTix_Plugin {
 		// wp_clear_scheduled_hook( 'tix_scheduled_hourly' );
 		if ( ! wp_next_scheduled( 'tix_scheduled_daily' ) )
 			wp_schedule_event( time(), 'daily', 'tix_scheduled_daily' );
+	}
+
+	/**
+	 * Load Textdomain
+	 */
+	function load_textdomain() {
+		load_plugin_textdomain( 'camptix', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' );
 	}
 
 	/**
