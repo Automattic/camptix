@@ -25,7 +25,7 @@ class CampTix_Plugin {
 	public $beta_features_enabled;
 	public $version     = 20140325;
 	public $css_version = 20150311;
-	public $js_version  = 20150311;
+	public $js_version  = 20161128;
 	public $caps;
 
 	public $addons = array();
@@ -191,12 +191,7 @@ class CampTix_Plugin {
 	 * Load Textdomain
 	 */
 	function load_textdomain() {
-
-		$locale = apply_filters( 'plugin_locale', get_locale(), 'camptix' );
-
-		load_textdomain( 'camptix', WP_LANG_DIR . '/camptix/camptix-' . $locale . '.mo' );
-		load_plugin_textdomain( 'camptix', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
-
+		load_plugin_textdomain( 'camptix', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' );
 	}
 
 	/**
@@ -1903,7 +1898,6 @@ class CampTix_Plugin {
 	function append_currency( $price, $nbsp = true, $currency_key = false ) {
 		$currencies = $this->get_currencies();
 		$currency = $currencies[ $this->options['currency'] ];
-		$locale = $currency['locale'];
 		if ( $currency_key )
 			$currency = $currencies[ $currency_key ];
 
