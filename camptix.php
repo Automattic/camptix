@@ -191,12 +191,7 @@ class CampTix_Plugin {
 	 * Load Textdomain
 	 */
 	function load_textdomain() {
-
-		$locale = apply_filters( 'plugin_locale', get_locale(), 'camptix' );
-
-		load_textdomain( 'camptix', WP_LANG_DIR . '/camptix/camptix-' . $locale . '.mo' );
-		load_plugin_textdomain( 'camptix', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
-
+		load_plugin_textdomain( 'camptix', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' );
 	}
 
 	/**
