@@ -326,7 +326,7 @@ window.camptix = window.camptix || { models: {}, views: {}, collections: {} };
 				var value = this.$type.val();
 				var $row = this.$( '.tix-add-question-values-row' );
 
-				if ( value && value.match( /radio|checkbox|select/ ) )
+				if ( value && value.match( /radio|checkbox|select|tshirt/ ) )
 					$row.show();
 				else
 					$row.hide();

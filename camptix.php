@@ -3,7 +3,10 @@
  * Plugin Name: CampTix Event Ticketing
  * Plugin URI:  http://wordcamp.org
  * Description: Simple and flexible event ticketing for WordPress.
- * Version:     1.5
+ * Version:     1.5.1
+ * Text Domain: camptix
+ * Domain Path: /languages/
+ *
  * Author:      Automattic
  * Author URI:  http://wordcamp.org
  * License:     GPLv2
@@ -22,7 +25,7 @@ class CampTix_Plugin {
 	public $beta_features_enabled;
 	public $version     = 20140325;
 	public $css_version = 20150311;
-	public $js_version  = 20150311;
+	public $js_version  = 20161128;
 	public $caps;
 
 	public $addons = array();
@@ -77,7 +80,7 @@ class CampTix_Plugin {
 		add_action( 'shutdown', array( $this, 'shutdown' ) );
 
 		// Load a text domain
-		load_plugin_textdomain( 'camptix', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 	}
 
 	/**
@@ -182,6 +185,13 @@ class CampTix_Plugin {
 		// wp_clear_scheduled_hook( 'tix_scheduled_hourly' );
 		if ( ! wp_next_scheduled( 'tix_scheduled_daily' ) )
 			wp_schedule_event( time(), 'daily', 'tix_scheduled_daily' );
+	}
+
+	/**
+	 * Load Textdomain
+	 */
+	function load_textdomain() {
+		load_plugin_textdomain( 'camptix', false, plugin_basename( dirname( __FILE__ ) ) . '/languages/' );
 	}
 
 	/**
@@ -1898,7 +1908,6 @@ class CampTix_Plugin {
 	function append_currency( $price, $nbsp = true, $currency_key = false ) {
 		$currencies = $this->get_currencies();
 		$currency = $currencies[ $this->options['currency'] ];
-		$locale = $currency['locale'];
 		if ( $currency_key )
 			$currency = $currencies[ $currency_key ];
 
@@ -2000,13 +2009,6 @@ class CampTix_Plugin {
 					<?php do_action( 'camptix_setup_buttons' ); ?>
 				</p>
 			</form>
-			<?php if ( $this->debug ) : ?>
-			<pre><?php
-				echo wp_kses( print_r( $this->options, true ), wp_kses_allowed_html( 'post' ) );
-				printf( __( 'Current time on server: %s', 'camptix' ) . PHP_EOL, date( 'r' ) );
-				print_r( get_option( 'camptix_stats' ) );
-			?></pre>
-			<?php endif; ?>
 		</div>
 		<?php
 	}
@@ -2875,10 +2877,37 @@ class CampTix_Plugin {
 	public static function esc_csv( $fields ) {
 		$active_content_triggers = array( '=', '+', '-', '@' );
 
+		/*
+		 * Formulas that follow all common delimiters need to be escaped, because the user may choose any delimiter
+		 * when importing a file into their spreadsheet program. Different delimiters are also used as the default
+		 * in different locales. For example, Windows + Russian uses `;` as the delimiter, rather than a `,`.
+		 *
+		 * The file encoding can also effect the behavior; e.g., opening/importing as UTF-8 will enable newline
+		 * characters as delimiters.
+		 */
+		$delimiters = array(
+			',', ';', ':', '|', '^',
+			"\n", "\t", " "
+		);
+
 		foreach( $fields as $index => $field ) {
-			if ( in_array( mb_substr( $field, 0, 1 ), $active_content_triggers, true ) ) {
-				$fields[ $index ] = "'" . $field;
+			// Escape trigger characters at the start of a new field
+			$first_cell_character = mb_substr( $field, 0, 1 );
+			$is_trigger_character = in_array( $first_cell_character, $active_content_triggers, true );
+			$is_delimiter         = in_array( $first_cell_character, $delimiters,              true );
+
+			if ( $is_trigger_character || $is_delimiter ) {
+				$field = "'" . $field;
 			}
+
+			// Escape trigger characters that follow delimiters
+			foreach ( $delimiters as $delimiter ) {
+				foreach ( $active_content_triggers as $trigger ) {
+					$field = str_replace( $delimiter . $trigger, $delimiter . "'" . $trigger, $field );
+				}
+			}
+
+			$fields[ $index ] = $field;
 		}
 
 		return $fields;
@@ -4150,12 +4179,13 @@ class CampTix_Plugin {
 	 */
 	function question_field_checkbox( $name, $user_value, $question ) {
 		$values = get_post_meta( $question->ID, 'tix_values', true );
+		$user_value_esc = array_map( 'esc_attr', (array) $user_value );
 		?>
 		<?php if ( $values ) : ?>
 			<?php foreach ( (array) $values as $question_value ) : ?>
 				<label>
 					<input
-						<?php checked( in_array( $question_value, (array) $user_value ) ); ?>
+						<?php checked( in_array( $question_value, array_merge( (array) $user_value, array_values( $user_value_esc ) ) ) ); ?>
 						name="<?php echo esc_attr( $name ); ?>[<?php echo esc_attr( sanitize_title_with_dashes( $question_value ) ); ?>]"
 						type="checkbox"
 						value="<?php echo esc_attr( $question_value ); ?>"
@@ -5230,7 +5260,7 @@ class CampTix_Plugin {
 								<td class="tix-column-description">
 									<strong class="tix-ticket-title"><?php echo esc_html( $ticket->post_title ); ?></strong>
 									<?php if ( $ticket->post_excerpt ) : ?>
-										<br /><span class="tix-ticket-excerpt"><?php echo $ticket->post_excerpt; ?></span>
+										<br /><span class="tix-ticket-excerpt"><?php echo esc_html( $ticket->post_excerpt ); ?></span>
 									<?php endif; ?>
 									<?php if ( $ticket->tix_coupon_applied ) : ?>
 										<br /><small class="tix-discount"><?php echo esc_html( $ticket->tix_discounted_text ); ?></small>
@@ -7472,7 +7502,9 @@ class CampTix_Plugin {
 			<thead>
 			<tr>
 				<?php foreach ( array_keys( $rows[0] ) as $column ) : ?>
-					<th class="tix-<?php echo esc_attr( sanitize_title_with_dashes( $column ) ); ?>"><?php echo $column; ?></th>
+					<th class="tix-<?php echo esc_attr( sanitize_title_with_dashes( $column ) ); ?>">
+						<?php echo wp_kses( $column, 'post' ); ?>
+					</th>
 				<?php endforeach; ?>
 			</tr>
 			</thead>
@@ -7486,7 +7518,9 @@ class CampTix_Plugin {
 					?>
 					<tr class="<?php echo esc_attr( $alt ); ?> tix-row-<?php echo sanitize_title_with_dashes( array_shift( $values ) ); ?>">
 						<?php foreach ( $row as $column => $value ) : ?>
-						<td class="tix-<?php echo esc_attr( sanitize_title_with_dashes( $column ) ); ?>"><span><?php echo $value; ?></span></td>
+							<td class="tix-<?php echo esc_attr( sanitize_title_with_dashes( $column ) ); ?>">
+								<span><?php echo wp_kses( $value, 'post' ); ?></span>
+							</td>
 						<?php endforeach; ?>
 					</tr>
 				<?php endforeach; ?>
@@ -7746,6 +7780,7 @@ class CampTix_Plugin {
 			'field-twitter'  => $this->get_default_addon_path( 'field-twitter.php' ),
 			'field-url'      => $this->get_default_addon_path( 'field-url.php' ),
 			'field-country'  => $this->get_default_addon_path( 'field-country.php' ),
+			'field-tshirt'   => $this->get_default_addon_path( 'field-tshirt.php' ),
 			'shortcodes'     => $this->get_default_addon_path( 'shortcodes.php' ),
 			'payment-paypal' => $this->get_default_addon_path( 'payment-paypal.php' ),
 			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),

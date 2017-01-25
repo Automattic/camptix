@@ -3,7 +3,7 @@ Contributors:      automattic, kovshenin, andreamiddleton, iandunn
 Tags:              ticketing, event ticketing
 Requires at least: 3.5
 Tested up to:      4.6
-Stable tag:        1.5
+Stable tag:        1.5.1
 Donate link:       http://wordpressfoundation.org/donate/
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
@@ -46,6 +46,10 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.5.1 (2016-10-11) =
+* [SECURITY] Fixed 3 CSV injection bypasses reported in [#160500-h1](https://hackerone.com/reports/160500), [#160520-h1](https://hackerone.com/reports/160520), and [#160674-h1](https://hackerone.com/reports/160674). Props to [white_walker](https://hackerone.com/white_walker), [lalka](https://hackerone.com/lalka), and [grande](https://hackerone.com/grande) for discovery and coordinated disclosure.
+* [SECURITY] Fixed an XSS vulnerability reported in [#164793-h1](https://hackerone.com/reports/164793). Props to [grande](https://hackerone.com/grande) for discovery and coordinated disclosure.
 
 = 1.5 (2016-08-10) =
 * [SECURITY] Fixed [CSV injection vulnerability](https://hackerone.com/reports/151516) with CVSS score of [8.3](https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:H/A:H). Props to [Zawad Bin Hafiz](https://hackerone.com/thezawad) for discovery and coordinated disclosure.
