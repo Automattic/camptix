@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: CampTix Event Ticketing\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/camptix\n"
 "POT-Creation-Date: 2017-03-03 01:10+0000\n"
-"PO-Revision-Date: 2017-03-03 11:52+0000\n"
+"PO-Revision-Date: 2017-03-03 11:58+0000\n"
 "Last-Translator: Pedro Mendonça <ped.gaspar@gmail.com>\n"
 "Language-Team: Pedro Mendonça <ped.gaspar@gmail.com>\n"
 "Language: pt_PT\n"
@@ -935,7 +935,7 @@ msgstr "Configuração geral."
 
 #: camptix.php:1605
 msgid "Reset Default"
-msgstr "Repor valores por omissão"
+msgstr "Repor configuração"
 
 #: camptix.php:1740 camptix.php:1754 camptix.php:3228 camptix.php:4187
 msgid "Yes"
