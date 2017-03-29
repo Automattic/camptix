@@ -25,6 +25,8 @@ CampTix is an easy to use and flexible event ticketing plugin created by WordCam
 
 Feel free to post your feature requests, issues and pull requests to [CampTix on GitHub](https://github.com/automattic/camptix "CampTix on GitHub").
 
+To contribute or update a translation, visit [the translation project](https://translate.wordpress.org/projects/wp-plugins/camptix "CampTix translation project").
+
 == Installation ==
 
 1. Download and extract CampTix in your `wp-content/plugins` directory
