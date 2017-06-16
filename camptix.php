@@ -169,7 +169,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Scheduled events, mainly around e-mail jobs, runs during file load.
+	 * Scheduled events, mainly around email jobs, runs during file load.
 	 */
 	function schedule_events() {
 		add_filter( 'cron_schedules', array( $this, 'cron_schedules' ) );
@@ -206,7 +206,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Runs during the tix_email_schedule scheduled event, processes e-mail jobs.
+	 * Runs during the tix_email_schedule scheduled event, processes email jobs.
 	 */
 	function send_emails_batch() {
 		global $wpdb, $shortcode_tags;
@@ -215,7 +215,7 @@ class CampTix_Plugin {
 		if ( ! did_action( 'camptix_init' ) )
 			$this->init();
 
-		// Grab only one e-mail job at a time.
+		// Grab only one email job at a time.
 		$email = get_posts( array(
 			'post_type' => 'tix_email',
 			'post_status' => 'pending',
@@ -228,7 +228,7 @@ class CampTix_Plugin {
 			return;
 
 		$email = array_shift( $email );
-		$this->log( 'Executing e-mail job.', $email->ID, null, 'notify' );
+		$this->log( 'Executing email job.', $email->ID, null, 'notify' );
 		$max = apply_filters( 'camptix_notify_recipients_batch_count', 200 ); // plugins can change this.
 
 		$recipients_data = $wpdb->get_results( $wpdb->prepare( "SELECT SQL_CALC_FOUND_ROWS meta_id, meta_value FROM $wpdb->postmeta WHERE $wpdb->postmeta.post_id = %d AND $wpdb->postmeta.meta_key = %s LIMIT %d;", $email->ID, 'tix_email_recipient_id', $max ) );
@@ -243,7 +243,7 @@ class CampTix_Plugin {
 
 		if ( $recipients && is_array( $recipients ) && count( $recipients ) > 0 ) {
 
-			// Remove all shortcodes before sending the e-mails, but bring them back later.
+			// Remove all shortcodes before sending the emails, but bring them back later.
 			$this->removed_shortcodes = $shortcode_tags;
 			remove_all_shortcodes();
 
@@ -279,22 +279,22 @@ class CampTix_Plugin {
 						);
 
 						if ( ! is_email( $attendee_email ) ) {
-							$this->log( sprintf( '%s is not a valid e-mail, removing from queue.', $attendee_email ), $email->ID, $data, 'notify' );
+							$this->log( sprintf( '%s is not a valid email, removing from queue.', $attendee_email ), $email->ID, $data, 'notify' );
 						} else {
 
 							$this->tmp( 'attendee_id', $attendee_id );
 							$email_content = do_shortcode( $email->post_content );
 							$email_title = do_shortcode( $email->post_title );
 
-							// Decode entities since the e-mails sent is a plain/text, not html.
+							// Decode entities since the emails sent is a plain/text, not html.
 							$email_title = html_entity_decode( $email_title );
 							$email_content = html_entity_decode( $email_content );
 
-							// Attempt to send an e-mail.
+							// Attempt to send an email.
 							if ( $this->wp_mail( $attendee_email, $email_title, $email_content ) ) {
-								$this->log( sprintf( 'E-mail successfully sent to %s', $attendee_email ), $email->ID, $data, 'notify' );
+								$this->log( sprintf( 'Email successfully sent to %s', $attendee_email ), $email->ID, $data, 'notify' );
 							} else {
-								$this->log( sprintf( 'Could not send e-mail to %s, removing from queue.', $attendee_email ), $email->ID, $data, 'notify' );
+								$this->log( sprintf( 'Could not send email to %s, removing from queue.', $attendee_email ), $email->ID, $data, 'notify' );
 							}
 						}
 
@@ -357,7 +357,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Returns the e-mail receipt content.
+	 * Returns the email receipt content.
 	 *
 	 * @uses $this->tmp() to retrieve receipt content.
 	 */
@@ -397,7 +397,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Notify shortcode: returns the attendee e-mail address.
+	 * Notify shortcode: returns the attendee email address.
 	 */
 	function notify_shortcode_email( $atts ) {
 		if ( $this->tmp( 'attendee_id' ) )
@@ -467,7 +467,7 @@ class CampTix_Plugin {
 		wp_register_script( 'camptix', plugins_url( 'camptix.js', __FILE__ ), array( 'jquery' ), $this->js_version );
 
 		wp_localize_script( 'camptix', 'camptix_l10n', array(
-			'enterEmail' => __( 'Please enter the e-mail addresses in the forms above.', 'camptix' ),
+			'enterEmail' => __( 'Please enter the email addresses in the forms above.', 'camptix' ),
 			'ajaxURL'    => admin_url( 'admin-ajax.php' ),
 		) );
 
@@ -529,7 +529,7 @@ class CampTix_Plugin {
 		add_filter( 'manage_edit-tix_coupon_columns', array( $this, 'manage_columns_coupon_filter' ) );
 		add_action( 'manage_tix_coupon_posts_custom_column', array( $this, 'manage_columns_coupon_action' ), 10, 2 );
 
-		// E-mail columns
+		// Email columns
 		add_filter( 'manage_edit-tix_email_columns', array( $this, 'manage_columns_email_filter' ) );
 		add_action( 'manage_tix_email_posts_custom_column', array( $this, 'manage_columns_email_action' ), 10, 2 );
 
@@ -601,7 +601,7 @@ class CampTix_Plugin {
 	 * Manage columns filter for attendee post type.
 	 */
 	function manage_columns_attendee_filter( $columns ) {
-		$columns['tix_email'] = __( 'E-mail', 'camptix' );
+		$columns['tix_email']  = __( 'Email', 'camptix' );
 		$columns['tix_ticket'] = __( 'Ticket', 'camptix' );
 		$columns['tix_coupon'] = __( 'Coupon', 'camptix' );
 
@@ -609,7 +609,7 @@ class CampTix_Plugin {
 			$columns['tix_reservation'] = __( 'Reservation', 'camptix' );
 
 		$columns['tix_ticket_price'] = __( 'Ticket Price', 'camptix' );
-		$columns['tix_order_total'] = __( 'Order Total', 'camptix' );
+		$columns['tix_order_total']  = __( 'Order Total', 'camptix' );
 
 		$date = $columns['date'];
 		unset( $columns['date'] );
@@ -1067,35 +1067,35 @@ class CampTix_Plugin {
 			),
 		) );
 
-		// tix_email will store e-mail jobs.
+		// tix_email will store email jobs.
 		register_post_type( 'tix_email', array(
 			'labels' => array(
-				'name' => __( 'E-mails', 'camptix' ),
-				'singular_name' => __( 'E-mail', 'camptix' ),
-				'add_new' => __( 'New E-mail', 'camptix' ),
-				'add_new_item' => __( 'Add New E-mail', 'camptix' ),
-				'edit_item' => __( 'Edit E-mail', 'camptix' ),
-				'new_item' => __( 'New E-mail', 'camptix' ),
-				'all_items' => __( 'E-mails', 'camptix' ),
-				'view_item' => __( 'View E-mail', 'camptix' ),
-				'search_items' => __( 'Search E-mails', 'camptix' ),
-				'not_found' => __( 'No e-mails found', 'camptix' ),
-				'not_found_in_trash' => __( 'No e-mails found in trash', 'camptix' ),
-				'menu_name' => __( 'E-mails (debug)', 'camptix' ),
+				'name'               => __( 'Emails', 'camptix' ),
+				'singular_name'      => __( 'Email', 'camptix' ),
+				'add_new'            => __( 'New Email', 'camptix' ),
+				'add_new_item'       => __( 'Add New Email', 'camptix' ),
+				'edit_item'          => __( 'Edit Email', 'camptix' ),
+				'new_item'           => __( 'New Email', 'camptix' ),
+				'all_items'          => __( 'Emails', 'camptix' ),
+				'view_item'          => __( 'View Email', 'camptix' ),
+				'search_items'       => __( 'Search Emails', 'camptix' ),
+				'not_found'          => __( 'No emails found', 'camptix' ),
+				'not_found_in_trash' => __( 'No emails found in trash', 'camptix' ),
+				'menu_name'          => __( 'Emails (debug)', 'camptix' ),
 			),
-			'public' => false,
-			'query_var' => false,
+			'public'             => false,
+			'query_var'          => false,
 			'publicly_queryable' => false,
-			'show_ui' => ( $this->debug && current_user_can( $this->caps['manage_options'] ) ),
-			'show_in_menu' => ( $this->debug && current_user_can( $this->caps['manage_options'] ) ) ? 'edit.php?post_type=tix_ticket' : false,
-			'supports' => array( 'title', 'editor', 'custom-fields' ),
+			'show_ui'            => ( $this->debug && current_user_can( $this->caps['manage_options'] ) ),
+			'show_in_menu'       => ( $this->debug && current_user_can( $this->caps['manage_options'] ) ) ? 'edit.php?post_type=tix_ticket' : false,
+			'supports'           => array( 'title', 'editor', 'custom-fields' ),
 		) );
 	}
 
 	function register_post_statuses() {
 		register_post_status( 'cancel', array(
-			'label'                     => _x( 'Cancelled', 'post', 'camptix' ),
-			'label_count'               => _nx_noop( 'Cancelled <span class="count">(%s)</span>', 'Cancelled <span class="count">(%s)</span>', 'camptix' ),
+			'label'                     => _x( 'Canceled', 'post', 'camptix' ),
+			'label_count'               => _nx_noop( 'Canceled <span class="count">(%s)</span>', 'Canceled <span class="count">(%s)</span>', 'camptix' ),
 			'public' => false,
 			'protected' => true,
 			'show_in_admin_all_list' => true,
@@ -1142,7 +1142,7 @@ class CampTix_Plugin {
 			$states['failed'] = __( 'Failed', 'camptix' );
 
 		if ( $post->post_status == 'cancel' && get_query_var( 'post_status' ) != 'cancel' )
-			$states['cancelled'] = __( 'Cancelled', 'camptix' );
+			$states['cancelled'] = __( 'Canceled', 'camptix' );
 
 		if ( $post->post_status == 'refund' && get_query_var( 'post_status' ) != 'refund' )
 			$states['cancelled'] = __( 'Refunded', 'camptix' );
@@ -1511,7 +1511,7 @@ class CampTix_Plugin {
 				}
 				break;
 			case 'email-templates':
-				add_settings_section( 'general', __( 'E-mail Templates', 'camptix' ), array( $this, 'menu_setup_section_email_templates' ), 'camptix_options' );
+				add_settings_section( 'general', __( 'Email Templates', 'camptix' ), array( $this, 'menu_setup_section_email_templates' ), 'camptix_options' );
 				$this->add_settings_field_helper( 'email_template_single_purchase', __( 'Single purchase', 'camptix' ), 'field_textarea' );
 				$this->add_settings_field_helper( 'email_template_multiple_purchase', __( 'Multiple purchase', 'camptix' ), 'field_textarea' );
 				$this->add_settings_field_helper( 'email_template_multiple_purchase_receipt', __( 'Multiple purchase (receipt)', 'camptix' ), 'field_textarea' );
@@ -1561,7 +1561,7 @@ class CampTix_Plugin {
 	function menu_setup_section_email_templates() {
 		?>
 
-		<p><?php _e( 'Customize your confirmation e-mail templates.', 'camptix' ); ?></p>
+		<p><?php _e( 'Customize your confirmation email templates.', 'camptix' ); ?></p>
 
 		<p>
 			<?php _e( 'You can use the following shortcodes inside the message: [event_name], [ticket_url], [receipt], and [buyer_full_name].', 'camptix' ); ?>
@@ -1641,7 +1641,7 @@ class CampTix_Plugin {
 					$output['payment_methods'][ $key ] = (bool) $input['payment_methods'][ $key ];
 		}
 
-		// E-mail templates
+		// Email templates
 		$email_templates = array_merge(
 			array(
 				'email_template_single_purchase',
@@ -2020,9 +2020,9 @@ class CampTix_Plugin {
 	function menu_setup_tabs() {
 		$current_section = $this->get_setup_section();
 		$sections = array(
-			'general' => __( 'General', 'camptix' ),
-			'payment' => __( 'Payment', 'camptix' ),
-			'email-templates' => __( 'E-mail Templates', 'camptix' ),
+			'general'         => __( 'General', 'camptix' ),
+			'payment'         => __( 'Payment', 'camptix' ),
+			'email-templates' => __( 'Email Templates', 'camptix' ),
 		);
 
 		if ( $this->beta_features_enabled )
@@ -2603,7 +2603,7 @@ class CampTix_Plugin {
 				__( 'Ticket type', 'camptix' ) => esc_html( $ticket->post_title ),
 				__( 'Sold', 'camptix' ) => $ticket->tix_sold_count,
 				__( 'Remaining', 'camptix' ) => $ticket->tix_remaining,
-				__( 'Sub-Total', 'camptix' ) => $this->append_currency( $ticket->tix_sold_count * $ticket->tix_price ),
+				__( 'Subtotal', 'camptix' ) => $this->append_currency( $ticket->tix_sold_count * $ticket->tix_price ),
 				__( 'Discounted', 'camptix' ) => $this->append_currency( $ticket->tix_discounted ),
 				__( 'Revenue', 'camptix' ) => $this->append_currency( $ticket->tix_sold_count * $ticket->tix_price - $ticket->tix_discounted ),
 			);
@@ -2612,7 +2612,7 @@ class CampTix_Plugin {
 			__( 'Ticket type', 'camptix' ) => 'Total',
 			__( 'Sold', 'camptix' ) => $totals->sold,
 			__( 'Remaining', 'camptix' ) => $totals->remaining,
-			__( 'Sub-Total', 'camptix' ) => $this->append_currency( $totals->sub_total ),
+			__( 'Subtotal', 'camptix' ) => $this->append_currency( $totals->sub_total ),
 			__( 'Discounted', 'camptix' ) => $this->append_currency( $totals->discounted ),
 			__( 'Revenue', 'camptix' ) => $this->append_currency( $totals->revenue ),
 		);
@@ -2709,18 +2709,18 @@ class CampTix_Plugin {
 		$questions = $this->get_all_questions();
 
 		$columns = array(
-			'id' => __( 'Attendee ID', 'camptix' ),
-			'ticket' => __( 'Ticket Type', 'camptix' ),
-			'first_name' => __( 'First Name', 'camptix' ),
-			'last_name' => __( 'Last Name', 'camptix' ),
-			'email' => __( 'E-mail Address', 'camptix' ),
-			'date' => __( 'Purchase date', 'camptix' ),
-			'modified_date' => __( 'Last Modified date', 'camptix' ),
-			'status' => __( 'Status', 'camptix' ),
-			'txn_id' => __( 'Transaction ID', 'camptix' ),
-			'coupon' => __( 'Coupon', 'camptix' ),
-			'buyer_name' => __( 'Ticket Buyer Name', 'camptix' ),
-			'buyer_email' => __( 'Ticket Buyer E-mail Address', 'camptix' ),
+			'id'             => __( 'Attendee ID', 'camptix' ),
+			'ticket'         => __( 'Ticket Type', 'camptix' ),
+			'first_name'     => __( 'First Name', 'camptix' ),
+			'last_name'      => __( 'Last Name', 'camptix' ),
+			'email'          => __( 'Email Address', 'camptix' ),
+			'date'           => __( 'Purchase date', 'camptix' ),
+			'modified_date'  => __( 'Last Modified date', 'camptix' ),
+			'status'         => __( 'Status', 'camptix' ),
+			'txn_id'         => __( 'Transaction ID', 'camptix' ),
+			'coupon'         => __( 'Coupon', 'camptix' ),
+			'buyer_name'     => __( 'Ticket Buyer Name', 'camptix' ),
+			'buyer_email'    => __( 'Ticket Buyer Email Address', 'camptix' ),
 			'payment_method' => __( 'Payment Method', 'camptix' ),
 		);
 		foreach ( $questions as $question )
@@ -2904,7 +2904,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Notify tools menu, allows to create, preview and send an e-mail
+	 * Notify tools menu, allows to create, preview and send an email
 	 * to all attendees. See also: notify shortcodes.
 	 */
 	function menu_tools_notify() {
@@ -2926,7 +2926,7 @@ class CampTix_Plugin {
 				$errors[] = __( 'Please enter a subject line.', 'camptix' );
 
 			if ( empty( $_POST['tix_notify_body'] ) )
-				$errors[] = __( 'Please enter the e-mail body.', 'camptix' );
+				$errors[] = __( 'Please enter the email body.', 'camptix' );
 
 			if ( empty( $_POST['tix-notify-segment-query'] ) )
 				$errors[] = __( 'At least one segment condition must be defined.', 'camptix' );
@@ -2949,7 +2949,7 @@ class CampTix_Plugin {
 				$subject = sanitize_text_field( wp_kses_post( $_POST['tix_notify_subject'] ) );
 				$body = wp_kses_post( $_POST['tix_notify_body'] );
 
-				// Create a new e-mail job.
+				// Create a new email job.
 				$email_id = wp_insert_post( array(
 					'post_type' => 'tix_email',
 					'post_status' => 'pending',
@@ -2959,8 +2959,8 @@ class CampTix_Plugin {
 
 				// Add recipients as post meta.
 				if ( $email_id ) {
-					add_settings_error( 'camptix', 'none', sprintf( __( 'Your e-mail job has been queued for %s recipients.', 'camptix' ), count( $recipients ) ), 'updated' );
-					$this->log( sprintf( 'Created e-mail job with %s recipients.', count( $recipients ) ), $email_id, null, 'notify' );
+					add_settings_error( 'camptix', 'none', sprintf( __( 'Your email job has been queued for %s recipients.', 'camptix' ), count( $recipients ) ), 'updated' );
+					$this->log( sprintf( 'Created email job with %s recipients.', count( $recipients ) ), $email_id, null, 'notify' );
 
 					foreach ( $recipients as $recipient_id )
 						add_post_meta( $email_id, 'tix_email_recipient_id', $recipient_id );
@@ -3105,7 +3105,7 @@ class CampTix_Plugin {
 					<?php /* Hit Preview, not Send, if the form is submitted with Enter. */ ?>
 					<?php submit_button( __( 'Preview', 'camptix' ), 'button', 'tix_notify_preview', false ); ?>
 				</div>
-				<?php submit_button( __( 'Send E-mails', 'camptix' ), 'primary', 'tix_notify_submit', false ); ?>
+				<?php submit_button( __( 'Send Emails', 'camptix' ), 'primary', 'tix_notify_submit', false ); ?>
 				<?php submit_button( __( 'Preview', 'camptix' ), 'button', 'tix_notify_preview', false ); ?>
 			</p>
 		</form>
@@ -4226,7 +4226,7 @@ class CampTix_Plugin {
 							<span class="tix-field-type"><?php _e( 'Default', 'camptix' ); ?></span>
 						</div>
 						<div class="tix-item-inner-middle">
-							<span class="tix-field-name"><?php _e( 'First name, last name and e-mail address', 'camptix' ); ?></span>
+							<span class="tix-field-name"><?php _e( 'First name, last name and email address', 'camptix' ); ?></span>
 							<span class="tix-field-required-star">*</span>
 							<span class="tix-field-values"></span>
 						</div>
@@ -4487,7 +4487,7 @@ class CampTix_Plugin {
 		$rows[] = array( __( 'Status', 'camptix' ), esc_html( ucwords( $post->post_status ) ) );
 		$rows[] = array( __( 'First Name', 'camptix' ), esc_html( get_post_meta( $post->ID, 'tix_first_name', true ) ) );
 		$rows[] = array( __( 'Last Name', 'camptix' ), esc_html( get_post_meta( $post->ID, 'tix_last_name', true ) ) );
-		$rows[] = array( __( 'E-mail', 'camptix' ), esc_html( get_post_meta( $post->ID, 'tix_email', true ) ) );
+		$rows[] = array( __( 'Email', 'camptix' ), esc_html( get_post_meta( $post->ID, 'tix_email', true ) ) );
 		$rows[] = array( __( 'Ticket', 'camptix' ), sprintf( '<a href="%s">%s</a>', get_edit_post_link( $ticket->ID ), $ticket->post_title ) );
 
 		$rows = apply_filters( 'camptix_metabox_attendee_info_additional_rows', $rows, $post );
@@ -4512,7 +4512,7 @@ class CampTix_Plugin {
 				$rows[] = array( __( 'Pending Reason', 'camptix' ), $txn['PENDINGREASON'] );
 
 			if ( isset( $txn['EMAIL'] ) )
-				$rows[] = array( __( 'Buyer E-mail', 'camptix' ), esc_html( $txn['EMAIL'] ) );
+				$rows[] = array( __( 'Buyer Email', 'camptix' ), esc_html( $txn['EMAIL'] ) );
 			*/
 		}
 
@@ -4732,7 +4732,7 @@ class CampTix_Plugin {
 					update_post_meta( $post_id, 'tix_quantity', $ticket_quantity );
 
 					delete_post_meta( $post_id, 'tix_reservation', $reservations[$cancel_token] );
-					$this->log( 'Cancelled a reservation.', $post_id, $reservations[$cancel_token] );
+					$this->log( 'Canceled a reservation.', $post_id, $reservations[$cancel_token] );
 				}
 			}
 		}
@@ -5175,7 +5175,7 @@ class CampTix_Plugin {
 			$this->error( __( 'Your access token does not seem to be valid.', 'camptix' ) );
 
 		if ( isset( $redirected_error_flags['payment_cancelled'] ) )
-			$this->error( __( 'Your payment has been cancelled. Feel free to try again!', 'camptix' ) );
+			$this->error( __( 'Your payment has been canceled. Feel free to try again!', 'camptix' ) );
 
 		if ( isset( $redirected_error_flags['invalid_edit_token'] ) )
 			$this->error( __( 'The edit link you are trying to use is either invalid or has expired.', 'camptix' ) );
@@ -5184,7 +5184,7 @@ class CampTix_Plugin {
 			$this->error( __( 'Your refund request can not be processed. Please try again later or contact support.', 'camptix' ) );
 
 		if ( isset( $redirected_error_flags['invalid_reservation'] ) )
-			$this->error( __( 'Sorry, but the reservation you are trying to use has been cancelled or has expired.', 'camptix' ) );
+			$this->error( __( 'Sorry, but the reservation you are trying to use has been canceled or has expired.', 'camptix' ) );
 
 		do_action( 'camptix_form_start_errors', $redirected_error_flags );
 
@@ -5347,10 +5347,10 @@ class CampTix_Plugin {
 			$this->error( __( 'Please fill in all required fields.', 'camptix' ) );
 
 		if ( isset( $this->error_flags['invalid_email'] ) )
-			$this->error( __( 'The e-mail address you have entered seems to be invalid.', 'camptix' ) );
+			$this->error( __( 'The email address you have entered seems to be invalid.', 'camptix' ) );
 
 		if ( isset( $this->error_flags['no_receipt_email'] ) )
-			$this->error( __( 'The chosen receipt e-mail address is either empty or invalid.', 'camptix' ) );
+			$this->error( __( 'The chosen receipt email address is either empty or invalid.', 'camptix' ) );
 
 		if ( isset( $this->error_flags['payment_failed'] ) )
 			$this->error( __( 'A payment error has occurred, looks like chosen payment method is not responding. Please try again later.', 'camptix' ) );
@@ -5477,7 +5477,7 @@ class CampTix_Plugin {
 								<?php do_action( 'camptix_attendee_form_additional_info', $this->form_data, $i, $this->tickets_selected_count ); ?>
 
 								<tr class="tix-row-email">
-									<td class="tix-required tix-left"><?php _e( 'E-mail', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
+									<td class="tix-required tix-left"><?php _e( 'Email', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['email'] ) ? $this->form_data['tix_attendee_info'][$i]['email'] : apply_filters( 'camptix_attendee_info_default_value', '', 'email', $this->form_data, $ticket, $i ); ?>
 									<td class="tix-right">
 										<input class="tix-field-email" name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][email]" type="email" value="<?php echo esc_attr( $value ); ?>" />
@@ -5533,7 +5533,7 @@ class CampTix_Plugin {
 						<th colspan="2"><?php _e( 'Receipt', 'camptix' ); ?></th>
 					</tr>
 					<tr>
-						<td class="tix-left tix-required"><?php _e( 'E-mail the receipt to', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
+						<td class="tix-left tix-required"><?php _e( 'Email the receipt to', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 						<td class="tix-right" id="tix-receipt-emails-list">
 							<?php if ( isset( $this->form_data['tix_receipt_email_js'] ) && is_email( $this->form_data['tix_receipt_email_js'] ) ) : ?>
 								<label><input name="tix_receipt_email_js" checked="checked" value="<?php echo esc_attr( $this->form_data['tix_receipt_email_js'] ); ?>" type="radio" /> <?php echo esc_html( $this->form_data['tix_receipt_email_js'] ); ?></label><br />
@@ -5778,7 +5778,7 @@ class CampTix_Plugin {
 				$errors[] = __( 'Please fill in all required fields.', 'camptix' );
 
 			if ( ! is_email( $new_ticket_info['email'] ) )
-				$errors[] = __( 'You have entered an invalid e-mail, please try again.', 'camptix' );
+				$errors[] = __( 'You have entered an invalid email, please try again.', 'camptix' );
 
 			$new_answers = array();
 			foreach ( $questions as $question ) {
@@ -5845,7 +5845,7 @@ class CampTix_Plugin {
 						<?php do_action( 'camptix_form_edit_attendee_additional_info', $attendee ); ?>
 
 						<tr>
-							<td class="tix-required tix-left"><?php _e( 'E-mail', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
+							<td class="tix-required tix-left"><?php _e( 'Email', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 							<td class="tix-right"><input name="tix_ticket_info[email]" type="text" value="<?php echo esc_attr( $ticket_info['email'] ); ?>" /></td>
 						</tr>
 
@@ -6022,7 +6022,7 @@ class CampTix_Plugin {
 							</th>
 						</tr>
 						<tr>
-							<td class="tix-left"><?php _e( 'E-mail', 'camptix' ); ?></td>
+							<td class="tix-left"><?php _e( 'Email', 'camptix' ); ?></td>
 							<td class="tix-right"><?php echo esc_html( $transaction['receipt_email'] ); ?></td>
 						</tr>
 						<tr>
@@ -6048,7 +6048,7 @@ class CampTix_Plugin {
 
 					</tbody>
 				</table>
-				<p class="tix-description"><?php _e( 'Refunds can take up to several days to process. All of the tickets you purchased in the original transaction will be cancelled. We are not able to provide partial refunds and/or refunds to a different account than the original purchaser. You must agree to these terms before requesting a refund.', 'camptix' ); ?></p>
+				<p class="tix-description"><?php _e( 'Refunds can take up to several days to process. All of the tickets you purchased in the original transaction will be canceled. We are not able to provide partial refunds and/or refunds to a different account than the original purchaser. You must agree to these terms before requesting a refund.', 'camptix' ); ?></p>
 				<p class="tix-submit">
 					<label><input type="checkbox" name="tix_refund_request_confirmed" value="1"> <?php _e( 'I agree to the above terms', 'camptix' ); ?></label>
 					<input type="submit" value="<?php esc_attr_e( 'Send Request', 'camptix' ); ?>" />
@@ -7010,7 +7010,7 @@ class CampTix_Plugin {
 			}
 		}
 
-		// We'll need these for proper e-mail notifications.
+		// We'll need these for proper email notifications.
 		$from_status = $attendees_status;
 		$to_status = $attendees[0]->post_status;
 
@@ -7108,7 +7108,7 @@ class CampTix_Plugin {
 		if ( ! $attendees )
 			return;
 
-		// Remove all shortcodes before sending the e-mails, but bring them back later.
+		// Remove all shortcodes before sending the emails, but bring them back later.
 		$this->removed_shortcodes = $shortcode_tags;
 		remove_all_shortcodes();
 
@@ -7142,7 +7142,7 @@ class CampTix_Plugin {
 		}
 
 		/**
-		 * If there's more than one attendee we should e-mail a separate ticket to each attendee,
+		 * If there's more than one attendee we should email a separate ticket to each attendee,
 		 * but only if the payment was from draft to completed or pending.For non-draft to ... tickets
 		 * we send out a receipt only.
 		 */
@@ -7160,7 +7160,7 @@ class CampTix_Plugin {
 
 				$subject = sprintf( __( "Your Ticket to %s", 'camptix' ), $this->options['event_name'] );
 
-				$this->log( sprintf( 'Sent ticket e-mail to %s and receipt to %s.', $attendee_email, $receipt_email ), $attendee->ID );
+				$this->log( sprintf( 'Sent ticket email to %s and receipt to %s.', $attendee_email, $receipt_email ), $attendee->ID );
 				$this->wp_mail( $attendee_email, $subject, $content );
 
 				do_action( 'camptix_ticket_emailed', $attendee->ID );
@@ -7182,7 +7182,7 @@ class CampTix_Plugin {
 					$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_multiple_refund', $attendee );
 					$content = do_shortcode( $this->options[ $email_template ] );
 
-					$this->log( sprintf( 'Sending refund e-mail notification to %s.', $attendee_email ), $attendees[0]->ID );
+					$this->log( sprintf( 'Sending refund email notification to %s.', $attendee_email ), $attendees[0]->ID );
 					$this->wp_mail( $attendee_email, $subject, $content );
 
 					do_action( 'camptix_refund_emailed', $attendee->ID );
@@ -7191,7 +7191,7 @@ class CampTix_Plugin {
 		}
 
 		/**
-		 * Let's now e-mail the receipt, directly after a purchase has been made.
+		 * Let's now email the receipt, directly after a purchase has been made.
 		 */
 		if ( $from_status == 'draft' && ( in_array( $to_status, array( 'publish', 'pending' ) ) ) ) {
 
@@ -7211,7 +7211,7 @@ class CampTix_Plugin {
 
 			// If the status is pending, let the buyer know about that in the receipt.
 			if ( 'pending' == $to_status )
-				$payment_status =  sprintf( __( 'Your payment status is: %s. You will receive a notification e-mail once your payment is completed.', 'camptix' ), 'pending' ) . "\n\n";
+				$payment_status =  sprintf( __( 'Your payment status is: %s. You will receive a notification email once your payment is completed.', 'camptix' ), 'pending' ) . "\n\n";
 
 			if ( count( $attendees ) == 1 ) {
 
@@ -7246,7 +7246,7 @@ class CampTix_Plugin {
 			$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_pending_succeeded', $attendees[0] );
 			$content = do_shortcode( $this->options[ $email_template ] );
 
-			$this->log( sprintf( 'Sending completed e-mail notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
+			$this->log( sprintf( 'Sending completed email notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 
@@ -7256,7 +7256,7 @@ class CampTix_Plugin {
 			$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_pending_failed', $attendees[0] );
 			$content = do_shortcode( $this->options[ $email_template ] );
 
-			$this->log( sprintf( 'Sending failed e-mail notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
+			$this->log( sprintf( 'Sending failed email notification after IPN to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 
@@ -7266,7 +7266,7 @@ class CampTix_Plugin {
 			$email_template = apply_filters( 'camptix_email_tickets_template', 'email_template_single_refund', $attendees[0] );
 			$content = do_shortcode( $this->options[ $email_template ] );
 
-			$this->log( sprintf( 'Sending refund e-mail notification to %s.', $receipt_email ), $attendees[0]->ID );
+			$this->log( sprintf( 'Sending refund email notification to %s.', $receipt_email ), $attendees[0]->ID );
 			$this->wp_mail( $receipt_email, $subject, $content );
 		}
 
@@ -7280,7 +7280,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Get the given attendee's e-mail address
+	 * Get the given attendee's email address
 	 *
 	 * @param int $attendee_id
 	 *
@@ -7490,7 +7490,7 @@ class CampTix_Plugin {
 	function wp_mail( $to, $subject, $message, $headers = array(), $attachments = '' ) {
 		do_action( 'camptix_wp_mail_start' );
 
-		// Allow plugins and addons to override any outgoing CampTix e-mail.
+		// Allow plugins and addons to override any outgoing CampTix email.
 		if ( apply_filters( 'camptix_wp_mail_override', false, array(
 			'to' => $to,
 			'subject' => $subject,
@@ -7511,7 +7511,7 @@ class CampTix_Plugin {
 		add_action( 'phpmailer_init', array( $this, 'maybe_send_html_email' ) );
 		$results = wp_mail( $to, $subject, $message, $headers, $attachments );
 		remove_action( 'phpmailer_init', array( $this, 'maybe_send_html_email' ) );
-		$log_message = $results ? sprintf( 'Sent e-mail to %s.', $to ) : sprintf( 'E-mail to %s failed to send.', $to );
+		$log_message = $results ? sprintf( 'Sent email to %s.', $to ) : sprintf( 'Email to %s failed to send.', $to );
 		$this->log( $log_message, null, $message_data, 'email' );
 
 		do_action( 'camptix_wp_mail_finish' );
@@ -7519,10 +7519,10 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Set the name of the From header in outgoing e-mails
+	 * Set the name of the From header in outgoing emails
 	 *
 	 * In most WP installations, this just defaults to "WordPress", which could make attendees think that the
-	 * e-mail is from the WordPress project, or they might not realize it's from the event and then delete it.
+	 * email is from the WordPress project, or they might not realize it's from the event and then delete it.
 	 *
 	 * @param string $name
 	 *
@@ -7539,7 +7539,7 @@ class CampTix_Plugin {
 	 * relies on the user to render the HTML message via a filter. In the future, we can bundle a default template
 	 * and turn it on by default, provided we solve any potential back-compat issues.
 	 *
-	 * This isn't the traditional way to send HTML e-mails in WordPress, because the bug described in #15448-core
+	 * This isn't the traditional way to send HTML emails in WordPress, because the bug described in #15448-core
 	 * prevents multi-part content-types, which we want for better accessibility and lower spam scores.
 	 *
 	 * @param PHPMailer $phpmailer
@@ -7577,7 +7577,7 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Get the list of HTML tags allowed in e-mails
+	 * Get the list of HTML tags allowed in emails
 	 *
 	 * This should be formatted the way that wp_kses() expects.
 	 *
@@ -7784,7 +7784,7 @@ class CampTix_Plugin {
 	 * Temporary storage (non-persistent)
 	 *
 	 * Use this function to access the CampTix temporary storage for things like attendee_id
-	 * for notify shortcodes, and receipt for e-mail templates, etc. You can also use it to
+	 * for notify shortcodes, and receipt for email templates, etc. You can also use it to
 	 * store your own stuff, but don't forget to cleanup when you're done.
 	 *
 	 * @param $key string The key to access/store the value with.
