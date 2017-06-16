@@ -89,7 +89,7 @@ function tix_contextual_help() {
 				'id' => 'tix-searching',
 				'content' => "
 					<h3>Searching</h3>
-					<p>Searching through attendees is easy, on the attendees list, in the top right corner. You can search by name, e-mail, transaction id or even by an answer to the asked questions.</p>",
+					<p>Searching through attendees is easy, on the attendees list, in the top right corner. You can search by name, email, transaction id or even by an answer to the asked questions.</p>",
 			) );
 
 		if ( $screen->id == 'tix_attendee' )
@@ -158,7 +158,7 @@ function tix_contextual_help() {
 			'id' => 'tix-export',
 			'content' => "
 				<h3>Notify</h3>
-				<p>The Notify section lets you send e-mails targeted at specific ticket groups. Note that the e-mails will not be sent out straight away, but rather grouped into tasks, which are carried out using a cron schedule. You can monitor the status of every e-mail job in the History section.</p>",
+				<p>The Notify section lets you send emails targeted at specific ticket groups. Note that the emails will not be sent out straight away, but rather grouped into tasks, which are carried out using a cron schedule. You can monitor the status of every email job in the History section.</p>",
 		) );
 
 	} elseif ( $screen->id == 'tix_ticket_page_camptix_options' ) {
@@ -179,7 +179,7 @@ function tix_contextual_help() {
 				<p>You can configure the payment methods you'd like to use in the Payment section. To enable or disable a specific payment method, set its Enabled option to Yes or No respectively. Most payment methods will come with additional configuration fields. Supported currencies will be listed next to each payment method. If you'd like to change the currency, you can do so from the General tab.</p>
 
 				<h4>PayPal Express Checkout</h4>
-				<p>To use Express Checkout you'll need to obtain your API credentials from PayPal. Please note, that these are not your PayPal e-mail and password. Read the <a href='https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_ECAPICredentials'>Creating an API Signature</a> for more information. If you want to test your payments before going public, please refer to the <a href='https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/howto_testing_sandbox'>PayPal Sandbox</a> guide.</p>
+				<p>To use Express Checkout you'll need to obtain your API credentials from PayPal. Please note, that these are not your PayPal email and password. Read the <a href='https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_ECAPICredentials'>Creating an API Signature</a> for more information. If you want to test your payments before going public, please refer to the <a href='https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/howto_testing_sandbox'>PayPal Sandbox</a> guide.</p>
 			",
 		) );
 

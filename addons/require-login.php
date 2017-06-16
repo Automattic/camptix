@@ -109,10 +109,10 @@ class CampTix_Require_Login extends CampTix_Addon {
 		// Inform a user registering multiple attendees that other attendees will enter their own info
 		if ( isset( $_REQUEST['tix_action'], $_REQUEST['tix_tickets_selected'] ) ) {
 			if ( 'attendee_info' == $_REQUEST['tix_action'] && $this->registering_multiple_attendees( $_REQUEST['tix_tickets_selected'] ) ) {
-				$notice = __( '<p>Please enter your own information for the first ticket, and then enter the names and e-mail addresses of other attendees in the subsequent ticket fields.</p>', 'camptix' );
+				$notice = __( '<p>Please enter your own information for the first ticket, and then enter the names and email addresses of other attendees in the subsequent ticket fields.</p>', 'camptix' );
 
 				if ( $this->tickets_have_questions( $_REQUEST['tix_tickets_selected'] ) ) {
-					$notice .= __( '<p>The other attendees will receive an e-mail asking them to confirm their registration and enter their additional information.</p>', 'camptix' );
+					$notice .= __( '<p>The other attendees will receive an email asking them to confirm their registration and enter their additional information.</p>', 'camptix' );
 				}
 
 				$camptix->notice( $notice );
@@ -320,7 +320,7 @@ class CampTix_Require_Login extends CampTix_Addon {
 	 */
 	public function get_attendee_search_meta( $attendee_search_meta ) {
 		$attendee_search_meta[] = 'tix_username';
-		
+
 		return $attendee_search_meta;
 	}
 
@@ -369,22 +369,22 @@ class CampTix_Require_Login extends CampTix_Addon {
 	}
 
 	/**
-	 * Set the default custom e-mail template content.
+	 * Set the default custom email template content.
 	 *
 	 * @param array $options
 	 *
 	 * @return array
 	 */
 	public function custom_email_template_default_values( $options ) {
-		$options['email_template_multiple_purchase_receipt_unconfirmed_attendees'] = __( "Hi there!\n\nYou have purchased the following tickets:\n\n[receipt]\n\nYou can view and edit your order at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nThe other attendees that you purchased tickets for will need to confirm their registration by visiting a link that was sent to them by e-mail.\n\nLet us know if you have any questions!", 'camptix' );
+		$options['email_template_multiple_purchase_receipt_unconfirmed_attendees'] = __( "Hi there!\n\nYou have purchased the following tickets:\n\n[receipt]\n\nYou can view and edit your order at any time before the event, by visiting the following link:\n\n[ticket_url]\n\nThe other attendees that you purchased tickets for will need to confirm their registration by visiting a link that was sent to them by email.\n\nLet us know if you have any questions!", 'camptix' );
 		$options['email_template_multiple_purchase_unconfirmed_attendee']          = __( "Hi there!\n\nA ticket to [event_name] has been purchased for you by [buyer_full_name].\n\nPlease visit the following page and fill in your information to complete your registration:\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' );
-		$options['email_template_multiple_purchase_unknown_attendee']              = __( "Hi there!\n\nThis e-mail is for the unknown attendee that you purchased a ticket for. When you decide who will be using the ticket, please forward the link below to them so that they can complete their registration.\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' );
+		$options['email_template_multiple_purchase_unknown_attendee']              = __( "Hi there!\n\nThis email is for the unknown attendee that you purchased a ticket for. When you decide who will be using the ticket, please forward the link below to them so that they can complete their registration.\n\n[ticket_url]\n\nLet us know if you have any questions!", 'camptix' );
 
 		return $options;
 	}
 
 	/**
-	 * Send custom e-mail templates to the purchaser and to unconfirmed attendees.
+	 * Send custom email templates to the purchaser and to unconfirmed attendees.
 	 *
 	 * @param string $template
 	 * @param WP_Post $attendee
@@ -413,9 +413,9 @@ class CampTix_Require_Login extends CampTix_Addon {
 	}
 
 	/**
-	 * Redirect e-mails intended for unknown attendees to the ticket buyer instead.
+	 * Redirect emails intended for unknown attendees to the ticket buyer instead.
 	 *
-	 * We don't know the attendee's real e-mail address, so we ask the buyer to forward the
+	 * We don't know the attendee's real email address, so we ask the buyer to forward the
 	 * email to them once they decide who will be using the ticket.
 	 *
 	 * @param string $attendee_email
@@ -797,6 +797,6 @@ class CampTix_Require_Login extends CampTix_Addon {
 
 		return $parameters;
 	}
-} // CampTix_Require_Login 
+} // CampTix_Require_Login
 
 camptix_register_addon( 'CampTix_Require_Login' );
