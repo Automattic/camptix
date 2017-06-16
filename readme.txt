@@ -1,9 +1,9 @@
 === CampTix Event Ticketing ===
-Contributors:      automattic, kovshenin, andreamiddleton, iandunn
+Contributors:      automattic, kovshenin, andreamiddleton, iandunn, coreymckrill
 Tags:              ticketing, event ticketing
 Requires at least: 3.5
-Tested up to:      4.6
-Stable tag:        1.5.1
+Tested up to:      4.7.3
+Stable tag:        1.6.0
 Donate link:       http://wordpressfoundation.org/donate/
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
@@ -24,6 +24,8 @@ CampTix is an easy to use and flexible event ticketing plugin created by WordCam
 * and much more!
 
 Feel free to post your feature requests, issues and pull requests to [CampTix on GitHub](https://github.com/automattic/camptix "CampTix on GitHub").
+
+To contribute or update a translation, visit [the translation project](https://translate.wordpress.org/projects/wp-plugins/camptix "CampTix translation project").
 
 == Installation ==
 
@@ -46,6 +48,12 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.6.0 (2017-03-10) =
+* [NEW] Enabled compatibility with language packs. [See status of translation locales](https://translate.wordpress.org/projects/wp-plugins/camptix).
+* [NEW] Addon to collect and track tshirt sizes for attendees, plus a shortcode to display aggregated tshirt size data.
+* [NEW] Enhanced the [camptix_attendees] shortcode to lazy-load attendee gravatars.
+* [Full changelog](https://github.com/Automattic/camptix/compare/0855047c86ef30ae8f72094899a412d2f7d27a7d...2ec1ec005d490dc627b3b0df2b1dd33491962d84)
 
 = 1.5.1 (2016-10-11) =
 * [SECURITY] Fixed 3 CSV injection bypasses reported in [#160500-h1](https://hackerone.com/reports/160500), [#160520-h1](https://hackerone.com/reports/160520), and [#160674-h1](https://hackerone.com/reports/160674). Props to [white_walker](https://hackerone.com/white_walker), [lalka](https://hackerone.com/lalka), and [grande](https://hackerone.com/grande) for discovery and coordinated disclosure.
