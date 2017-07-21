@@ -7738,6 +7738,7 @@ class CampTix_Plugin {
 			'field-twitter'  => $this->get_default_addon_path( 'field-twitter.php' ),
 			'field-url'      => $this->get_default_addon_path( 'field-url.php' ),
 			'field-country'  => $this->get_default_addon_path( 'field-country.php' ),
+			'field-mobile'   => $this->get_default_addon_path( 'field-mobile.php' ),
 			'field-tshirt'   => $this->get_default_addon_path( 'field-tshirt.php' ),
 			'shortcodes'     => $this->get_default_addon_path( 'shortcodes.php' ),
 			'payment-paypal' => $this->get_default_addon_path( 'payment-paypal.php' ),
