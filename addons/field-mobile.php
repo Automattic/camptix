@@ -1,4 +1,3 @@
-
 <?php
 /**
  * Mobile Field Addon for CampTix
@@ -36,7 +35,7 @@ class CampTix_Addon_Mobile_Field extends CampTix_Addon {
 	 */
 	function question_field_mobile( $name, $value ) {
 		?>
-		<input name="<?php echo esc_attr( $name ); ?>" type="url" value="<?php echo esc_attr( $value ); ?>" />
+		<input name="<?php echo esc_attr( $name ); ?>" type="tel" value="<?php echo esc_attr( $value ); ?>" />
 		<?php
 	}
 }
