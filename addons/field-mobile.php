@@ -13,7 +13,7 @@ class CampTix_Addon_Mobile_Field extends CampTix_Addon {
 	 * Register hook callbacks
 	 */
 	function camptix_init() {
-		add_filter( 'camptix_question_field_types',   array( $this, 'question_field_types'   ) );
+		add_filter( 'camptix_question_field_types',  array( $this, 'question_field_types'  ) );
 		add_action( 'camptix_question_field_mobile', array( $this, 'question_field_mobile' ), 10, 3 );
 	}
 
