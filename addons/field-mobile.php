@@ -2,8 +2,8 @@
 /**
  * Mobile Field Addon for CampTix
  *
- * A few of the payment platforms requie the mobile/phone field to complete the
- * transction. By adding it as a field, the payment class can explictly call this
+ * A few of the payment platforms require the mobile/phone field to complete the 
+ * transaction. By adding it as a field, the payment class can explicitly call this 
  * field type to pass the variable to the payment platform.
  *
  */
