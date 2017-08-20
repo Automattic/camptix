@@ -5545,16 +5545,39 @@ class CampTix_Plugin {
 				<?php endif; ?>
 
 				<p class="tix-submit">
-					<?php if ( $total > 0 ) : ?>
-					<select name="tix_payment_method">
-						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
-							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
-					<?php else : ?>
+					<?php
+					if ( $total > 0 ) {
+						$payment_methods = $this->get_enabled_payment_methods();
+						var_dump( $payment_methods );
+						if ( 1 === count( $payment_methods ) ) {
+							?>
+							<input name="tix_payment_method" type="hidden"
+							<?php
+							foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) {
+								?>
+								value="<?php echo esc_attr( $payment_method_key ); ?>"/><span class="tix-payment-method-single">(<?php echo esc_html( $payment_method['name'] ); ?>)</span>
+								<?php
+								break;
+							}
+							?>
+							<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
+							<?php
+						} else {
+							?>
+							<select name="tix_payment_method">
+								<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
+									<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
+								<?php endforeach; ?>
+							</select>
+							<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
+							<?php
+						}
+					} else {
+						?>
 						<input type="submit" value="<?php esc_attr_e( 'Claim Tickets &rarr;', 'camptix' ); ?>" />
-					<?php endif; ?>
+						<?php
+					}
+					 ?>
 					<br class="tix-clear" />
 				</p>
 			</form>
