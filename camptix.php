@@ -4293,6 +4293,14 @@ class CampTix_Plugin {
 							<label><input data-model-attribute="required" data-model-attribute-type="checkbox" id="tix-add-question-required" type="checkbox" value="1" /> <?php _e( 'This field is required', 'camptix' ); ?></label>
 						</td>
 					</tr>
+					<tr valign="top">
+						<th scope="row">
+							<label><?php _e( 'Include in Email', 'camptix' ); ?></label>
+						</th>
+						<td>
+							<label><input data-model-attribute="include_in_email" data-model-attribute-type="checkbox" id="tix-add-question-required" type="checkbox" value="1" /> <?php _e( 'Include this field in the email confirmation', 'camptix' ); ?></label>
+						</td>
+					</tr>
 				</table>
 				<p class="submit">
 					<a href="#" class="button tix-add"><?php _e( 'Add Question', 'camptix' ); ?></a>
