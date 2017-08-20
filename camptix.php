@@ -7143,7 +7143,8 @@ class CampTix_Plugin {
 		if ( isset( $order['coupon'] ) && $order['coupon'] )
 			$receipt_content .= sprintf( '* ' . __( 'Coupon used: %s', 'camptix' ) . "\n", $order['coupon'] );
 
-		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' )."\n", $this->append_currency( $order['total'], false ) );
+		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' )."\n", $this->append_currency( $order['total'], false ) ) ;
+		$receipt_content .= "\n\n";
 
 		foreach ( $order['items'] as $item ) {
 
@@ -7162,11 +7163,18 @@ class CampTix_Plugin {
 			) );
 
 			foreach ( $attendees as $attendee ) {
+				$answers = get_post_meta( $attendee->ID, 'tix_questions', true );
 				foreach ( $questions as $question ) {
 					// if question is to be included in email
+					$include_in_email = get_post_meta( $question->ID, 'tix_include_in_email', true );
+					if ( $include_in_email ) {
 						// grab the questions name
+						$question_name = $question->post_title;
 						// grab the value from the attendee post meta
+						$answer = $answers[$question->ID];
 						// append them to receipt content
+						$receipt_content .= esc_html( $question_name.': '.$answer )."\n";
+					}
 				}
 				break;
 			}
