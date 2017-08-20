@@ -5548,7 +5548,6 @@ class CampTix_Plugin {
 					<?php
 					if ( $total > 0 ) {
 						$payment_methods = $this->get_enabled_payment_methods();
-						var_dump( $payment_methods );
 						if ( 1 === count( $payment_methods ) ) {
 							?>
 							<input name="tix_payment_method" type="hidden"
