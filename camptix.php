@@ -7143,7 +7143,36 @@ class CampTix_Plugin {
 		if ( isset( $order['coupon'] ) && $order['coupon'] )
 			$receipt_content .= sprintf( '* ' . __( 'Coupon used: %s', 'camptix' ) . "\n", $order['coupon'] );
 
-		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $order['total'], false ) );
+		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' )."\n", $this->append_currency( $order['total'], false ) );
+
+		foreach ( $order['items'] as $item ) {
+
+			$question_ids = (array) get_post_meta( $item['id'], 'tix_question_id' );
+			$order = (array) get_post_meta( $item['id'], 'tix_questions_order', true );
+
+			// Make sure we have at least some questions
+			if ( empty( $question_ids ) )
+				return array();
+
+			$questions = get_posts( array(
+				'post_type' => 'tix_question',
+				'post_status' => 'publish',
+				'posts_per_page' => -1,
+				'post__in' => $question_ids,
+			) );
+
+			foreach ( $attendees as $attendee ) {
+				foreach ( $questions as $question ) {
+					// if question is to be included in email
+						// grab the questions name
+						// grab the value from the attendee post meta
+						// append them to receipt content
+				}
+				break;
+			}
+
+		}
+
 		$signature = apply_filters( 'camptix_ticket_email_signature', __( 'Let us know if you have any questions!', 'camptix' ) );
 
 		// Set the tmp receipt for shortcodes use.
