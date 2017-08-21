@@ -2975,7 +2975,9 @@ class CampTix_Plugin {
 						add_settings_error( 'camptix', false, $error );
 					}
 				} elseif ( ! empty( $_POST['tix_notify_preview'] ) ) {
-					add_settings_error( 'camptix', 'none', sprintf( __( 'Your segment matched %s recipients.', 'camptix' ), count( $recipients ) ), 'updated' );
+					$notify_overview = apply_filters( 'camptix_notify_overview', sprintf( __( 'Your segment matched %s recipients.', 'camptix' ), count( $recipients ) ), $recipients, $conditions);
+
+					add_settings_error( 'camptix', 'none', $notify_overview, 'updated' );
 				}
 
 				// Keep form data.
