@@ -532,6 +532,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 		$args = shortcode_atts( array(
 			'ticket_ids' => null,
+			'logged_out_message' => '',
 		), $atts );
 
 		$can_view_content = false;
@@ -613,9 +614,12 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		$email = isset( $_POST['tix_email'] ) ? $_POST['tix_email'] : '';
 		ob_start();
 
-		if ( isset( $atts['logged_out_message'] ) )
+		if ( ! empty( $atts['logged_out_message'] ) ) {
 			echo wpautop( $atts['logged_out_message'] );
+		}
+
 		?>
+
 		<div id="tix">
 			<?php do_action( 'camptix_notices' ); ?>
 			<form method="POST" action="#tix">
