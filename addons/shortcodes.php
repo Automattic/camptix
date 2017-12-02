@@ -598,12 +598,12 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 			if ( isset( $_POST['tix_private_shortcode_submit'] ) )
 				$camptix->info( __( 'Success! Enjoy your content!', 'camptix' ) );
 
-			return $this->shortcode_private_display_content( $atts, $content );
+			return $this->shortcode_private_display_content( $args, $content );
 		} else {
 			if ( ! isset( $_POST['tix_private_shortcode_submit'] ) && ! $error )
 				$camptix->notice( __( 'The content on this page is private. Please log in using the form below.', 'camptix' ) );
 
-			return $this->shortcode_private_login_form( $atts, $content );
+			return $this->shortcode_private_login_form( $args, $content );
 		}
 	}
 
