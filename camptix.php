@@ -5240,7 +5240,7 @@ class CampTix_Plugin {
 								<td class="tix-column-description">
 									<strong class="tix-ticket-title"><?php echo esc_html( $ticket->post_title ); ?></strong>
 									<?php if ( $ticket->post_excerpt ) : ?>
-										<br /><span class="tix-ticket-excerpt"><?php echo esc_html( $ticket->post_excerpt ); ?></span>
+										<br /><span class="tix-ticket-excerpt"><?php echo wp_kses_post( $ticket->post_excerpt ); ?></span>
 									<?php endif; ?>
 									<?php if ( $ticket->tix_coupon_applied ) : ?>
 										<br /><small class="tix-discount"><?php echo esc_html( $ticket->tix_discounted_text ); ?></small>
