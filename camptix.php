@@ -1157,6 +1157,7 @@ class CampTix_Plugin {
 			'version' => 0,
 			'reservations_enabled' => false,
 			'refunds_enabled' => false,
+			'checkout_buttons' => false,
 			'refund_all_enabled' => false,
 			'archived' => false,
 			'payment_methods' => array(),
@@ -1496,6 +1497,10 @@ class CampTix_Plugin {
 					__( "This will allows your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
 				);
 
+				$this->add_settings_field_helper( 'checkout_buttons', __( 'Payment Type Buttons', 'camptix' ), 'field_yesno', false,
+				    __( "A setting of yes will display a separate checkout button per payment type you have enabled. Otherwise it will use a dropdown to allow users to select their payment type.", 'camptix' )
+				);
+
 				break;
 			case 'payment':
 				foreach ( $this->get_available_payment_methods() as $key => $payment_method ) {
@@ -1621,7 +1626,7 @@ class CampTix_Plugin {
 		if ( isset( $input['refunds_date_end'], $input['refunds_enabled'] ) && (bool) $input['refunds_enabled'] && strtotime( $input['refunds_date_end'] ) )
 			$output['refunds_date_end'] = $input['refunds_date_end'];
 
-		$yesno_fields = array( 'refunds_enabled' );
+		$yesno_fields = array( 'refunds_enabled', 'checkout_buttons' );
 
 		// Beta features checkboxes
 		if ( $this->beta_features_enabled )
@@ -5546,17 +5551,24 @@ class CampTix_Plugin {
 
 				<p class="tix-submit">
 					<?php if ( $total > 0 ) : ?>
-					<select name="tix_payment_method">
-						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
-							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
+					    <?php if ( !empty($this->options['checkout_buttons']) ) : ?>
+                            <?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
+                                <button id="tix-pm-<?php echo esc_attr( $payment_method_key ); ?>" type="submit" name="tix_payment_method" value="<?php echo esc_attr( $payment_method_key ); ?>"><?php esc_attr_e( 'Checkout with', 'camptix' ); ?> <?php echo esc_html( $payment_method['name'] ); ?></button>
+    						<?php endforeach; ?>
+    					<?php else : ?>
+                            <select name="tix_payment_method">
+        						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
+        							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
+        						<?php endforeach; ?>
+        					</select>
+        					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
+					    <?php endif; ?>
 					<?php else : ?>
 						<input type="submit" value="<?php esc_attr_e( 'Claim Tickets &rarr;', 'camptix' ); ?>" />
 					<?php endif; ?>
 					<br class="tix-clear" />
 				</p>
+				
 			</form>
 		</div><!-- #tix -->
 		<?php
