@@ -614,6 +614,9 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		$email = isset( $_POST['tix_email'] ) ? $_POST['tix_email'] : '';
 		ob_start();
 
+		// @todo Note that in order to include HTML markup in the logged out message, the shortcode
+		// attribute needs to enclose the value in single instead of double quotes. TinyMCE enforces
+		// double quotes on HTML attributes, which will break the shortcode if it also uses double quotes.
 		if ( ! empty( $atts['logged_out_message'] ) ) {
 			echo wpautop( $atts['logged_out_message'] );
 		}
