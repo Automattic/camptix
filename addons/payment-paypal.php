@@ -74,6 +74,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 					sprintf( '<a href="https://developer.paypal.com/">%s</a>', __( 'PayPal Developer', 'camptix' ) )
 				)
 			);
+			$this->add_settings_field_helper( 'collect_shipping', __( 'Collect Shipping Information',  'camptix' ), array( $this, 'field_yesno' ),
+               __( "Do you need shipping information collected by the payment processor from your attendees?", 'camptix' ));
 		}
 	}
 
@@ -200,15 +202,20 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			$output['sandbox'] = (bool) $input['sandbox'];
 		}
 
+		if ( isset( $input['collect_shipping'] ) ) {
+			$output['collect_shipping'] = (bool) $input['collect_shipping'];
+		}
+
 		if ( isset( $input['api_predef'] ) ) {
 			// If a valid predefined account is set, erase the credentials array.
 			// We do not store predefined credentials in options, only code.
 			if ( $this->get_predefined_account( $input['api_predef'] ) ) {
 				$output = array_merge( $output, array(
-					'api_username'  => '',
-					'api_password'  => '',
-					'api_signature' => '',
-					'sandbox'       => false,
+					'api_username'     => '',
+					'api_password'     => '',
+					'api_signature'    => '',
+					'sandbox'          => false,
+					'collect_shipping' => false,
 				) );
 			} else {
 				$input['api_predef'] = '';
@@ -639,6 +646,9 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'tix_payment_method' => 'paypal',
 		), $camptix->get_tickets_url() );
 
+		// Replace credentials from a predefined account if any.
+		$options = array_merge( $this->options, $this->get_predefined_account( $this->options['api_predef'] ) );
+
 		$payload = array(
 			'METHOD'                                => 'SetExpressCheckout',
 			'PAYMENTREQUEST_0_PAYMENTACTION'        => 'Sale',
@@ -646,7 +656,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'RETURNURL'                             => $return_url,
 			'CANCELURL'                             => $cancel_url,
 			'ALLOWNOTE'                             => 0,
-			'NOSHIPPING'                            => 1,
+			'NOSHIPPING'                            => $this->options['collect_shipping'] ? 2 : 1,
 			'SOLUTIONTYPE'                          => 'Sole',
 		);
 
@@ -655,9 +665,6 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		if ( ! empty( $locale_code ) && 'default' != $locale_code ) {
 			$payload['LOCALECODE'] = $locale_code;
 		}
-
-		// Replace credentials from a predefined account if any.
-		$options = array_merge( $this->options, $this->get_predefined_account( $this->options['api_predef'] ) );
 
 		$order = $this->get_order( $payment_token );
 		$this->fill_payload_with_order( $payload, $order );
