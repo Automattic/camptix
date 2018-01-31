@@ -304,8 +304,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		$payment_data = array(
 			'transaction_id' => $txn_id,
 			'transaction_details' => array(
-				// @todo maybe add more info about the payment
 				'raw' => $txn_details,
+                'checkout' => $payload
 			),
 		);
 
@@ -575,8 +575,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				$payment_data = array(
 					'transaction_id' => $txn_id,
 					'transaction_details' => array(
-						// @todo maybe add more info about the payment
 						'raw' => $txn,
+                        'checkout' => $checkout_details,
 					),
 				);
 
