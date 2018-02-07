@@ -1496,7 +1496,7 @@ class CampTix_Plugin {
 				$this->add_settings_field_helper( 'refunds_enabled', __( 'Enable Refunds', 'camptix' ), 'field_enable_refunds', false,
 					__( "This will allows your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
 				);
-
+				
 				$this->add_settings_field_helper( 'wrap_subpages', __( 'Wrap Subpages', 'camptix' ), 'field_yesno', false,
 				    __( "Setting this to yes will cause all additional pages of content created by the shortcode to still have the rest of the page content on it, otherwise it will be stripped for cleaner output.", 'camptix' )
 				);
@@ -5553,17 +5553,24 @@ class CampTix_Plugin {
 
 				<p class="tix-submit">
 					<?php if ( $total > 0 ) : ?>
-					<select name="tix_payment_method">
-						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
-							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
+					    <?php if ( !empty($this->options['checkout_buttons']) ) : ?>
+                            <?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
+                                <button id="tix-pm-<?php echo esc_attr( $payment_method_key ); ?>" type="submit" name="tix_payment_method" value="<?php echo esc_attr( $payment_method_key ); ?>"><?php esc_attr_e( 'Checkout with', 'camptix' ); ?> <?php echo esc_html( $payment_method['name'] ); ?></button>
+    						<?php endforeach; ?>
+    					<?php else : ?>
+                            <select name="tix_payment_method">
+        						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
+        							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
+        						<?php endforeach; ?>
+        					</select>
+        					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
+					    <?php endif; ?>
 					<?php else : ?>
 						<input type="submit" value="<?php esc_attr_e( 'Claim Tickets &rarr;', 'camptix' ); ?>" />
 					<?php endif; ?>
 					<br class="tix-clear" />
 				</p>
+				
 			</form>
 		</div><!-- #tix -->
 		<?php
