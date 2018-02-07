@@ -5128,7 +5128,6 @@ class CampTix_Plugin {
 	 * Step 1: shows the available tickets table.
 	 */
 	function form_start() {
-        // add_action('wp_enqueue_scripts', function() { error_log('wait'); wp_localize_script( 'camptix', 'camptix_fb', [ 'eli' => 'testing' ] ); }, 11);
 		$available_tickets = 0;
 		$max_tickets_per_order = apply_filters( 'camptix_max_tickets_per_order', 10 );
 
@@ -5553,18 +5552,12 @@ class CampTix_Plugin {
 
 				<p class="tix-submit">
 					<?php if ( $total > 0 ) : ?>
-					    <?php if ( !empty($this->options['checkout_buttons']) ) : ?>
-                            <?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
-                                <button id="tix-pm-<?php echo esc_attr( $payment_method_key ); ?>" type="submit" name="tix_payment_method" value="<?php echo esc_attr( $payment_method_key ); ?>"><?php esc_attr_e( 'Checkout with', 'camptix' ); ?> <?php echo esc_html( $payment_method['name'] ); ?></button>
+                        <select name="tix_payment_method">
+    						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
+    							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
     						<?php endforeach; ?>
-    					<?php else : ?>
-                            <select name="tix_payment_method">
-        						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
-        							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
-        						<?php endforeach; ?>
-        					</select>
-        					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
-					    <?php endif; ?>
+    					</select>
+    					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
 					<?php else : ?>
 						<input type="submit" value="<?php esc_attr_e( 'Claim Tickets &rarr;', 'camptix' ); ?>" />
 					<?php endif; ?>
