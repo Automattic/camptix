@@ -5060,36 +5060,43 @@ class CampTix_Plugin {
 
 		$this->did_template_redirect = true;
 
-		// Don't go past the start form if no payment methods are enabled.
-		if ( isset( $this->error_flags['no_payment_methods'] ) )
-			return $this->shortcode_contents = $this->form_start();
+		$tix_action = filter_input( INPUT_GET, 'tix_action' );
 
-		if ( isset( $_GET['tix_action'] ) && ! empty( $_GET['tix_action'] ) ) {
-			if ( 'attendee_info' == $_GET['tix_action'] && isset( $_POST['tix_coupon_submit'], $_POST['tix_coupon'] ) && ! empty( $_POST['tix_coupon'] ) )
-				return $this->shortcode_contents = $this->form_start();
-
-			if ( 'attendee_info' == $_GET['tix_action'] && isset( $this->error_flags['no_tickets_selected'] ) )
-				return $this->shortcode_contents = $this->form_start();
-
-			if ( 'attendee_info' == $_GET['tix_action'] )
-				return $this->shortcode_contents = $this->form_attendee_info();
-
-			if ( 'checkout' == $_GET['tix_action'] )
-				return $this->shortcode_contents = $this->form_checkout();
-
-			if ( 'access_tickets' == $_GET['tix_action'] )
-				return $this->shortcode_contents = $this->form_access_tickets();
-
-			if ( 'edit_attendee' == $_GET['tix_action'] )
-				return $this->shortcode_contents = $this->form_edit_attendee();
-
-			if ( 'refund_request' == $_GET['tix_action'] && $this->options['refunds_enabled'] )
-				return $this->shortcode_contents = $this->form_refund_request();
+		if ( isset( $this->error_flags['no_payment_methods'] ) ) {
+			// Don't go past the start form if no payment methods are enabled.
+			$this->shortcode_contents = $this->form_start();
+		} elseif ( $tix_action ) {
+			if ( 'attendee_info' == $tix_action && isset( $_POST['tix_coupon_submit'], $_POST['tix_coupon'] ) && ! empty( $_POST['tix_coupon'] ) ) {
+				$this->shortcode_contents = $this->form_start();
+			} elseif ( 'attendee_info' == $tix_action && isset( $this->error_flags['no_tickets_selected'] ) ) {
+				$this->shortcode_contents = $this->form_start();
+			} elseif ( 'attendee_info' == $tix_action ) {
+				$this->shortcode_contents = $this->form_attendee_info();
+			} elseif ( 'checkout' == $tix_action ) {
+				$this->shortcode_contents = $this->form_checkout();
+			} elseif ( 'access_tickets' == $tix_action ) {
+				$this->shortcode_contents = $this->form_access_tickets();
+			} elseif ( 'edit_attendee' == $tix_action ) {
+				$this->shortcode_contents = $this->form_edit_attendee();
+			} elseif ( 'refund_request' == $tix_action && $this->options['refunds_enabled'] ) {
+				$this->shortcode_contents = $this->form_refund_request();
+			} else {
+				// If we end up here, start over.
+				$this->shortcode_contents = $this->form_start();
+			}
 		} else {
-			return $this->shortcode_contents = $this->form_start();
+			$this->shortcode_contents = $this->form_start();
 		}
 
-		return $this->shortcode_contents = 'Hmmm.';
+		/**
+		 * Filter: Modify the output of `[camptix]`.
+		 *
+		 * @param string $shortcode_contents The HTML markup contents of the shortcode.
+		 * @param string $tix_action         The current step in the ticketing process.
+		 */
+		$this->shortcode_contents = apply_filters( 'camptix_shortcode_contents', $this->shortcode_contents, $tix_action );
+
+		return $this->shortcode_contents;
 	}
 
 	/**
