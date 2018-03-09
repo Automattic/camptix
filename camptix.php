@@ -5500,6 +5500,8 @@ class CampTix_Plugin {
 									</td>
 								</tr>
 
+								<?php do_action( 'camptix_attendee_form_before_questions', $this->form_data, $i, $this->tickets_selected_count ); ?>
+
 								<?php
 									do_action( 'camptix_question_fields_init' );
 									$question_num = 0; // Used for questions class names.
@@ -5526,6 +5528,8 @@ class CampTix_Plugin {
 										</tr>
 									<?php endforeach; ?>
 								<?php endif; ?>
+
+								<?php do_action( 'camptix_attendee_form_after_questions', $this->form_data, $i, $this->tickets_selected_count ); ?>
 							</tbody>
 						</table>
 						<?php $i++; ?>
