@@ -21,6 +21,7 @@ class CampTix_Plugin {
 
 	protected $tmp;
 
+	public $error_flags;
 	public $debug;
 	public $beta_features_enabled;
 	public $version     = 20140325;
@@ -37,7 +38,6 @@ class CampTix_Plugin {
 	protected $form_data;
 	protected $reservation;
 	protected $coupon;
-	protected $error_flags;
 	protected $error_data;
 	protected $did_template_redirect;
 	protected $did_checkout;
