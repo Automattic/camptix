@@ -5368,6 +5368,8 @@ class CampTix_Plugin {
 		if ( isset( $this->error_flags['invalid_coupon'] ) )
 			$this->notice( __( "Looks like you're trying to use an invalid or expired coupon.", 'camptix' ) );
 
+		do_action( 'camptix_form_attendee_info_errors', $this->error_flags );
+
 		ob_start();
 		$total = 0;
 		$i = 1;
@@ -5771,11 +5773,13 @@ class CampTix_Plugin {
 		$ticket = get_post( $ticket_id );
 		$questions = $this->get_sorted_questions( $ticket->ID );
 		$answers = (array) get_post_meta( $attendee->ID, 'tix_questions', true );
-		$ticket_info = apply_filters( 'camptix_form_edit_attendee_ticket_info', array(
+
+		$ticket_info = array(
 			'first_name' => get_post_meta( $attendee->ID, 'tix_first_name', true ),
-			'last_name' => get_post_meta( $attendee->ID, 'tix_last_name', true ),
-			'email' => get_post_meta( $attendee->ID, 'tix_email', true ),
-		) );
+			'last_name'  => get_post_meta( $attendee->ID, 'tix_last_name', true ),
+			'email'      => get_post_meta( $attendee->ID, 'tix_email', true ),
+		);
+		$ticket_info = apply_filters( 'camptix_form_edit_attendee_ticket_info', $ticket_info, $attendee );
 
 		if ( isset( $_POST['tix_attendee_save'] ) ) {
 			$errors = array();
