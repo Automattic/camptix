@@ -5860,6 +5860,8 @@ class CampTix_Plugin {
 							<td class="tix-right"><input name="tix_ticket_info[email]" type="text" value="<?php echo esc_attr( $ticket_info['email'] ); ?>" /></td>
 						</tr>
 
+						<?php do_action( 'camptix_form_edit_attendee_before_questions', $ticket_info ); ?>
+
 						<?php do_action( 'camptix_question_fields_init' ); ?>
 						<?php if ( apply_filters( 'camptix_ask_questions', true, array( (int) $ticket_id => 1 ), (int) $ticket_id, 1, $questions ) ) : ?>
 							<?php foreach ( $questions as $question ) : ?>
@@ -5882,6 +5884,7 @@ class CampTix_Plugin {
 							<?php endforeach; ?>
 						<?php endif; ?>
 
+						<?php do_action( 'camptix_form_edit_attendee_after_questions', $ticket_info ); ?>
 					</tbody>
 				</table>
 
