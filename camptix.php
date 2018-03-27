@@ -1790,7 +1790,7 @@ class CampTix_Plugin {
 	 * @link http://goo.gl/Gp0ri (paypal currency codes)
 	 */
 	function get_currencies() {
-		return apply_filters( 'camptix_currencies', array(
+		$currencies = apply_filters( 'camptix_currencies', array(
 			'AUD' => array(
 				'label' => __( 'Australian Dollar', 'camptix' ),
 				'locale' => 'en_AU.UTF-8',
@@ -1892,6 +1892,26 @@ class CampTix_Plugin {
 				'locale' => 'tr_TR.UTF-8',
 			),
 		) );
+
+		uasort( $currencies, array( $this, 'sort_currencies' ) );
+
+		return $currencies;
+	}
+
+	/**
+	 * Sort currencies by label.
+	 *
+	 * @param array $a
+	 * @param array $b
+	 *
+	 * @return int
+	 */
+	function sort_currencies( $a, $b ) {
+		if ( $a['label'] === $b['label'] ) {
+			return 0;
+		}
+
+		return $a['label'] > $b['label'];
 	}
 
 	/**
