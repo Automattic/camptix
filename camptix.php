@@ -1875,6 +1875,10 @@ class CampTix_Plugin {
 				'label' => __( 'Philippine Peso', 'camptix' ),
 				'format' => '₱ %s',
 			),
+			'PKR' => array(
+				'label' => __( 'Pakistani Rupee', 'camptix' ),
+				'format' => '₨ %s',
+			),
 			'TWD' => array(
 				'label' => __( 'New Taiwan Dollar', 'camptix' ),
 				'locale' => 'zh_TW.UTF-8',
