@@ -4238,7 +4238,8 @@ class CampTix_Plugin {
 	 * Metabox callback for ticket questions.
 	 */
 	function metabox_ticket_questions() {
-		$types = $this->get_question_field_types();
+		$types          = $this->get_question_field_types();
+		$default_fields = apply_filters( 'camptix_metabox_questions_default_fields_list', __( 'First name, last name and e-mail address', 'camptix' ) );
 		?>
 		<div class="tix-ticket-questions">
 			<div class="tix-ui-sortable" id="tix-questions-container">
@@ -4250,7 +4251,7 @@ class CampTix_Plugin {
 							<span class="tix-field-type"><?php _e( 'Default', 'camptix' ); ?></span>
 						</div>
 						<div class="tix-item-inner-middle">
-							<span class="tix-field-name"><?php _e( 'First name, last name and e-mail address', 'camptix' ); ?></span>
+							<span class="tix-field-name"><?php echo wp_kses_post( $default_fields ); ?></span>
 							<span class="tix-field-required-star">*</span>
 							<span class="tix-field-values"></span>
 						</div>
