@@ -7785,6 +7785,7 @@ class CampTix_Plugin {
 			'shortcodes'     => $this->get_default_addon_path( 'shortcodes.php' ),
 			'payment-paypal' => $this->get_default_addon_path( 'payment-paypal.php' ),
 			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),
+			'privacy'        => $this->get_default_addon_path( 'privacy.php' ),
 
 			/**
 			 * The following addons are available but inactive by default. Do not uncomment
