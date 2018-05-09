@@ -60,7 +60,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 			array(
 				'posts_per_page' => $number,
 				'paged'          => $page,
-				'post_type'      => 'camptix_attendee',
+				'post_type'      => 'tix_attendee',
 				'post_status'    => 'any',
 				'orderby'        => 'ID',
 				'order'          => 'ASC',
