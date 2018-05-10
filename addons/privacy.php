@@ -45,11 +45,23 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 
 		$data_to_export = array();
 
+		/**
+		 * Filter: Modify the list of ticket buyer properties to export.
+		 *
+		 * @param array $props Associative array of properties. Key is the identifier of the data,
+		 *                     value is the human-readable label for the data in the export file.
+		 */
 		$buyer_prop_to_export = apply_filters( 'camptix_privacy_buyer_props_to_export', array(
 			'tix_buyer_name'  => __( 'Ticket Buyer Name', 'camptix' ),
 			'tix_buyer_email' => __( 'Ticket Buyer E-mail Address', 'camptix' ),
 		) );
 
+		/**
+		 * Filter: Modify the list of attendee properties to export.
+		 *
+		 * @param array $props Associative array of properties. Key is the identifier of the data,
+		 *                     value is the human-readable label for the data in the export file.
+		 */
 		$attendee_prop_to_export = apply_filters( 'camptix_privacy_attendee_props_to_export', array(
 			'tix_first_name' => __( 'First Name', 'camptix' ),
 			'tix_last_name'  => __( 'Last Name', 'camptix' ),
@@ -63,26 +75,61 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 
 			if ( $email_address === $post->tix_buyer_email ) {
 				foreach ( $buyer_prop_to_export as $key => $label ) {
-					$value = get_post_meta( $post->ID, $key, true );
+					/**
+					 * Action: Fires for each ticket buyer property in the export list.
+					 *
+					 * Use this to add export procedures for additional properties added via
+					 * the `camptix_privacy_buyer_props_to_export` filter.
+					 *
+					 * @param string  $key
+					 * @param string  $label
+					 * @param WP_Post $post
+					 */
+					do_action( 'camptix_privacy_export_buyer_prop', $key, $label, $post );
 
-					if ( ! empty( $value ) ) {
-						$attendee_data_to_export[] = array(
-							'name'  => $label,
-							'value' => $value,
-						);
+					switch ( $key ) {
+						case 'tix_buyer_name' :
+						case 'tix_buyer_email' :
+							$value = get_post_meta( $post->ID, $key, true );
+
+							if ( ! empty( $value ) ) {
+								$attendee_data_to_export[] = array(
+									'name'  => $label,
+									'value' => $value,
+								);
+							}
+							break;
 					}
 				}
 			}
 
 			if ( $email_address === $post->tix_email ) {
 				foreach ( $attendee_prop_to_export as $key => $label ) {
-					$value = get_post_meta( $post->ID, $key, true );
+					/**
+					 * Action: Fires for each attendee property in the export list.
+					 *
+					 * Use this to add export procedures for additional properties added via
+					 * the `camptix_privacy_attendee_props_to_export` filter.
+					 *
+					 * @param string  $key
+					 * @param string  $label
+					 * @param WP_Post $post
+					 */
+					do_action( 'camptix_privacy_export_attendee_prop', $key, $label, $post );
 
-					if ( ! empty( $value ) ) {
-						$attendee_data_to_export[] = array(
-							'name'  => $label,
-							'value' => $value,
-						);
+					switch ( $key ) {
+						case 'tix_first_name' :
+						case 'tix_last_name' :
+						case 'tix_email' :
+							$value = get_post_meta( $post->ID, $key, true );
+
+							if ( ! empty( $value ) ) {
+								$attendee_data_to_export[] = array(
+									'name'  => $label,
+									'value' => $value,
+								);
+							}
+							break;
 					}
 				}
 
@@ -149,11 +196,23 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		$items_retained = false;
 		$messages       = array();
 
+		/**
+		 * Filter: Modify the list of ticket buyer properties to erase.
+		 *
+		 * @param array $props Associative array of properties. Key is the identifier of the data,
+		 *                     value is the data type that is used with the anonymizer function.
+		 */
 		$buyer_prop_to_erase = apply_filters( 'camptix_privacy_buyer_props_to_erase', array(
 			'tix_buyer_name'  => 'camptix_full_name',
 			'tix_buyer_email' => 'email',
 		) );
 
+		/**
+		 * Filter: Modify the list of attendee properties to erase.
+		 *
+		 * @param array $props Associative array of properties. Key is the identifier of the data,
+		 *                     value is the data type that is used with the anonymizer function.
+		 */
 		$attendee_prop_to_erase = apply_filters( 'camptix_privacy_attendee_props_to_erase', array(
 			'post_title'     => 'camptix_full_name',
 			'post_content'   => 'text',
@@ -184,6 +243,18 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 
 			if ( $email_address === $post->tix_buyer_email ) {
 				foreach ( $buyer_prop_to_erase as $key => $type ) {
+					/**
+					 * Action: Fires for each ticket buyer property in the erasure list.
+					 *
+					 * Use this to add erasure procedures for additional properties added via
+					 * the `camptix_privacy_buyer_props_to_erase` filter.
+					 *
+					 * @param string  $key
+					 * @param string  $type
+					 * @param WP_Post $post
+					 */
+					do_action( 'camptix_privacy_erase_buyer_prop', $key, $type, $post );
+
 					switch ( $key ) {
 						case 'tix_buyer_name' :
 						case 'tix_buyer_email' :
@@ -191,8 +262,6 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 							update_post_meta( $post->ID, $key, $anonymized_value );
 							break;
 					}
-
-					do_action( 'camptix_privacy_erase_buyer_prop', $key, $type, $post );
 				}
 
 				$items_removed = true;
@@ -200,6 +269,18 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 
 			if ( $email_address === $post->tix_email ) {
 				foreach ( $attendee_prop_to_erase as $key => $type ) {
+					/**
+					 * Action: Fires for each attendee property in the erasure list.
+					 *
+					 * Use this to add erasure procedures for additional properties added via
+					 * the `camptix_privacy_attendee_props_to_erase` filter.
+					 *
+					 * @param string  $key
+					 * @param string  $type
+					 * @param WP_Post $post
+					 */
+					do_action( 'camptix_privacy_erase_attendee_prop', $key, $type, $post );
+
 					switch ( $key ) {
 						case 'post_title' :
 						case 'post_content' :
@@ -221,6 +302,12 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 							// TODO add anonymizers and exceptions for the question-related addons.
 							foreach ( $questions as $question ) {
 								if ( isset( $answers[ $question->ID ] ) ) {
+									/**
+									 * Filter: Toggle whether to erase the answer data for a particular question.
+									 *
+									 * @param bool    $erase    Set to false to retain the answer data.
+									 * @param WP_Post $question The question in question.
+									 */
 									$erase = apply_filters( 'camptix_privacy_erase_attendee_question', true, $question );
 
 									if ( false !== $erase ) {
@@ -233,8 +320,6 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 							update_post_meta( $post->ID, 'tix_questions', $anonymized_answers );
 							break;
 					}
-
-					do_action( 'camptix_privacy_erase_attendee_prop', $key, $type, $post );
 				}
 
 				$items_removed = true;
@@ -285,7 +370,15 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		);
 	}
 
-
+	/**
+	 * Handle custom data types for anonymization.
+	 *
+	 * @param string $anonymous
+	 * @param string $type
+	 * @param mixed  $data
+	 *
+	 * @return mixed
+	 */
 	public function data_anonymizers( $anonymous, $type, $data ) {
 		switch ( $type ) {
 			case 'camptix_full_name' :
