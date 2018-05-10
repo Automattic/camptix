@@ -73,7 +73,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		foreach ( (array) $post_query->posts as $post ) {
 			$attendee_data_to_export = array();
 
-			if ( $email_address === $post->tix_buyer_email ) {
+			if ( $email_address === $post->tix_receipt_email ) {
 				foreach ( $buyer_prop_to_export as $key => $label ) {
 					/**
 					 * Action: Fires for each ticket buyer property in the export list.
@@ -240,7 +240,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 				continue;
 			}
 
-			if ( $email_address === $post->tix_buyer_email ) {
+			if ( $email_address === $post->tix_receipt_email ) {
 				foreach ( $buyer_prop_to_erase as $key => $type ) {
 					/**
 					 * Action: Fires for each ticket buyer property in the erasure list.
