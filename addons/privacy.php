@@ -10,6 +10,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 	public function camptix_init() {
 		add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'register_personal_data_exporters' ) );
 		add_filter( 'wp_privacy_personal_data_erasers', array( $this, 'register_personal_data_erasers' ) );
+		add_filter( 'wp_privacy_anonymize_data', array( $this, 'data_anonymizers' ) );
 	}
 
 	/**
@@ -40,8 +41,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		/* @var CampTix_Plugin $camptix */
 		global $camptix;
 
-		$number = 20;
-		$page   = (int) $page;
+		$page = (int) $page;
 
 		$data_to_export = array();
 
@@ -56,27 +56,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 			'tix_email'      => __( 'E-mail Address', 'camptix' ),
 		) );
 
-		$post_query = new WP_Query(
-			array(
-				'posts_per_page' => $number,
-				'paged'          => $page,
-				'post_type'      => 'tix_attendee',
-				'post_status'    => 'any',
-				'orderby'        => 'ID',
-				'order'          => 'ASC',
-				'meta_query'     => array(
-					'relation' => 'OR',
-					array(
-						'key'   => 'tix_email',
-						'value' => $email_address,
-					),
-					array(
-						'key'   => 'tix_buyer_email',
-						'value' => $email_address,
-					),
-				),
-			)
-		);
+		$post_query = $this->get_attendee_posts( $email_address, $page );
 
 		foreach ( (array) $post_query->posts as $post ) {
 			$attendee_data_to_export = array();
@@ -161,7 +141,167 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 
 
 	public function attendee_personal_data_eraser( $email_address, $page ) {
+		/* @var CampTix_Plugin $camptix */
+		global $camptix;
 
+		$page           = (int) $page;
+		$items_removed  = false;
+		$items_retained = false;
+		$messages       = array();
+
+		$buyer_prop_to_erase = apply_filters( 'camptix_privacy_buyer_props_to_erase', array(
+			'tix_buyer_name'  => 'camptix_full_name',
+			'tix_buyer_email' => 'email',
+		) );
+
+		$attendee_prop_to_erase = apply_filters( 'camptix_privacy_attendee_props_to_erase', array(
+			'post_title'     => 'camptix_full_name',
+			'post_content'   => 'text',
+			'tix_first_name' => 'camptix_first_name',
+			'tix_last_name'  => 'camptix_last_name',
+			'tix_email'      => 'email',
+			'questions'      => 'camptix_questions',
+		) );
+
+		$post_query = $this->get_attendee_posts( $email_address, $page );
+
+		foreach ( (array) $post_query->posts as $post ) {
+
+			$anon_message = apply_filters( 'camptix_privacy_erase_attendee', true, $post );
+
+			if ( true !== $anon_message ) {
+				if ( $anon_message && is_string( $anon_message ) ) {
+					$messages[] = esc_html( $anon_message );
+				} else {
+					/* translators: %d: Comment ID */
+					$messages[] = sprintf( __( 'Attendee %d contains personal data but could not be anonymized.' ), $post->ID );
+				}
+
+				$items_retained = true;
+
+				continue;
+			}
+
+			if ( $email_address === $post->tix_buyer_email ) {
+				foreach ( $buyer_prop_to_erase as $key => $type ) {
+					switch ( $key ) {
+						case 'tix_buyer_name' :
+						case 'tix_buyer_email' :
+							$anonymized_value = wp_privacy_anonymize_data( $type );
+							update_post_meta( $post->ID, $key, $anonymized_value );
+							break;
+					}
+
+					do_action( 'camptix_privacy_erase_buyer_prop', $key, $type, $post );
+				}
+
+				$items_removed = true;
+			}
+
+			if ( $email_address === $post->tix_email ) {
+				foreach ( $attendee_prop_to_erase as $key => $type ) {
+					switch ( $key ) {
+						case 'post_title' :
+						case 'post_content' :
+							$post[ $key ] = wp_privacy_anonymize_data( $type );
+							wp_update_post( $post );
+							break;
+						case 'tix_first_name' :
+						case 'tix_last_name' :
+						case 'tix_email' :
+							$anonymized_value = wp_privacy_anonymize_data( $type );
+							update_post_meta( $post->ID, $key, $anonymized_value );
+							break;
+						case 'questions' :
+							$questions = $camptix->get_sorted_questions( $post->tix_ticket_id );
+							$answers   = $post->tix_questions;
+
+							$anonymized_answers = array();
+
+							// TODO add anonymizers and exceptions for the question-related addons.
+							foreach ( $questions as $question ) {
+								if ( isset( $answers[ $question->ID ] ) ) {
+									$erase = apply_filters( 'camptix_privacy_erase_attendee_question', true, $question );
+
+									if ( false !== $erase ) {
+										$type = 'camptix_question_' . $question->tix_type;
+										$anonymized_answers[ $question->ID ] = wp_privacy_anonymize_data( $type );
+									}
+								}
+							}
+
+							update_post_meta( $post->ID, 'tix_questions', $anonymized_answers );
+							break;
+					}
+
+					do_action( 'camptix_privacy_erase_attendee_prop', $key, $type, $post );
+				}
+
+				$items_removed = true;
+			}
+		}
+
+		$done = $post_query->max_num_pages <= $page;
+
+		return array(
+			'items_removed'  => $items_removed,
+			'items_retained' => $items_retained,
+			'messages'       => $messages,
+			'done'           => $done,
+		);
+	}
+
+	/**
+	 * Get the list of attendee posts related to a particular email address.
+	 *
+	 * @param string $email_address
+	 * @param int    $page
+	 *
+	 * @return WP_Query
+	 */
+	private function get_attendee_posts( $email_address, $page ) {
+		$number = 20;
+
+		return new WP_Query(
+			array(
+				'posts_per_page' => $number,
+				'paged'          => $page,
+				'post_type'      => 'tix_attendee',
+				'post_status'    => 'any',
+				'orderby'        => 'ID',
+				'order'          => 'ASC',
+				'meta_query'     => array(
+					'relation' => 'OR',
+					array(
+						'key'   => 'tix_email',
+						'value' => $email_address,
+					),
+					array(
+						'key'   => 'tix_buyer_email',
+						'value' => $email_address,
+					),
+				),
+			)
+		);
+	}
+
+
+	public function data_anonymizers( $anonymous, $type, $data ) {
+		switch ( $type ) {
+			case 'camptix_full_name' :
+				$anonymous = __( 'Anonymous', 'camptix' );
+				break;
+
+			case 'camptix_first_name' :
+				$anonymous = __( 'Anonymous', 'camptix' );
+				break;
+
+			case 'camptix_last_name' :
+				$anonymous = '';
+				break;
+		}
+
+		return $anonymous;
 	}
 }
 
