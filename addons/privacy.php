@@ -52,8 +52,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		 *                     value is the human-readable label for the data in the export file.
 		 */
 		$buyer_prop_to_export = apply_filters( 'camptix_privacy_buyer_props_to_export', array(
-			'tix_buyer_name'  => __( 'Ticket Buyer Name', 'camptix' ),
-			'tix_buyer_email' => __( 'Ticket Buyer E-mail Address', 'camptix' ),
+			'tix_receipt_email' => __( 'Ticket Buyer E-mail Address', 'camptix' ),
 		) );
 
 		/**
@@ -66,6 +65,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 			'tix_first_name' => __( 'First Name', 'camptix' ),
 			'tix_last_name'  => __( 'Last Name', 'camptix' ),
 			'tix_email'      => __( 'E-mail Address', 'camptix' ),
+			'questions'      => '',
 		) );
 
 		$post_query = $this->get_attendee_posts( $email_address, $page );
@@ -88,8 +88,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 					do_action( 'camptix_privacy_export_buyer_prop', $key, $label, $post );
 
 					switch ( $key ) {
-						case 'tix_buyer_name' :
-						case 'tix_buyer_email' :
+						case 'tix_receipt_email' :
 							$value = get_post_meta( $post->ID, $key, true );
 
 							if ( ! empty( $value ) ) {
@@ -130,26 +129,27 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 								);
 							}
 							break;
-					}
-				}
+						case 'questions' :
+							$questions = $camptix->get_sorted_questions( $post->tix_ticket_id );
+							$answers   = $post->tix_questions;
 
-				$questions = $camptix->get_sorted_questions( $post->tix_ticket_id );
-				$answers   = $post->tix_questions;
+							foreach ( $questions as $question ) {
+								if ( isset( $answers[ $question->ID ] ) ) {
+									$answer = $answers[ $question->ID ];
 
-				foreach ( $questions as $question ) {
-					if ( isset( $answers[ $question->ID ] ) ) {
-						$answer = $answers[ $question->ID ];
+									if ( is_array( $answer ) ) {
+										$answer = implode( ', ', $answer );
+									}
 
-						if ( is_array( $answer ) ) {
-							$answer = implode( ', ', $answer );
-						}
-
-						if ( ! empty( $answer ) ) {
-							$attendee_data_to_export[] = array(
-								'name'  => esc_html( apply_filters( 'the_title', $question->post_title ) ),
-								'value' => nl2br( esc_html( $answer ) ),
-							);
-						}
+									if ( ! empty( $answer ) ) {
+										$attendee_data_to_export[] = array(
+											'name'  => esc_html( apply_filters( 'the_title', $question->post_title ) ),
+											'value' => nl2br( esc_html( $answer ) ),
+										);
+									}
+								}
+							}
+							break;
 					}
 				}
 			}
@@ -203,8 +203,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		 *                     value is the data type that is used with the anonymizer function.
 		 */
 		$buyer_prop_to_erase = apply_filters( 'camptix_privacy_buyer_props_to_erase', array(
-			'tix_buyer_name'  => 'camptix_full_name',
-			'tix_buyer_email' => 'email',
+			'tix_receipt_email' => 'email',
 		) );
 
 		/**
@@ -256,8 +255,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 					do_action( 'camptix_privacy_erase_buyer_prop', $key, $type, $post );
 
 					switch ( $key ) {
-						case 'tix_buyer_name' :
-						case 'tix_buyer_email' :
+						case 'tix_receipt_email' :
 							$anonymized_value = wp_privacy_anonymize_data( $type );
 							update_post_meta( $post->ID, $key, $anonymized_value );
 							break;
@@ -362,7 +360,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 						'value' => $email_address,
 					),
 					array(
-						'key'   => 'tix_buyer_email',
+						'key'   => 'tix_receipt_email',
 						'value' => $email_address,
 					),
 				),
