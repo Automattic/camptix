@@ -1,7 +1,7 @@
 <?php
 
 /**
- *
+ * Functionality to help CampTix comply with privacy regulations.
  */
 class CampTix_Addon_Privacy extends CampTix_Addon {
 	/**
