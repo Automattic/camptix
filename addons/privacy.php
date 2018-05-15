@@ -243,8 +243,6 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		 *                     value is the data type that is used with the anonymizer function.
 		 */
 		$attendee_prop_to_erase = apply_filters( 'camptix_privacy_attendee_props_to_erase', array(
-			'post_title'                 => 'camptix_full_name',
-			'post_content'               => 'text',
 			'tix_first_name'             => 'camptix_first_name',
 			'tix_last_name'              => 'camptix_last_name',
 			'tix_email'                  => 'email',
@@ -319,14 +317,6 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 					do_action( 'camptix_privacy_erase_attendee_prop', $key, $type, $post );
 
 					switch ( $key ) {
-						case 'post_title' :
-						case 'post_content' :
-							// TODO Figure out how to trigger CampTix save post routines during erasure
-							// and then these won't be necessary.
-							wp_update_post( array(
-								$key => wp_privacy_anonymize_data( $type ),
-							) );
-							break;
 						case 'tix_first_name' :
 						case 'tix_last_name' :
 						case 'tix_email' :
@@ -372,6 +362,10 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 
 				$items_removed = true;
 			}
+
+			// Trigger the CampTix actions for attendee posts.
+			// This resets the post title and post content based on certain postmeta values.
+			do_action( 'save_post', $post->ID, $post, true );
 		}
 
 		$done = $post_query->max_num_pages <= $page;
