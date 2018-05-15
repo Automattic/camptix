@@ -99,7 +99,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 					 * @param string  $label  The data label in the export.
 					 * @param WP_Post $post   The attendee post object.
 					 */
-					apply_filters( 'camptix_privacy_export_buyer_prop', $export, $key, $label, $post );
+					$export = apply_filters( 'camptix_privacy_export_buyer_prop', $export, $key, $label, $post );
 
 					if ( ! empty( $export ) ) {
 						$attendee_data_to_export = array_merge( $attendee_data_to_export, $export );
@@ -167,7 +167,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 					 * @param string  $label  The data label in the export.
 					 * @param WP_Post $post   The attendee post object.
 					 */
-					apply_filters( 'camptix_privacy_export_attendee_prop', $export, $key, $label, $post );
+					$export = apply_filters( 'camptix_privacy_export_attendee_prop', $export, $key, $label, $post );
 
 					if ( ! empty( $export ) ) {
 						$attendee_data_to_export = array_merge( $attendee_data_to_export, $export );
