@@ -248,6 +248,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 			'tix_email'                  => 'email',
 			'questions'                  => 'camptix_questions',
 			'tix_private_form_submit_ip' => 'ip',
+			'tix_privacy'                => '',
 		) );
 
 		$post_query = $this->get_attendee_posts( $email_address, $page );
@@ -356,6 +357,10 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 								update_post_meta( $post->ID, $key, wp_privacy_anonymize_ip( $value ), $prev );
 								$prev = $value;
 							}
+							break;
+						case 'tix_privacy':
+							// Set the attendee to be hidden from the public Attendees page
+							update_post_meta( $post->ID, $key, 'private' );
 							break;
 					}
 				}
