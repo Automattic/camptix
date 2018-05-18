@@ -22,7 +22,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 	 */
 	public function register_personal_data_exporters( $exporters ) {
 		$exporters['camptix-attendee'] = array(
-			'exporter_friendly_name' => __( 'CampTix Attendee Data' ),
+			'exporter_friendly_name' => __( 'CampTix Attendee Data', 'camptix' ),
 			'callback'               => array( $this, 'attendee_personal_data_exporter' ),
 		);
 
@@ -202,7 +202,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 	 */
 	public function register_personal_data_erasers( $erasers ) {
 		$erasers['camptix-attendee'] = array(
-			'eraser_friendly_name' => __( 'CampTix Attendee Data' ),
+			'eraser_friendly_name' => __( 'CampTix Attendee Data', 'camptix' ),
 			'callback'             => array( $this, 'attendee_personal_data_eraser' ),
 		);
 
