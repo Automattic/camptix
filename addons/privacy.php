@@ -178,7 +178,7 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 			if ( ! empty( $attendee_data_to_export ) ) {
 				$data_to_export[] = array(
 					'group_id'    => 'camptix-attendee',
-					'group_label' => __( 'CampTix Attendee Data' ),
+					'group_label' => __( 'CampTix Attendee Data', 'camptix' ),
 					'item_id'     => "camptix-attendee-{$post->ID}",
 					'data'        => $attendee_data_to_export,
 				);
