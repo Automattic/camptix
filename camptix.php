@@ -7777,7 +7777,7 @@ class CampTix_Plugin {
 	 * Runs during camptix_load_addons, includes the necessary files to register default addons.
 	 */
 	function load_default_addons() {
-		$default_addons = apply_filters( 'camptix_default_addons', array(
+		$default_addons = array(
 			'field-twitter'  => $this->get_default_addon_path( 'field-twitter.php' ),
 			'field-url'      => $this->get_default_addon_path( 'field-url.php' ),
 			'field-country'  => $this->get_default_addon_path( 'field-country.php' ),
@@ -7785,20 +7785,26 @@ class CampTix_Plugin {
 			'shortcodes'     => $this->get_default_addon_path( 'shortcodes.php' ),
 			'payment-paypal' => $this->get_default_addon_path( 'payment-paypal.php' ),
 			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),
+		);
 
-			/**
-			 * The following addons are available but inactive by default. Do not uncomment
-			 * but rather filter 'camptix_default_addons', otherwise your changes may be overwritten
-			 * during an update to the plugin.
-			 */
+		if ( function_exists( 'wp_privacy_anonymize_data' ) && function_exists( 'wp_privacy_anonymize_ip' ) ) {
+			$default_addons['privacy'] = $this->get_default_addon_path( 'privacy.php' );
+		}
 
-			// 'logging-file'  => $this->get_default_addon_path( 'logging-file.php' ),
-			// 'logging-json'  => $this->get_default_addon_path( 'logging-file-json.php' ),
-			// 'require-login' => $this->get_default_addon_path( 'require-login.php' ),
-		) );
+		/**
+		 * The following addons are available but inactive by default. Use the 'camptix_default_addons' filter
+		 * to enable them, otherwise your changes may be overwritten during an update to the plugin.
+		 *
+		 * 'logging-file'  => $this->get_default_addon_path( 'logging-file.php' ),
+		 * 'logging-json'  => $this->get_default_addon_path( 'logging-file-json.php' ),
+		 * 'require-login' => $this->get_default_addon_path( 'require-login.php' ),
+		 */
 
-		foreach ( $default_addons as $filename )
+		$default_addons = apply_filters( 'camptix_default_addons', $default_addons );
+
+		foreach ( $default_addons as $filename ) {
 			include_once $filename;
+		}
 	}
 
 	function get_default_addon_path( $filename ) {
