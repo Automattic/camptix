@@ -7787,7 +7787,7 @@ class CampTix_Plugin {
 			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),
 		);
 
-		if ( function_exists( 'wp_privacy_anonymize_data' ) ) {
+		if ( function_exists( 'wp_privacy_anonymize_data' ) && function_exists( 'wp_privacy_anonymize_ip' ) ) {
 			$default_addons['privacy'] = $this->get_default_addon_path( 'privacy.php' );
 		}
 
