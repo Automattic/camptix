@@ -226,6 +226,16 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 		}
 	};
 
-	$( document ).ready( lazyLoad.init )
+	$( document ).ready( lazyLoad.init );
+
+
+	/**
+	 * Use select2 for dropdown.
+	*/
+	$( document ).ready( function loadSelect2Country() {
+		if( ! tix.length || ! $.fn.hasOwnProperty( 'select2' ) )
+			return;
+		$( '#tix .tix-select2-enabled select' ).select2();
+    })
 
 }(jQuery));

@@ -578,5 +578,15 @@ window.camptix = window.camptix || { models: {}, views: {}, collections: {} };
 			);
 		} );
 
+		/**
+		* Select2 for dropdowns rendered by tix page
+		*/
+		$( document ).ready( function() {
+			if( ! $.fn.hasOwnProperty( 'select2' ) ){
+				return;
+			}
+			$( '.tix-setup-form select' ).select2();
+		});
+
 	});
 }(jQuery));
