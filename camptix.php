@@ -1505,8 +1505,8 @@ class CampTix_Plugin {
 					__( "This will allow your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
 				);
 				$this->add_settings_field_helper( 'select2_enabled', __( 'Enable Select2', 'camptix' ), 'field_enable_select2', false,
-                    __( "This will render all the dropdown answers as a searchable dropdown instead of normal select dropdown", 'camptix' )
-                );
+					__( "This will render all the dropdown answers as a searchable dropdown instead of normal select dropdown", 'camptix' )
+				);
 
 				break;
 			case 'payment':

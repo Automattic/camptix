@@ -586,6 +586,7 @@ window.camptix = window.camptix || { models: {}, views: {}, collections: {} };
 				return;
 			}
 			$( '.tix-setup-form select' ).select2();
+			$( 'select[name=tix_summarize_by]' ).select2();
 		});
 
 	});
