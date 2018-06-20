@@ -15,6 +15,14 @@ if ( empty ( $sizes_by_site ) ) {
 ?>
 
 <?php foreach ( $sizes_by_site as $site_id => $site ) : ?>
+	<?php
+	$sizes_sum = array_sum( $site['sizes'] );
+
+	if ( ! $sizes_sum ) {
+		continue;
+	}
+	?>
+
 	<h3>
 		<?php echo esc_html( $site['name'] ); ?>
 	</h3>
@@ -36,7 +44,7 @@ if ( empty ( $sizes_by_site ) ) {
 
 		<tbody>
 			<?php foreach ( $site['sizes'] as $size => $size_count ) : ?>
-				<?php $percentage = round( $size_count / array_sum( $site['sizes'] ) * 100 ); ?>
+				<?php $percentage = round( $size_count / $sizes_sum * 100 ); ?>
 
 				<tr>
 					<td><?php echo esc_html( $size       ); ?> </td>

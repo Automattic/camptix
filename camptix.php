@@ -21,6 +21,7 @@ class CampTix_Plugin {
 
 	protected $tmp;
 
+	public $error_flags;
 	public $debug;
 	public $beta_features_enabled;
 	public $version     = 20140325;
@@ -37,7 +38,6 @@ class CampTix_Plugin {
 	protected $form_data;
 	protected $reservation;
 	protected $coupon;
-	protected $error_flags;
 	protected $error_data;
 	protected $did_template_redirect;
 	protected $did_checkout;
@@ -1790,7 +1790,7 @@ class CampTix_Plugin {
 	 * @link http://goo.gl/Gp0ri (paypal currency codes)
 	 */
 	function get_currencies() {
-		return apply_filters( 'camptix_currencies', array(
+		$currencies = apply_filters( 'camptix_currencies', array(
 			'AUD' => array(
 				'label' => __( 'Australian Dollar', 'camptix' ),
 				'locale' => 'en_AU.UTF-8',
@@ -1875,6 +1875,10 @@ class CampTix_Plugin {
 				'label' => __( 'Philippine Peso', 'camptix' ),
 				'format' => '₱ %s',
 			),
+			'PKR' => array(
+				'label' => __( 'Pakistani Rupee', 'camptix' ),
+				'format' => '₨ %s',
+			),
 			'TWD' => array(
 				'label' => __( 'New Taiwan Dollar', 'camptix' ),
 				'locale' => 'zh_TW.UTF-8',
@@ -1888,6 +1892,26 @@ class CampTix_Plugin {
 				'locale' => 'tr_TR.UTF-8',
 			),
 		) );
+
+		uasort( $currencies, array( $this, 'sort_currencies' ) );
+
+		return $currencies;
+	}
+
+	/**
+	 * Sort currencies by label.
+	 *
+	 * @param array $a
+	 * @param array $b
+	 *
+	 * @return int
+	 */
+	function sort_currencies( $a, $b ) {
+		if ( $a['label'] === $b['label'] ) {
+			return 0;
+		}
+
+		return $a['label'] > $b['label'];
 	}
 
 	/**
@@ -4214,7 +4238,8 @@ class CampTix_Plugin {
 	 * Metabox callback for ticket questions.
 	 */
 	function metabox_ticket_questions() {
-		$types = $this->get_question_field_types();
+		$types          = $this->get_question_field_types();
+		$default_fields = apply_filters( 'camptix_metabox_questions_default_fields_list', __( 'First name, last name and e-mail address', 'camptix' ) );
 		?>
 		<div class="tix-ticket-questions">
 			<div class="tix-ui-sortable" id="tix-questions-container">
@@ -4226,7 +4251,7 @@ class CampTix_Plugin {
 							<span class="tix-field-type"><?php _e( 'Default', 'camptix' ); ?></span>
 						</div>
 						<div class="tix-item-inner-middle">
-							<span class="tix-field-name"><?php _e( 'First name, last name and email address', 'camptix' ); ?></span>
+							<span class="tix-field-name"><?php echo wp_kses_post( $default_fields ); ?></span>
 							<span class="tix-field-required-star">*</span>
 							<span class="tix-field-values"></span>
 						</div>
@@ -5060,36 +5085,43 @@ class CampTix_Plugin {
 
 		$this->did_template_redirect = true;
 
-		// Don't go past the start form if no payment methods are enabled.
-		if ( isset( $this->error_flags['no_payment_methods'] ) )
-			return $this->shortcode_contents = $this->form_start();
+		$tix_action = filter_input( INPUT_GET, 'tix_action' );
 
-		if ( isset( $_GET['tix_action'] ) && ! empty( $_GET['tix_action'] ) ) {
-			if ( 'attendee_info' == $_GET['tix_action'] && isset( $_POST['tix_coupon_submit'], $_POST['tix_coupon'] ) && ! empty( $_POST['tix_coupon'] ) )
-				return $this->shortcode_contents = $this->form_start();
-
-			if ( 'attendee_info' == $_GET['tix_action'] && isset( $this->error_flags['no_tickets_selected'] ) )
-				return $this->shortcode_contents = $this->form_start();
-
-			if ( 'attendee_info' == $_GET['tix_action'] )
-				return $this->shortcode_contents = $this->form_attendee_info();
-
-			if ( 'checkout' == $_GET['tix_action'] )
-				return $this->shortcode_contents = $this->form_checkout();
-
-			if ( 'access_tickets' == $_GET['tix_action'] )
-				return $this->shortcode_contents = $this->form_access_tickets();
-
-			if ( 'edit_attendee' == $_GET['tix_action'] )
-				return $this->shortcode_contents = $this->form_edit_attendee();
-
-			if ( 'refund_request' == $_GET['tix_action'] && $this->options['refunds_enabled'] )
-				return $this->shortcode_contents = $this->form_refund_request();
+		if ( isset( $this->error_flags['no_payment_methods'] ) ) {
+			// Don't go past the start form if no payment methods are enabled.
+			$this->shortcode_contents = $this->form_start();
+		} elseif ( $tix_action ) {
+			if ( 'attendee_info' == $tix_action && isset( $_POST['tix_coupon_submit'], $_POST['tix_coupon'] ) && ! empty( $_POST['tix_coupon'] ) ) {
+				$this->shortcode_contents = $this->form_start();
+			} elseif ( 'attendee_info' == $tix_action && isset( $this->error_flags['no_tickets_selected'] ) ) {
+				$this->shortcode_contents = $this->form_start();
+			} elseif ( 'attendee_info' == $tix_action ) {
+				$this->shortcode_contents = $this->form_attendee_info();
+			} elseif ( 'checkout' == $tix_action ) {
+				$this->shortcode_contents = $this->form_checkout();
+			} elseif ( 'access_tickets' == $tix_action ) {
+				$this->shortcode_contents = $this->form_access_tickets();
+			} elseif ( 'edit_attendee' == $tix_action ) {
+				$this->shortcode_contents = $this->form_edit_attendee();
+			} elseif ( 'refund_request' == $tix_action && $this->options['refunds_enabled'] ) {
+				$this->shortcode_contents = $this->form_refund_request();
+			} else {
+				// If we end up here, start over.
+				$this->shortcode_contents = $this->form_start();
+			}
 		} else {
-			return $this->shortcode_contents = $this->form_start();
+			$this->shortcode_contents = $this->form_start();
 		}
 
-		return $this->shortcode_contents = 'Hmmm.';
+		/**
+		 * Filter: Modify the output of `[camptix]`.
+		 *
+		 * @param string $shortcode_contents The HTML markup contents of the shortcode.
+		 * @param string $tix_action         The current step in the ticketing process.
+		 */
+		$this->shortcode_contents = apply_filters( 'camptix_shortcode_contents', $this->shortcode_contents, $tix_action );
+
+		return $this->shortcode_contents;
 	}
 
 	/**
@@ -5238,9 +5270,9 @@ class CampTix_Plugin {
 							?>
 							<tr class="tix-ticket-<?php echo absint( $ticket->ID ); ?>">
 								<td class="tix-column-description">
-									<strong class="tix-ticket-title"><?php echo esc_html( $ticket->post_title ); ?></strong>
+									<strong class="tix-ticket-title"><?php echo wp_kses_post( $ticket->post_title ); ?></strong>
 									<?php if ( $ticket->post_excerpt ) : ?>
-										<br /><span class="tix-ticket-excerpt"><?php echo esc_html( $ticket->post_excerpt ); ?></span>
+										<br /><span class="tix-ticket-excerpt"><?php echo wp_kses_post( $ticket->post_excerpt ); ?></span>
 									<?php endif; ?>
 									<?php if ( $ticket->tix_coupon_applied ) : ?>
 										<br /><small class="tix-discount"><?php echo esc_html( $ticket->tix_discounted_text ); ?></small>
@@ -5360,6 +5392,8 @@ class CampTix_Plugin {
 
 		if ( isset( $this->error_flags['invalid_coupon'] ) )
 			$this->notice( __( "Looks like you're trying to use an invalid or expired coupon.", 'camptix' ) );
+
+		do_action( 'camptix_form_attendee_info_errors', $this->error_flags );
 
 		ob_start();
 		$total = 0;
@@ -5493,6 +5527,8 @@ class CampTix_Plugin {
 									</td>
 								</tr>
 
+								<?php do_action( 'camptix_attendee_form_before_questions', $this->form_data, $i, $this->tickets_selected_count ); ?>
+
 								<?php
 									do_action( 'camptix_question_fields_init' );
 									$question_num = 0; // Used for questions class names.
@@ -5519,6 +5555,8 @@ class CampTix_Plugin {
 										</tr>
 									<?php endforeach; ?>
 								<?php endif; ?>
+
+								<?php do_action( 'camptix_attendee_form_after_questions', $this->form_data, $i, $this->tickets_selected_count ); ?>
 							</tbody>
 						</table>
 						<?php $i++; ?>
@@ -5760,11 +5798,13 @@ class CampTix_Plugin {
 		$ticket = get_post( $ticket_id );
 		$questions = $this->get_sorted_questions( $ticket->ID );
 		$answers = (array) get_post_meta( $attendee->ID, 'tix_questions', true );
-		$ticket_info = apply_filters( 'camptix_form_edit_attendee_ticket_info', array(
+
+		$ticket_info = array(
 			'first_name' => get_post_meta( $attendee->ID, 'tix_first_name', true ),
-			'last_name' => get_post_meta( $attendee->ID, 'tix_last_name', true ),
-			'email' => get_post_meta( $attendee->ID, 'tix_email', true ),
-		) );
+			'last_name'  => get_post_meta( $attendee->ID, 'tix_last_name', true ),
+			'email'      => get_post_meta( $attendee->ID, 'tix_email', true ),
+		);
+		$ticket_info = apply_filters( 'camptix_form_edit_attendee_ticket_info', $ticket_info, $attendee );
 
 		if ( isset( $_POST['tix_attendee_save'] ) ) {
 			$errors = array();
@@ -5849,6 +5889,8 @@ class CampTix_Plugin {
 							<td class="tix-right"><input name="tix_ticket_info[email]" type="text" value="<?php echo esc_attr( $ticket_info['email'] ); ?>" /></td>
 						</tr>
 
+						<?php do_action( 'camptix_form_edit_attendee_before_questions', $ticket_info ); ?>
+
 						<?php do_action( 'camptix_question_fields_init' ); ?>
 						<?php if ( apply_filters( 'camptix_ask_questions', true, array( (int) $ticket_id => 1 ), (int) $ticket_id, 1, $questions ) ) : ?>
 							<?php foreach ( $questions as $question ) : ?>
@@ -5871,6 +5913,7 @@ class CampTix_Plugin {
 							<?php endforeach; ?>
 						<?php endif; ?>
 
+						<?php do_action( 'camptix_form_edit_attendee_after_questions', $ticket_info ); ?>
 					</tbody>
 				</table>
 
@@ -7734,7 +7777,7 @@ class CampTix_Plugin {
 	 * Runs during camptix_load_addons, includes the necessary files to register default addons.
 	 */
 	function load_default_addons() {
-		$default_addons = apply_filters( 'camptix_default_addons', array(
+		$default_addons = array(
 			'field-twitter'  => $this->get_default_addon_path( 'field-twitter.php' ),
 			'field-url'      => $this->get_default_addon_path( 'field-url.php' ),
 			'field-country'  => $this->get_default_addon_path( 'field-country.php' ),
@@ -7742,20 +7785,26 @@ class CampTix_Plugin {
 			'shortcodes'     => $this->get_default_addon_path( 'shortcodes.php' ),
 			'payment-paypal' => $this->get_default_addon_path( 'payment-paypal.php' ),
 			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),
+		);
 
-			/**
-			 * The following addons are available but inactive by default. Do not uncomment
-			 * but rather filter 'camptix_default_addons', otherwise your changes may be overwritten
-			 * during an update to the plugin.
-			 */
+		if ( function_exists( 'wp_privacy_anonymize_data' ) && function_exists( 'wp_privacy_anonymize_ip' ) ) {
+			$default_addons['privacy'] = $this->get_default_addon_path( 'privacy.php' );
+		}
 
-			// 'logging-file'  => $this->get_default_addon_path( 'logging-file.php' ),
-			// 'logging-json'  => $this->get_default_addon_path( 'logging-file-json.php' ),
-			// 'require-login' => $this->get_default_addon_path( 'require-login.php' ),
-		) );
+		/**
+		 * The following addons are available but inactive by default. Use the 'camptix_default_addons' filter
+		 * to enable them, otherwise your changes may be overwritten during an update to the plugin.
+		 *
+		 * 'logging-file'  => $this->get_default_addon_path( 'logging-file.php' ),
+		 * 'logging-json'  => $this->get_default_addon_path( 'logging-file-json.php' ),
+		 * 'require-login' => $this->get_default_addon_path( 'require-login.php' ),
+		 */
 
-		foreach ( $default_addons as $filename )
+		$default_addons = apply_filters( 'camptix_default_addons', $default_addons );
+
+		foreach ( $default_addons as $filename ) {
 			include_once $filename;
+		}
 	}
 
 	function get_default_addon_path( $filename ) {
