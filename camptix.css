@@ -156,8 +156,9 @@ body.admin-bar #tix {
 }
 
 .tix-payment-method-single {
-    margin-right: 1em;
-    font-style: italic;
+	margin-right: 2em;
+	font-style: italic;
+	color: #00aace;
 }
 
 .tix-submit {
