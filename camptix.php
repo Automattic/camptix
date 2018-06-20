@@ -1891,6 +1891,10 @@ class CampTix_Plugin {
 				'label' => __( 'Turkish Lira', 'camptix' ),
 				'locale' => 'tr_TR.UTF-8',
 			),
+			'ZAR' => array(
+				'label' => __( 'South African Rand', 'camptix' ),
+				'format' => 'R %s',
+			),
 		) );
 
 		uasort( $currencies, array( $this, 'sort_currencies' ) );
