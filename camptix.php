@@ -5549,16 +5549,11 @@ class CampTix_Plugin {
 					if ( $total > 0 ) {
 						$payment_methods = $this->get_enabled_payment_methods();
 						if ( 1 === count( $payment_methods ) ) {
+							$payment_method_key = array_keys( $payment_methods )[0];
+							$payment_method = $payment_methods[ $payment_method_key ][ 'name' ];
 							?>
 							<input name="tix_payment_method" type="hidden"
-							<?php
-							foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) {
-								?>
-								value="<?php echo esc_attr( $payment_method_key ); ?>"/><span class="tix-payment-method-single">(<?php echo esc_html( $payment_method['name'] ); ?>)</span>
-								<?php
-								break;
-							}
-							?>
+								value="<?php echo esc_attr( $payment_method_key ); ?>"/><span class="tix-payment-method-single">(<?php echo esc_html( $payment_method ); ?>)</span>
 							<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
 							<?php
 						} else {
