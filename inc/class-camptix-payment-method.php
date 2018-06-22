@@ -323,10 +323,10 @@ abstract class CampTix_Payment_Method extends CampTix_Addon {
 	/**
 	 * Add a setting field
 	 *
-	 * @param string $option_name
-	 * @param string $title
-	 * @param string $callback
-	 * @param string $description
+	 * @param string   $option_name
+	 * @param string   $title
+	 * @param callable $callback
+	 * @param string   $description
 	 */
 	function add_settings_field_helper( $option_name, $title, $callback, $description = '' ) {
 		add_settings_field(

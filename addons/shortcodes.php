@@ -532,6 +532,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 		$args = shortcode_atts( array(
 			'ticket_ids' => null,
+			'logged_out_message' => '',
 		), $atts );
 
 		$can_view_content = false;
@@ -597,12 +598,12 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 			if ( isset( $_POST['tix_private_shortcode_submit'] ) )
 				$camptix->info( __( 'Success! Enjoy your content!', 'camptix' ) );
 
-			return $this->shortcode_private_display_content( $atts, $content );
+			return $this->shortcode_private_display_content( $args, $content );
 		} else {
 			if ( ! isset( $_POST['tix_private_shortcode_submit'] ) && ! $error )
 				$camptix->notice( __( 'The content on this page is private. Please log in using the form below.', 'camptix' ) );
 
-			return $this->shortcode_private_login_form( $atts, $content );
+			return $this->shortcode_private_login_form( $args, $content );
 		}
 	}
 
@@ -613,9 +614,15 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		$email = isset( $_POST['tix_email'] ) ? $_POST['tix_email'] : '';
 		ob_start();
 
-		if ( isset( $atts['logged_out_message'] ) )
+		// @todo Note that in order to include HTML markup in the logged out message, the shortcode
+		// attribute needs to enclose the value in single instead of double quotes. TinyMCE enforces
+		// double quotes on HTML attributes, which will break the shortcode if it also uses double quotes.
+		if ( ! empty( $atts['logged_out_message'] ) ) {
 			echo wpautop( $atts['logged_out_message'] );
+		}
+
 		?>
+
 		<div id="tix">
 			<?php do_action( 'camptix_notices' ); ?>
 			<form method="POST" action="#tix">
