@@ -7833,9 +7833,10 @@ class CampTix_Plugin {
 		 * The following addons are available but inactive by default. Use the 'camptix_default_addons' filter
 		 * to enable them, otherwise your changes may be overwritten during an update to the plugin.
 		 *
-		 * 'logging-file'  => $this->get_default_addon_path( 'logging-file.php' ),
-		 * 'logging-json'  => $this->get_default_addon_path( 'logging-file-json.php' ),
-		 * 'require-login' => $this->get_default_addon_path( 'require-login.php' ),
+		 * 'payment-stripe' => $this->get_default_addon_path( 'payment-stripe.php' ),
+		 * 'logging-file'   => $this->get_default_addon_path( 'logging-file.php' ),
+		 * 'logging-json'   => $this->get_default_addon_path( 'logging-file-json.php' ),
+		 * 'require-login'  => $this->get_default_addon_path( 'require-login.php' ),
 		 */
 
 		$default_addons = apply_filters( 'camptix_default_addons', $default_addons );
