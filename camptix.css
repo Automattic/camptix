@@ -155,6 +155,12 @@ body.admin-bar #tix {
 	vertical-align: middle;
 }
 
+.tix-payment-method-single {
+	margin-right: 1em;
+	font-style: italic;
+	color: #00aace;
+}
+
 .tix-submit {
 	text-align: right;
 }
