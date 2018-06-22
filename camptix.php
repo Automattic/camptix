@@ -165,6 +165,9 @@ class CampTix_Plugin {
 		$this->register_post_types();
 		$this->register_post_statuses();
 
+		// Change updated messages
+		add_filter( 'post_updated_messages', array( $this, 'ticket_updated_messages' ) );
+
 		do_action( 'camptix_init' );
 	}
 
@@ -1148,6 +1151,37 @@ class CampTix_Plugin {
 			$states['cancelled'] = __( 'Refunded', 'camptix' );
 
 		return $states;
+	}
+
+	function ticket_updated_messages( $messages ) {
+		global $post;
+
+		$post_type_name = 'tix_ticket';
+
+		if ( $post_type_name === $post->post_type ) {
+			$ticket_updated_messages = array(
+				0  => '', // Unused. Messages start at index 1.
+				1  => esc_html__( 'Ticket updated.', 'camptix' ),
+				2  => esc_html__( 'Custom field updated.', 'camptix' ),
+				3  => esc_html__( 'Custom field deleted.', 'camptix' ),
+				4  => esc_html__( 'Ticket updated.', 'camptix' ),
+				/* translators: %s: date and time of the revision */
+				5  => isset( $_GET['revision'] ) ? sprintf( esc_html__( 'Ticket restored to revision from %s', 'camptix' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+				6  => esc_html__( 'Ticket published.', 'camptix' ),
+				7  => esc_html__( 'Ticket saved.', 'camptix' ),
+				8  => esc_html__( 'Ticket submitted.', 'camptix' ),
+				9  => sprintf(
+					wp_kses( __( 'Ticket scheduled for: <strong>%1$s</strong>.', 'camptix' ), array( 'strong' => array() ) ),
+					// translators: Publish box date format, see http://php.net/date
+					date_i18n( esc_html__( 'M j, Y @ G:i', 'camptix' ), strtotime( $post->post_date ) )
+				),
+				10 => esc_html__( 'Ticket draft updated.', 'camptix' ),
+			);
+
+			$messages[ $post_type_name ] = $ticket_updated_messages;
+		}
+
+		return $messages;
 	}
 
 	function get_default_options() {
