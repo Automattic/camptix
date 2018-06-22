@@ -1908,10 +1908,16 @@ class CampTix_Plugin {
 			$currency = array( 'label' => __( 'U.S. Dollar', 'camptix' ), 'locale' => 'en_US.UTF-8' );
 
 		if ( isset( $currency['locale'] ) ) {
-			setlocale( LC_MONETARY, $currency['locale'] );
+			setlocale( LC_ALL, $currency['locale'] );
 		}
 
-		$formatted_amount = money_format( '%n', $amount );
+		// money_format not available on Windows and some other systems
+		if ( function_exists('money_format') ){
+			$formatted_amount = money_format( '%n', $amount );
+		} else {
+			$currency_symbol = localeconv()['currency_symbol'];
+			$formatted_amount = $currency_symbol. ' ' .$amount;
+		}
 
 		if ( isset( $currency['format'] ) && $currency['format'] ) {
 			$formatted_amount = sprintf( $currency['format'], number_format( (float) $amount, 2 ) );
