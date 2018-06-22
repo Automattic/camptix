@@ -1806,6 +1806,7 @@ class CampTix_Plugin {
 			'GBP' => array(
 				'label' => __( 'Pound Sterling', 'camptix' ),
 				'locale' => 'en_GB.UTF-8',
+				'win_format' => '£ %s',
 			),
 			'JPY' => array(
 				'label' => __( 'Japanese Yen', 'camptix' ),
@@ -1822,10 +1823,12 @@ class CampTix_Plugin {
 			'CHF' => array(
 				'label' => __( 'Swiss Franc', 'camptix' ),
 				'locale' => 'fr_CH.UTF-8',
+				'win_format' => 'Fr. %s',
 			),
 			'HKD' => array(
 				'label' => __( 'Hong Kong Dollar', 'camptix' ),
 				'locale' => 'zh_HK.UTF-8',
+				'win_format' => 'HK$ %s',
 			),
 			'SGD' => array(
 				'label' => __( 'Singapore Dollar', 'camptix' ),
@@ -1834,6 +1837,7 @@ class CampTix_Plugin {
 			'SEK' => array(
 				'label' => __( 'Swedish Krona', 'camptix' ),
 				'locale' => 'sv_SE.UTF-8',
+				'win_format' => '%s Kr',
 			),
 			'DKK' => array(
 				'label' => __( 'Danish Krone', 'camptix' ),
@@ -1854,10 +1858,12 @@ class CampTix_Plugin {
 			'CZK' => array(
 				'label' => __( 'Czech Koruna', 'camptix' ),
 				'locale' => 'hcs_CZ.UTF-8',
+				'win_format' => '%s Kč',
 			),
 			'ILS' => array(
 				'label' => __( 'Israeli New Sheqel', 'camptix' ),
 				'locale' => 'he_IL.UTF-8',
+				'win_format' => '%s ₪',
 			),
 			'MXN' => array(
 				'label' => __( 'Mexican Peso', 'camptix' ),
@@ -1866,6 +1872,7 @@ class CampTix_Plugin {
 			'BRL' => array(
 				'label' => __( 'Brazilian Real', 'camptix' ),
 				'locale' => 'pt_BR.UTF-8',
+				'win_format' => '%s R$',
 			),
 			'MYR' => array(
 				'label' => __( 'Malaysian Ringgit', 'camptix' ),
@@ -1882,6 +1889,7 @@ class CampTix_Plugin {
 			'TWD' => array(
 				'label' => __( 'New Taiwan Dollar', 'camptix' ),
 				'locale' => 'zh_TW.UTF-8',
+				'win_format' => 'NT$ %s',
 			),
 			'THB' => array(
 				'label' => __( 'Thai Baht', 'camptix' ),
@@ -1933,13 +1941,27 @@ class CampTix_Plugin {
 			$currency = array( 'label' => __( 'U.S. Dollar', 'camptix' ), 'locale' => 'en_US.UTF-8' );
 
 		if ( isset( $currency['locale'] ) ) {
-			setlocale( LC_MONETARY, $currency['locale'] );
+			setlocale( LC_ALL, $currency['locale'] );
 		}
 
-		$with_currency = money_format( '%n', $price );
+		// money_format not available on Windows and some other systems
+		if ( function_exists('money_format') ){
+			$money_format_exist = true;
+			$with_currency = money_format( '%n', $price );
+		} else { // Fallback for systems which cannot use money_format
+			
+			$money_format_exist = false;
+			$currency_symbol = localeconv()['currency_symbol'];
+			$with_currency = $currency_symbol. ' ' .$price;
+		}
 
 		if ( isset( $currency['format'] ) && $currency['format'] ) {
 			$with_currency = sprintf( $currency['format'], number_format( (float) $price, 2 ) );
+		}
+
+		// manual formats for system without money_format and incorrect symbols
+		if ( isset( $currency['win_format'] ) && $currency['win_format'] && $money_format_exist === false ){
+			$with_currency = sprintf( $currency['win_format'], number_format( (float) $price));
 		}
 
 		if ( $nbsp )
