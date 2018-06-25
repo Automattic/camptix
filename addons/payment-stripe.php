@@ -6,10 +6,10 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	public $description = 'Stripe';
 
 	/**
-	 * Zero-decimal currencies are _not_ included yet, because they require extra logic:
-	 * 'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'
-	 *
 	 * See https://support.stripe.com/questions/which-currencies-does-stripe-support.
+	 *
+	 * 1.7
+	 * Removing SVC, because it is no longer in circulation and is rarely used. (https://www.xe.com/currency/svc-salvadoran-colon)
 	 */
 	public $supported_currencies = array(
 		'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN', 'BMD',
@@ -18,9 +18,12 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		'HRK', 'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'ISK', 'JMD', 'KES', 'KGS', 'KHR', 'KYD', 'KZT', 'LAK', 'LBP',
 		'LKR', 'LRD', 'LSL', 'MAD', 'MDL', 'MKD', 'MMK', 'MNT', 'MOP', 'MRO', 'MUR', 'MVR', 'MWK', 'MXN', 'MYR',
 		'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'QAR', 'RON',
-		'RSD', 'RUB', 'SAR', 'SBD', 'SCR', 'SEK', 'SGD', 'SHP', 'SLL', 'SOS', 'SRD', 'STD', 'SVC', 'SZL', 'THB',
+		'RSD', 'RUB', 'SAR', 'SBD', 'SCR', 'SEK', 'SGD', 'SHP', 'SLL', 'SOS', 'SRD', 'STD', 'SZL', 'THB',
 		'TJS', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'WST', 'XCD', 'YER', 'ZAR',
 		'ZMW',
+		// Zero decimal currencies (https://stripe.com/docs/currencies#zero-decimal)
+		'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'VND', 'VUV', 'XAF', 'XOF',
+		'XPF',
 	);
 
 	public $supported_features = array(
@@ -137,20 +140,24 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		$fractional_amount = null;
 
 		$currency_multipliers = array(
-			5    => array( 'MRO', 'MRU' ),
+			1    => array(
+				'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF',
+				'XOF', 'XPF',
+			),
+			5    => array( 'MRO', ),
 			100  => array(
 				'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN',
-				'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHF', 'CNY', 'COP',
-				'CRC', 'CUC', 'CUP', 'CVE', 'CZK', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP',
-				'GBP', 'GEL', 'GGP', 'GHS', 'GIP', 'GMD', 'GTQ', 'GYD', 'HKD', 'HNL', 'HRK', 'HTG', 'HUF', 'IDR',
-				'ILS', 'IMP', 'INR', 'IRR', 'ISK', 'JEP', 'JMD', 'JOD', 'KES', 'KGS', 'KHR', 'KPW', 'KYD', 'KZT',
+				'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BWP', 'BZD', 'CAD', 'CDF', 'CHF', 'CNY', 'COP',
+				'CRC', 'CVE', 'CZK', 'DKK', 'DOP', 'DZD', 'EGP', 'ETB', 'EUR', 'FJD', 'FKP',
+				'GBP', 'GEL', 'GIP', 'GMD', 'GTQ', 'GYD', 'HKD', 'HNL', 'HRK', 'HTG', 'HUF', 'IDR',
+				'ILS', 'INR', 'ISK', 'JMD', 'KES', 'KGS', 'KHR', 'KYD', 'KZT',
 				'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'MAD', 'MDL', 'MKD', 'MMK', 'MNT', 'MOP', 'MUR', 'MVR', 'MWK',
 				'MXN', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR',
-				'PLN', 'PRB', 'QAR', 'RON', 'RSD', 'RUB', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLL',
-				'SOS', 'SRD', 'SSP', 'STD', 'SYP', 'SZL', 'THB', 'TJS', 'TMT', 'TOP', 'TRY', 'TTD', 'TVD', 'TWD',
-				'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'VEF', 'WST', 'XCD', 'YER', 'ZAR', 'ZMW',
+				'PLN', 'QAR', 'RON', 'RSD', 'RUB', 'SAR', 'SBD', 'SCR', 'SEK', 'SGD', 'SHP', 'SLL',
+				'SOS', 'SRD', 'STD', 'SZL', 'THB', 'TJS', 'TOP', 'TRY', 'TTD', 'TWD',
+				'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'WST', 'XCD', 'YER', 'ZAR', 'ZMW',
 			),
-			1000 => array( 'BHD', 'IQD', 'KWD', 'LYD', 'OMR', 'TND' ),
+			1000 => array( 'KWD', ),
 		);
 
 		foreach ( $currency_multipliers as $multiplier => $currencies ) {
