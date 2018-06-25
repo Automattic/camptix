@@ -1852,6 +1852,30 @@ class CampTix_Plugin {
 	 */
 	function get_currencies() {
 		$currencies = apply_filters( 'camptix_currencies', array(
+			'AED' => array(
+				'label' => __( 'United Arab Emirates dirham', 'camptix' ),
+				'format' => '%s AED',
+			),
+			'AFN' => array(
+				'label' => __( 'Afghan afghani', 'camptix' ),
+				'format' => 'AFN %s',
+			),
+			'ALL' => array(
+				'label' => __( 'Albanian lek', 'camptix' ),
+				'format' => 'L %s',
+			),
+			'AMD' => array(
+				'label' => __( 'Armenian dram', 'camptix' ),
+				'format' => 'AMD %s',
+			),
+			'ANG' => array(
+				'label' => __( 'Netherlands Antillean guilder', 'camptix' ),
+				'format' => 'ANG %s',
+			),
+			'AOA' => array(
+				'label' => __( 'Angolan kwanza', 'camptix' ),
+				'format' => 'Kz %s',
+			),
 			'AUD' => array(
 				'label' => __( 'Australian Dollar', 'camptix' ),
 				'locale' => 'en_AU.UTF-8',
@@ -1955,6 +1979,410 @@ class CampTix_Plugin {
 			'ZAR' => array(
 				'label' => __( 'South African Rand', 'camptix' ),
 				'format' => 'R %s',
+			),
+			'DZD'=> array(
+				'label' => __( 'Algerian Dinar', 'camptix' ),
+				'format' => 'DZD %s',
+			),
+			'XCD'=> array(
+				'label' => __( 'East Caribbean Dollar', 'camptix' ),
+				'format' => 'XCD %s',
+			),
+			'ARS'=> array(
+				'label' => __( 'Argentine Peso', 'camptix' ),
+				'format' => 'ARS %s',
+			),
+			'AWG'=> array(
+				'label' => __( 'Aruban Florin', 'camptix' ),
+				'format' => 'AWG %s',
+			),
+			'AZN'=> array(
+				'label' => __( 'Azerbaijan Manat', 'camptix' ),
+				'format' => 'AZN %s',
+			),
+			'BSD'=> array(
+				'label' => __( 'Bahamian Dollar', 'camptix' ),
+				'format' => 'BSD %s',
+			),
+			'BDT'=> array(
+				'label' => __( 'Taka', 'camptix' ),
+				'format' => 'BDT %s',
+			),
+			'BBD'=> array(
+				'label' => __( 'Barbados Dollar', 'camptix' ),
+				'format' => 'BBD %s',
+			),
+			'BZD'=> array(
+				'label' => __( 'Belize Dollar', 'camptix' ),
+				'format' => 'BZD %s',
+			),
+			'XOF'=> array(
+				'label' => __( 'CFA Franc BCEAO', 'camptix' ),
+				'format' => 'XOF %s',
+			),
+			'BMD'=> array(
+				'label' => __( 'Bermudian Dollar', 'camptix' ),
+				'format' => 'BMD %s',
+			),
+			'INR'=> array(
+				'label' => __( 'Indian Rupee', 'camptix' ),
+				'format' => 'INR %s',
+			),
+			'BOB'=> array(
+				'label' => __( 'Boliviano', 'camptix' ),
+				'format' => 'BOB %s',
+			),
+			'BAM'=> array(
+				'label' => __( 'Convertible Mark', 'camptix' ),
+				'format' => 'BAM %s',
+			),
+			'BWP'=> array(
+				'label' => __( 'Pula', 'camptix' ),
+				'format' => 'BWP %s',
+			),
+			'BND'=> array(
+				'label' => __( 'Brunei Dollar', 'camptix' ),
+				'format' => 'BND %s',
+			),
+			'BGN'=> array(
+				'label' => __( 'Bulgarian Lev', 'camptix' ),
+				'format' => 'BGN %s',
+			),
+			'BIF'=> array(
+				'label' => __( 'Burundi Franc', 'camptix' ),
+				'format' => 'BIF %s',
+			),
+			'CVE'=> array(
+				'label' => __( 'Cabo Verde Escudo', 'camptix' ),
+				'format' => 'CVE %s',
+			),
+			'KHR'=> array(
+				'label' => __( 'Riel', 'camptix' ),
+				'format' => 'KHR %s',
+			),
+			'XAF'=> array(
+				'label' => __( 'CFA Franc BEAC', 'camptix' ),
+				'format' => 'XAF %s',
+			),
+			'KYD'=> array(
+				'label' => __( 'Cayman Islands Dollar', 'camptix' ),
+				'format' => 'KYD %s',
+			),
+			'CLP'=> array(
+				'label' => __( 'Chilean Peso', 'camptix' ),
+				'format' => 'CLP %s',
+			),
+			'CNY'=> array(
+				'label' => __( 'Yuan Renminbi', 'camptix' ),
+				'format' => 'CNY %s',
+			),
+			'COP'=> array(
+				'label' => __( 'Colombian Peso', 'camptix' ),
+				'format' => 'COP %s',
+			),
+			'KMF'=> array(
+				'label' => __( 'Comorian Franc ', 'camptix' ),
+				'format' => 'KMF %s',
+			),
+			'CDF'=> array(
+				'label' => __( 'Congolese Franc', 'camptix' ),
+				'format' => 'CDF %s',
+			),
+			'CRC'=> array(
+				'label' => __( 'Costa Rican Colon', 'camptix' ),
+				'format' => 'CRC %s',
+			),
+			'HRK'=> array(
+				'label' => __( 'Kuna', 'camptix' ),
+				'format' => 'HRK %s',
+			),
+			'DJF'=> array(
+				'label' => __( 'Djibouti Franc', 'camptix' ),
+				'format' => 'DJF %s',
+			),
+			'DOP'=> array(
+				'label' => __( 'Dominican Peso', 'camptix' ),
+				'format' => 'DOP %s',
+			),
+			'EGP'=> array(
+				'label' => __( 'Egyptian Pound', 'camptix' ),
+				'format' => 'EGP %s',
+			),
+			'ETB'=> array(
+				'label' => __( 'Ethiopian Birr', 'camptix' ),
+				'format' => 'ETB %s',
+			),
+			'FKP'=> array(
+				'label' => __( 'Falkland Islands Pound', 'camptix' ),
+				'format' => 'FKP %s',
+			),
+			'FJD'=> array(
+				'label' => __( 'Fiji Dollar', 'camptix' ),
+				'format' => 'FJD %s',
+			),
+			'XPF'=> array(
+				'label' => __( 'CFP Franc', 'camptix' ),
+				'format' => 'XPF %s',
+			),
+			'GMD'=> array(
+				'label' => __( 'Dalasi', 'camptix' ),
+				'format' => 'GMD %s',
+			),
+			'GEL'=> array(
+				'label' => __( 'Lari', 'camptix' ),
+				'format' => 'GEL %s',
+			),
+			'GIP'=> array(
+				'label' => __( 'Gibraltar Pound', 'camptix' ),
+				'format' => 'GIP %s',
+			),
+			'GTQ'=> array(
+				'label' => __( 'Quetzal', 'camptix' ),
+				'format' => 'GTQ %s',
+			),
+			'GNF'=> array(
+				'label' => __( 'Guinean Franc', 'camptix' ),
+				'format' => 'GNF %s',
+			),
+			'GYD'=> array(
+				'label' => __( 'Guyana Dollar', 'camptix' ),
+				'format' => 'GYD %s',
+			),
+			'HTG'=> array(
+				'label' => __( 'Gourde', 'camptix' ),
+				'format' => 'HTG %s',
+			),
+			'HNL'=> array(
+				'label' => __( 'Lempira', 'camptix' ),
+				'format' => 'HNL %s',
+			),
+			'ISK'=> array(
+				'label' => __( 'Iceland Krona', 'camptix' ),
+				'format' => 'ISK %s',
+			),
+			'IDR'=> array(
+				'label' => __( 'Rupiah', 'camptix' ),
+				'format' => 'IDR %s',
+			),
+			'JMD'=> array(
+				'label' => __( 'Jamaican Dollar', 'camptix' ),
+				'format' => 'JMD %s',
+			),
+			'KZT'=> array(
+				'label' => __( 'Tenge', 'camptix' ),
+				'format' => 'KZT %s',
+			),
+			'KES'=> array(
+				'label' => __( 'Kenyan Shilling', 'camptix' ),
+				'format' => 'KES %s',
+			),
+			'KRW'=> array(
+				'label' => __( 'Won', 'camptix' ),
+				'format' => 'KRW %s',
+			),
+			'KGS'=> array(
+				'label' => __( 'Som', 'camptix' ),
+				'format' => 'KGS %s',
+			),
+			'LAK'=> array(
+				'label' => __( 'Lao Kip', 'camptix' ),
+				'format' => 'LAK %s',
+			),
+			'LBP'=> array(
+				'label' => __( 'Lebanese Pound', 'camptix' ),
+				'format' => 'LBP %s',
+			),
+			'LSL'=> array(
+				'label' => __( 'Loti', 'camptix' ),
+				'format' => 'LSL %s',
+			),
+			'LRD'=> array(
+				'label' => __( 'Liberian Dollar', 'camptix' ),
+				'format' => 'LRD %s',
+			),
+			'MOP'=> array(
+				'label' => __( 'Pataca', 'camptix' ),
+				'format' => 'MOP %s',
+			),
+			'MKD'=> array(
+				'label' => __( 'Denar', 'camptix' ),
+				'format' => 'MKD %s',
+			),
+			'MGA'=> array(
+				'label' => __( 'Malagasy Ariary', 'camptix' ),
+				'format' => 'MGA %s',
+			),
+			'MWK'=> array(
+				'label' => __( 'Malawi Kwacha', 'camptix' ),
+				'format' => 'MWK %s',
+			),
+			'MVR'=> array(
+				'label' => __( 'Rufiyaa', 'camptix' ),
+				'format' => 'MVR %s',
+			),
+			'MUR'=> array(
+				'label' => __( 'Mauritius Rupee', 'camptix' ),
+				'format' => 'MUR %s',
+			),
+			'MDL'=> array(
+				'label' => __( 'Moldovan Leu', 'camptix' ),
+				'format' => 'MDL %s',
+			),
+			'MNT'=> array(
+				'label' => __( 'Tugrik', 'camptix' ),
+				'format' => 'MNT %s',
+			),
+			'MAD'=> array(
+				'label' => __( 'Moroccan Dirham', 'camptix' ),
+				'format' => 'MAD %s',
+			),
+			'MZN'=> array(
+				'label' => __( 'Mozambique Metical', 'camptix' ),
+				'format' => 'MZN %s',
+			),
+			'MMK'=> array(
+				'label' => __( 'Kyat', 'camptix' ),
+				'format' => 'MMK %s',
+			),
+			'NAD'=> array(
+				'label' => __( 'Namibia Dollar', 'camptix' ),
+				'format' => 'NAD %s',
+			),
+			'NPR'=> array(
+				'label' => __( 'Nepalese Rupee', 'camptix' ),
+				'format' => 'NPR %s',
+			),
+			'NIO'=> array(
+				'label' => __( 'Cordoba Oro', 'camptix' ),
+				'format' => 'NIO %s',
+			),
+			'NGN'=> array(
+				'label' => __( 'Naira', 'camptix' ),
+				'format' => 'NGN %s',
+			),
+			'PAB'=> array(
+				'label' => __( 'Balboa', 'camptix' ),
+				'format' => 'PAB %s',
+			),
+			'PGK'=> array(
+				'label' => __( 'Kina', 'camptix' ),
+				'format' => 'PGK %s',
+			),
+			'PYG'=> array(
+				'label' => __( 'Guarani', 'camptix' ),
+				'format' => 'PYG %s',
+			),
+			'PEN'=> array(
+				'label' => __( 'Sol', 'camptix' ),
+				'format' => 'PEN %s',
+			),
+			'QAR'=> array(
+				'label' => __( 'Qatari Rial', 'camptix' ),
+				'format' => 'QAR %s',
+			),
+			'RON'=> array(
+				'label' => __( 'Romanian Leu', 'camptix' ),
+				'format' => 'RON %s',
+			),
+			'RUB'=> array(
+				'label' => __( 'Russian Ruble', 'camptix' ),
+				'format' => 'RUB %s',
+			),
+			'RWF'=> array(
+				'label' => __( 'Rwanda Franc', 'camptix' ),
+				'format' => 'RWF %s',
+			),
+			'SHP'=> array(
+				'label' => __( 'Saint Helena Pound', 'camptix' ),
+				'format' => 'SHP %s',
+			),
+			'WST'=> array(
+				'label' => __( 'Tala', 'camptix' ),
+				'format' => 'WST %s',
+			),
+			'SAR'=> array(
+				'label' => __( 'Saudi Riyal', 'camptix' ),
+				'format' => 'SAR %s',
+			),
+			'RSD'=> array(
+				'label' => __( 'Serbian Dinar', 'camptix' ),
+				'format' => 'RSD %s',
+			),
+			'SCR'=> array(
+				'label' => __( 'Seychelles Rupee', 'camptix' ),
+				'format' => 'SCR %s',
+			),
+			'SLL'=> array(
+				'label' => __( 'Leone', 'camptix' ),
+				'format' => 'SLL %s',
+			),
+			'SBD'=> array(
+				'label' => __( 'Solomon Islands Dollar', 'camptix' ),
+				'format' => 'SBD %s',
+			),
+			'SOS'=> array(
+				'label' => __( 'Somali Shilling', 'camptix' ),
+				'format' => 'SOS %s',
+			),
+			'LKR'=> array(
+				'label' => __( 'Sri Lanka Rupee', 'camptix' ),
+				'format' => 'LKR %s',
+			),
+			'SRD'=> array(
+				'label' => __( 'Surinam Dollar', 'camptix' ),
+				'format' => 'SRD %s',
+			),
+			'SZL'=> array(
+				'label' => __( 'Lilangeni', 'camptix' ),
+				'format' => 'SZL %s',
+			),
+			'TJS'=> array(
+				'label' => __( 'Somoni', 'camptix' ),
+				'format' => 'TJS %s',
+			),
+			'TZS'=> array(
+				'label' => __( 'Tanzanian Shilling', 'camptix' ),
+				'format' => 'TZS %s',
+			),
+			'TOP'=> array(
+				'label' => __( 'Pa’anga', 'camptix' ),
+				'format' => 'TOP %s',
+			),
+			'TTD'=> array(
+				'label' => __( 'Trinidad and Tobago Dollar', 'camptix' ),
+				'format' => 'TTD %s',
+			),
+			'UGX'=> array(
+				'label' => __( 'Uganda Shilling', 'camptix' ),
+				'format' => 'UGX %s',
+			),
+			'UAH'=> array(
+				'label' => __( 'Hryvnia', 'camptix' ),
+				'format' => 'UAH %s',
+			),
+			'UYU'=> array(
+				'label' => __( 'Peso Uruguayo', 'camptix' ),
+				'format' => 'UYU %s',
+			),
+			'UZS'=> array(
+				'label' => __( 'Uzbekistan Sum', 'camptix' ),
+				'format' => 'UZS %s',
+			),
+			'VUV'=> array(
+				'label' => __( 'Vatu', 'camptix' ),
+				'format' => 'VUV %s',
+			),
+			'VND'=> array(
+				'label' => __( 'Dong', 'camptix' ),
+				'format' => 'VND %s',
+			),
+			'YER'=> array(
+				'label' => __( 'Yemeni Rial', 'camptix' ),
+				'format' => 'YER %s',
+			),
+			'ZMW'=> array(
+				'label' => __( 'Zambian Kwacha', 'camptix' ),
+				'format' => 'ZMW %s',
 			),
 		) );
 
