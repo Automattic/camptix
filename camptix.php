@@ -2357,6 +2357,10 @@ class CampTix_Plugin {
 				'label' => __( 'Zambian Kwacha', 'camptix' ),
 				'format' => 'ZMW %s',
 			),
+			'MRO' => array(
+				'label' => __( 'Mauritanian Ouguiya', 'camptix' ),
+				'format' => 'MRO %s',
+			),
 		) );
 
 		uasort( $currencies, array( $this, 'sort_currencies' ) );
