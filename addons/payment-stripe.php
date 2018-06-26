@@ -37,7 +37,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	 */
 	protected $options = array();
 
-	/**wp-
+	/**
 	 * Runs during camptix_init, loads our options and sets some actions.
 	 *
 	 * @see CampTix_Addon
@@ -413,7 +413,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		$statement_descriptor = $camptix->substr_bytes( strip_tags( $this->camptix_options['event_name'] ), 0, 22 );
 
 		$request_args = array(
-			'user-agent' => 'CampTix-Stripe/' . 'addon-test' . ' (https://github.com/dd32/CampTix-Stripe-Payment-Gateway)',
+			'user-agent' => 'CampTix-Stripe/' . $camptix->version . ' (https://github.com/dd32/CampTix-Stripe-Payment-Gateway)',
 
 			'body' => array(
 				'amount'               => $this->get_fractional_unit_amount( $this->camptix_options['currency'], $order['total'] ),
