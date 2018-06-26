@@ -37,7 +37,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	 */
 	protected $options = array();
 
-	/**wp-
+	/**
 	 * Runs during camptix_init, loads our options and sets some actions.
 	 *
 	 * @see CampTix_Addon
