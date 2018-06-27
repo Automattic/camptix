@@ -4,6 +4,10 @@ class CampTix_Currency {
 
 	public $version = 20180627;
 
+	/**
+	 * @return array List of currencies with their labels. We are keeping combination
+	 * of all currencies supported by union of payment gateways to have a single source of truth.
+	 */
 	private static function get_currency_list() {
 		return array(
 			'AED' => array(
@@ -545,14 +549,21 @@ class CampTix_Currency {
 		);
 	}
 
+	/**
+	 * Supported currencies are added via filter by different payment gateway addons/plugins
+	 * Addons should have `$supported_currencies` variable defined with list of currencies that they support in
+	 * ISO format
+	 *
+	 * @return array currency code of all supported currencies.
+	 */
 	private static function get_supported_currency_list() {
-		$supported_currencies = array(
-			'AUD', 'CAD', 'EUR', 'GBP', 'JPY', 'USD', 'NZD', 'CHF', 'HKD', 'SGD', 'SEK', 'DKK', 'PLN', 'NOK', 'HUF',
-			'CZK', 'ILS', 'MXN', 'BRL', 'MYR', 'PHP', 'PKR', 'TWD', 'THB', 'TRY', 'ZAR',
-		);
+		$supported_currencies = array();
 		return apply_filters( 'camptix_supported_currencies', $supported_currencies );
 	}
 
+	/**
+	 * @return array list of currencies with their labels, which are currently supported.
+	 */
 	public static function get_currencies() {
 		// from https://stackoverflow.com/a/4260168/1845153
 		$supported_currency_labels = array_intersect_key(
