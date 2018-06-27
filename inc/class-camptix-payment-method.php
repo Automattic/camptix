@@ -9,7 +9,7 @@ abstract class CampTix_Payment_Method extends CampTix_Addon {
 	public $id = false;
 	public $name = false;
 	public $description = false;
-	public $supported_currencies = false;
+	public $supported_currencies = array();
 	public $supported_features = array(
 		'refund-single' => false,
 		'refund-all' => false,
@@ -47,6 +47,17 @@ abstract class CampTix_Payment_Method extends CampTix_Addon {
 		}
 
 		$this->camptix_options = $camptix->get_options();
+		if (
+				array_key_exists( 'payment_methods', $this->camptix_options )
+				&& array_key_exists( $this->id, $this->camptix_options['payment_methods'] )
+				&& $this->camptix_options['payment_methods'][$this->id]
+		) {
+			add_filter( 'camptix_supported_currencies', array($this, 'add_supported_currency' ) );
+		}
+	}
+
+	function add_supported_currency( $currencies ) {
+		return array_merge( $this->supported_currencies, $currencies );
 	}
 
 	/**
