@@ -91,11 +91,19 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		}
 
 		$credentials  = $this->get_api_credentials();
-		$description  = '';
-		$ticket_count = array_sum( wp_list_pluck( $camptix->order['items'], 'quantity' ) );
+
+		$item_summary = array();
 		foreach ( $camptix->order['items'] as $item ) {
-			$description .= ( $ticket_count > 1 ? (int) $item['quantity'] . 'x ' : '' ) . $item['name'] . "\n";
+			$item_summary[] = sprintf(
+				/* translators: 1: Name of ticket; 2: Quantity of ticket; */
+				__( '%1$s x %2$d', 'camptix' ),
+				esc_js( $item['name'] ),
+				absint( $item['quantity'] )
+			);
 		}
+
+		/* translators: used between list items, there is a space after the comma */
+		$description = implode( __( ', ', 'camptix' ), $item_summary );
 
 		wp_register_script( 'stripe-checkout', 'https://checkout.stripe.com/checkout.js', array(), false, true );
 		wp_enqueue_script( 'camptix-stripe', plugins_url( 'camptix-stripe.js', __DIR__ . '/camptix-stripe-gateway.php' ), array( 'stripe-checkout', 'jquery' ), '20170322', true );
@@ -354,15 +362,15 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		$stripe        = new CampTix_Stripe_API_Client( $payment_token, $credentials['api_secret_key'] );
 		$amount        = $this->get_fractional_unit_amount( $this->camptix_options['currency'], $order['total'] );
 		$source        = wp_unslash( $_POST['tix_stripe_token'] );
+		$description   = $this->camptix_options['event_name'];
 		$receipt_email = isset( $_POST['tix_stripe_reciept_email'] ) ? wp_unslash( $_POST['tix_stripe_reciept_email'] ) : false;
+		$metadata      = array();
 
-		$description  = '';
-		$ticket_count = array_sum( wp_list_pluck( $order['items'], 'quantity' ) );
 		foreach ( $order['items'] as $item ) {
-			$description .= ( $ticket_count > 1 ? (int) $item['quantity'] . 'x ' : '' ) . $item['name'] . "\n";
+			$metadata[ $item['name'] ] = $item['quantity'];
 		}
 
-		$charge = $stripe->request_charge( $amount, $source, $description, $receipt_email );
+		$charge = $stripe->request_charge( $amount, $source, $description, $receipt_email, $metadata );
 
 		if ( is_wp_error( $charge ) ) {
 			// A failure happened, since we don't expose the exact details to the user we'll catch every failure here.
@@ -663,7 +671,7 @@ class CampTix_Stripe_API_Client {
 	 *
 	 * @return array|WP_Error
 	 */
-	public function request_charge( $amount, $source, $description, $receipt_email ) {
+	public function request_charge( $amount, $source, $description, $receipt_email, $metadata = array() ) {
 		$statement_descriptor = sanitize_text_field( $description );
 		$statement_descriptor = str_replace( array( '<', '>', '"', "'" ), '', $statement_descriptor );
 		$statement_descriptor = mb_substr( $statement_descriptor, 0, 22 );
@@ -676,6 +684,10 @@ class CampTix_Stripe_API_Client {
 			'source'               => $source,
 			'receipt_email'        => $receipt_email,
 		);
+
+		if ( is_array( $metadata ) && ! empty( $metadata ) ) {
+			$args['metadata'] = $metadata;
+		}
 
 		return $this->send_request( 'charge', $args );
 	}
