@@ -353,8 +353,8 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 
 		// One final check before charging the user.
 		if ( ! $camptix->verify_order( $order ) ) {
-			$camptix->log( "Dying because couldn't verify order", $order['attendee_id'] );
-			wp_die( 'Something went wrong, order is no longer available.' );
+			$camptix->log( "Could not verify order", $order['attendee_id'], array( 'payment_token' => $payment_token ), 'stripe' );
+			wp_die( 'Something went wrong, order is not available.' );
 		}
 
 		$credentials = $this->get_api_credentials();
@@ -377,12 +377,15 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			// Remove the POST param of the token so it's not used again.
 			unset( $_POST['tix_stripe_token'] );
 
-			$camptix->log( 'Stripe charge failed', null, $charge, 'stripe' );
+			$camptix->log( 'Stripe charge failed', $order['attendee_id'], $charge, 'stripe' );
 
 			return $camptix->payment_result(
 				$payment_token,
 				CampTix_Plugin::PAYMENT_STATUS_FAILED,
-				$charge
+				array(
+					'errors'     => $charge->errors,
+					'error_data' => $charge->error_data,
+				)
 			);
 		}
 
@@ -461,20 +464,36 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		/** @var CampTix_Plugin $camptix */
 		global $camptix;
 
-		$credentials = $this->get_api_credentials();
-
-		$stripe         = new CampTix_Stripe_API_Client( $payment_token, $credentials['api_secret_key'] );
+		$order          = $this->get_order( $payment_token );
 		$transaction_id = $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' );
 
-		$refund = $stripe->request_refund( $transaction_id );
+		if ( empty( $order ) || ! $transaction_id ) {
+			$camptix->log( 'Could not refund because could not find order', null, array( 'payment_token' => $payment_token ), 'stripe' );
+			wp_die( 'Something went wrong, order could not be found.' );
+		}
+
+		$metadata = array(
+			'Refund reason' => filter_input( INPUT_POST, 'tix_refund_request_reason', FILTER_SANITIZE_STRING ),
+		);
+
+		// Create a new Idempotency token for the refund request.
+		// The same token can't be used for both a charge and a refund.
+		$idempotency_token = md5( 'tix-idempotency-token' . $payment_token . time() . rand( 1, 9999 ) );
+		$credentials       = $this->get_api_credentials();
+
+		$stripe = new CampTix_Stripe_API_Client( $idempotency_token, $credentials['api_secret_key'] );
+		$refund = $stripe->request_refund( $transaction_id, $metadata );
 
 		if ( is_wp_error( $refund ) ) {
-			$camptix->log( 'Stripe refund failed', null, $refund, 'stripe' );
+			$camptix->log( 'Stripe refund failed', $order['attendee_id'], $refund, 'stripe' );
 
 			return $camptix->payment_result(
 				$payment_token,
 				CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED,
-				$refund
+				array(
+					'errors'     => $refund->errors,
+					'error_data' => $refund->error_data,
+				)
 			);
 		}
 
@@ -699,10 +718,15 @@ class CampTix_Stripe_API_Client {
 	 *
 	 * @return array|WP_Error
 	 */
-	public function request_refund( $transaction_id ) {
+	public function request_refund( $transaction_id, $metadata = array() ) {
 		$args = array(
 			'charge' => $transaction_id,
+			'reason' => 'requested_by_customer',
 		);
+
+		if ( is_array( $metadata ) && ! empty( $metadata ) ) {
+			$args['metadata'] = $metadata;
+		}
 
 		return $this->send_request( 'refund', $args );
 	}
