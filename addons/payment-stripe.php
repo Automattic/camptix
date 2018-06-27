@@ -664,7 +664,7 @@ class CampTix_Stripe_API_Client {
 	 * @return array|WP_Error
 	 */
 	public function request_charge( $amount, $source, $description, $receipt_email ) {
-		$statement_descriptor = sanitize_text_field( $this->description );
+		$statement_descriptor = sanitize_text_field( $description );
 		$statement_descriptor = str_replace( array( '<', '>', '"', "'" ), '', $statement_descriptor );
 		$statement_descriptor = mb_substr( $statement_descriptor, 0, 22 );
 
