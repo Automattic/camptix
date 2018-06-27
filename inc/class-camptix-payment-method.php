@@ -56,6 +56,11 @@ abstract class CampTix_Payment_Method extends CampTix_Addon {
 		}
 	}
 
+	/**
+	 * @param $currencies
+	 *
+	 * @return array Add currencies supported by this plugin to the global list of currencies
+	 */
 	function add_supported_currency( $currencies ) {
 		return array_merge( $this->supported_currencies, $currencies );
 	}
