@@ -241,7 +241,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Get an array of predefined PayPal accounts
+	 * Get an array of predefined Stripe accounts
 	 *
 	 * Runs an empty array through a filter, where one might specify a list of
 	 * predefined PayPal credentials, through a plugin or something.
@@ -323,13 +323,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Process a checkout request
-	 *
-	 * This method is the fire starter. It's called when the user initiates
-	 * a checkout process with the selected payment method. In PayPal's case,
-	 * if everything's okay, we redirect to the PayPal Express Checkout page with
-	 * the details of our transaction. If something's wrong, we return a failed
-	 * result back to CampTix immediately.
+	 * Submits a single, user-initiated charge request to Stripe and returns the result.
 	 *
 	 * @param string $payment_token
 	 *
@@ -445,7 +439,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Submits a single, user-initiated refund request to PayPal and returns the result
+	 * Submits a single, user-initiated refund request to Stripe and returns the result.
 	 *
 	 * @param string $payment_token
 	 *
