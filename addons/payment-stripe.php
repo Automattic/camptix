@@ -414,12 +414,14 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		global $camptix;
 
 		if ( CampTix_Plugin::PAYMENT_STATUS_FAILED === $result && ! empty( $data ) ) {
-			if ( is_wp_error( $data ) ) {
+			if ( isset( $data['errors'] ) ) {
+				$codes = array_keys( $data['errors'] );
+
 				$camptix->error(
 					sprintf(
 						__( 'Your payment has failed: %1$s (%2$s)', 'camptix' ),
-						esc_html( $data->get_error_message() ),
-						esc_html( $data->get_error_code() )
+						esc_html( $data['errors'][ $codes[0] ][0] ),
+						esc_html( $codes[0] )
 					)
 				);
 			} elseif ( isset( $data['transaction_details']['raw']['error'] ) ) {
@@ -624,7 +626,7 @@ class CampTix_Stripe_API_Client {
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( 200 !== $response_code ) {
-			if ( ! is_array( $response_body ) || ! isset( $response_body['type'] ) ) {
+			if ( ! is_array( $response_body ) || ! isset( $response_body['error'] ) ) {
 				return new WP_Error(
 					'camptix_stripe_unexpected_response',
 					__( 'An unexpected error occurred.', 'camptix' ),
@@ -632,7 +634,7 @@ class CampTix_Stripe_API_Client {
 				);
 			}
 
-			return $this->handle_error( $response_code, $response_body );
+			return $this->handle_error( $response_code, $response_body['error'] );
 		}
 
 		return $response_body;
