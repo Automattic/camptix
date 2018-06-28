@@ -40,16 +40,16 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	 * @see CampTix_Addon
 	 */
 	public function camptix_init() {
-		$this->options = array_merge( array(
-			'api_secret_key' => '',
-			'api_public_key' => '',
-			'api_predef'     => '',
-		), $this->get_payment_options() );
-
-		$credentials = $this->get_api_credentials();
+		$this->options = array_merge(
+			array(
+				'api_secret_key' => '',
+				'api_public_key' => '',
+				'api_predef'     => '',
+			),
+			$this->get_payment_options()
+		);
 
 		add_filter( 'camptix_register_registration_info_header', array( $this, 'camptix_register_registration_info_header' ) );
-
 		add_filter( 'camptix_payment_result', array( $this, 'camptix_payment_result' ), 10, 3 );
 	}
 
@@ -91,11 +91,19 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		}
 
 		$credentials  = $this->get_api_credentials();
-		$description  = '';
-		$ticket_count = array_sum( wp_list_pluck( $camptix->order['items'], 'quantity' ) );
+
+		$item_summary = array();
 		foreach ( $camptix->order['items'] as $item ) {
-			$description .= ( $ticket_count > 1 ? (int) $item['quantity'] . 'x ' : '' ) . $item['name'] . "\n";
+			$item_summary[] = sprintf(
+				/* translators: 1: Name of ticket; 2: Quantity of ticket; */
+				__( '%1$s x %2$d', 'camptix' ),
+				esc_js( $item['name'] ),
+				absint( $item['quantity'] )
+			);
 		}
+
+		/* translators: used between list items, there is a space after the comma */
+		$description = implode( __( ', ', 'camptix' ), $item_summary );
 
 		wp_register_script( 'stripe-checkout', 'https://checkout.stripe.com/checkout.js', array(), false, true );
 		wp_enqueue_script( 'camptix-stripe', plugins_url( 'camptix-stripe.js', __DIR__ . '/camptix-stripe-gateway.php' ), array( 'stripe-checkout', 'jquery' ), '20170322', true );
@@ -241,7 +249,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Get an array of predefined PayPal accounts
+	 * Get an array of predefined Stripe accounts
 	 *
 	 * Runs an empty array through a filter, where one might specify a list of
 	 * predefined PayPal credentials, through a plugin or something.
@@ -323,25 +331,19 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Process a checkout request
-	 *
-	 * This method is the fire starter. It's called when the user initiates
-	 * a checkout process with the selected payment method. In PayPal's case,
-	 * if everything's okay, we redirect to the PayPal Express Checkout page with
-	 * the details of our transaction. If something's wrong, we return a failed
-	 * result back to CampTix immediately.
+	 * Submits a single, user-initiated charge request to Stripe and returns the result.
 	 *
 	 * @param string $payment_token
 	 *
 	 * @return int One of the CampTix_Plugin::PAYMENT_STATUS_{status} constants
 	 */
 	public function payment_checkout( $payment_token ) {
-		/** @var CampTix_Plugin $camptix */
-		global $camptix;
-
 		if ( empty( $payment_token ) ) {
 			return false;
 		}
+
+		/** @var CampTix_Plugin $camptix */
+		global $camptix;
 
 		if ( ! in_array( $this->camptix_options['currency'], $this->supported_currencies ) ) {
 			wp_die( __( 'The selected currency is not supported by this payment method.', 'camptix-stripe-payment-gateway' ) );
@@ -351,37 +353,48 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 
 		// One final check before charging the user.
 		if ( ! $camptix->verify_order( $order ) ) {
-			$camptix->log( "Dying because couldn't verify order", $order['attendee_id'] );
-			wp_die( 'Something went wrong, order is no longer available.' );
+			$camptix->log( "Could not verify order", $order['attendee_id'], array( 'payment_token' => $payment_token ), 'stripe' );
+			wp_die( 'Something went wrong, order is not available.' );
 		}
 
-		try {
-			$token        = wp_unslash( $_POST['tix_stripe_token'] );
-			$description  = '';
-			$ticket_count = array_sum( wp_list_pluck( $camptix->order['items'], 'quantity' ) );
-			foreach ( $camptix->order['items'] as $item ) {
-				$description .= ( $ticket_count > 1 ? (int) $item['quantity'] . 'x ' : '' ) . $item['name'] . "\n";
-			}
+		$credentials = $this->get_api_credentials();
 
-			$statement_descriptor = $camptix->substr_bytes( strip_tags( $this->camptix_options['event_name'] ), 0, 22 );
-			$receipt_email        = isset( $_POST['tix_stripe_reciept_email'] ) ? wp_unslash( $_POST['tix_stripe_reciept_email'] ) : false;
-			$charge               = $this->charge( $camptix->order, $payment_token, $token, $receipt_email );
-		} catch ( Exception $e ) {
+		$stripe        = new CampTix_Stripe_API_Client( $payment_token, $credentials['api_secret_key'] );
+		$amount        = $this->get_fractional_unit_amount( $this->camptix_options['currency'], $order['total'] );
+		$source        = wp_unslash( $_POST['tix_stripe_token'] );
+		$description   = $this->camptix_options['event_name'];
+		$receipt_email = isset( $_POST['tix_stripe_reciept_email'] ) ? wp_unslash( $_POST['tix_stripe_reciept_email'] ) : false;
+		$metadata      = array();
+
+		foreach ( $order['items'] as $item ) {
+			$metadata[ $item['name'] ] = $item['quantity'];
+		}
+
+		$charge = $stripe->request_charge( $amount, $source, $description, $receipt_email, $metadata );
+
+		if ( is_wp_error( $charge ) ) {
 			// A failure happened, since we don't expose the exact details to the user we'll catch every failure here.
-			// Remvoe the POST param of the token so it's not used again.
+			// Remove the POST param of the token so it's not used again.
 			unset( $_POST['tix_stripe_token'] );
 
-			return $camptix->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_FAILED, array(
-				'exception' => $e->getMessage(),
-			) );
+			$camptix->log( 'Stripe charge failed', $order['attendee_id'], $charge, 'stripe' );
+
+			return $camptix->payment_result(
+				$payment_token,
+				CampTix_Plugin::PAYMENT_STATUS_FAILED,
+				array(
+					'errors'     => $charge->errors,
+					'error_data' => $charge->error_data,
+				)
+			);
 		}
 
 		$payment_data = array(
-			'transaction_id'      => $charge->id,
+			'transaction_id'      => $charge['id'],
 			'transaction_details' => array(
 				'raw' => array(
-					'token'  => $token,
-					'charge' => (array) $charge,
+					'token'  => $source,
+					'charge' => $charge,
 				),
 			),
 		);
@@ -390,85 +403,48 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Charge the attendee for their ticket via Stripe's API
-	 *
-	 * @param array  $order
-	 * @param string $payment_token
-	 * @param string $token_id
-	 * @param string $receipt_email
-	 *
-	 * @return object
-	 * @throws Exception
-	 */
-	protected function charge( $order, $payment_token, $token_id, $receipt_email ) {
-		/** @var CampTix_Plugin $camptix */
-		global $camptix;
-
-		$credentials          = $this->get_api_credentials();
-		$statement_descriptor = $camptix->substr_bytes( strip_tags( $this->camptix_options['event_name'] ), 0, 22 );
-
-		$request_args = array(
-			'user-agent' => 'CampTix-Stripe/' . CampTix_Stripe::VERSION . ' (https://github.com/dd32/CampTix-Stripe-Payment-Gateway)',
-
-			'body' => array(
-				'amount'               => $this->get_fractional_unit_amount( $this->camptix_options['currency'], $order['total'] ),
-				'currency'             => $this->camptix_options['currency'],
-				'description'          => $this->camptix_options['event_name'],
-				'statement_descriptor' => $statement_descriptor,
-				'source'               => $token_id,
-				'receipt_email'        => $receipt_email,
-			),
-
-			'headers' => array(
-				'Authorization'   => 'Bearer ' . $credentials['api_secret_key'],
-				'Idempotency-Key' => $payment_token,
-			),
-		);
-
-		$response = wp_remote_post( 'https://api.stripe.com/v1/charges', $request_args );
-
-		if ( is_wp_error( $response ) ) {
-			$camptix->log( 'Error during Charge: ' . $response->get_error_message(), null, $response, 'stripe' );
-			throw new Exception( $response->get_error_message() );
-		}
-
-		$body = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( empty( $body->id ) || empty( $body->paid ) || ! $body->paid ) {
-			$camptix->log( 'Error during Charge: Unexpected response.', null, $response, 'stripe' );
-			throw new Exception( 'Unexpected response, missing charge ID.' );
-		}
-
-		return $body;
-	}
-
-	/**
-	 * Adds a failure reason / code to the post-payment screen whne the payment fails.
+	 * Adds a failure reason / code to the post-payment screen when the payment fails.
 	 *
 	 * @param string $payment_token
 	 * @param int    $result
-	 * @param mixed  $data
+	 * @param array|WP_Error  $data
 	 */
 	public function camptix_payment_result( $payment_token, $result, $data ) {
+		/** @var CampTix_Plugin $camptix */
 		global $camptix;
 
-		if ( $camptix::PAYMENT_STATUS_FAILED == $result && ! empty( $data['transaction_details']['raw']['error'] ) ) {
+		if ( CampTix_Plugin::PAYMENT_STATUS_FAILED === $result && ! empty( $data ) ) {
+			if ( isset( $data['errors'] ) ) {
+				$codes = array_keys( $data['errors'] );
 
-			$error_data = $data['transaction_details']['raw']['error'];
+				$camptix->error(
+					sprintf(
+						__( 'Your payment has failed: %1$s (%2$s)', 'camptix' ),
+						esc_html( $data['errors'][ $codes[0] ][0] ),
+						esc_html( $codes[0] )
+					)
+				);
+			} elseif ( isset( $data['transaction_details']['raw']['error'] ) ) {
+				$error_data = $data['transaction_details']['raw']['error'];
 
-			$message = $error_data['message'];
-			$code    = $error_data['code'];
-			if ( isset( $error_data['decline_code'] ) ) {
-				$code .= ' ' . $error_data['decline_code'];
+				$message = $error_data['message'];
+				$code    = $error_data['code'];
+				if ( isset( $error_data['decline_code'] ) ) {
+					$code .= ' ' . $error_data['decline_code'];
+				}
+
+				$camptix->error(
+					sprintf(
+						__( 'Your payment has failed: %1$s (%2$s)', 'camptix' ),
+						esc_html( $message ),
+						esc_html( $code )
+					)
+				);
+			} else {
+				$camptix->error(
+					__( 'Your payment has failed.', 'camptix' )
+				);
 			}
-
-			$camptix->error(
-				sprintf(
-					__( 'Your payment has failed: %1$s (%2$s)', 'camptix-stripe-payment-gateway' ),
-					$message,
-					$code
-				)
-			);
 
 			// Unfortunately there's no way to remove the following failure message, but at least ours will display first:
 			// A payment error has occurred, looks like chosen payment method is not responding. Please try again later.
@@ -476,71 +452,284 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	}
 
 	/**
-	 * Submits a single, user-initiated refund request to PayPal and returns the result
+	 * Submits a single, user-initiated refund request to Stripe and returns the result.
 	 *
 	 * @param string $payment_token
 	 *
 	 * @return int One of the CampTix_Plugin::PAYMENT_STATUS_{status} constants
 	 */
 	public function payment_refund( $payment_token ) {
-		/** @var $camptix CampTix_Plugin */
+		if ( empty( $payment_token ) ) {
+			return false;
+		}
+
+		/** @var CampTix_Plugin $camptix */
 		global $camptix;
 
-		$result = $this->send_refund_request( $payment_token );
+		$order          = $this->get_order( $payment_token );
+		$transaction_id = $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' );
 
-		if ( CampTix_Plugin::PAYMENT_STATUS_REFUNDED != $result['status'] ) {
-			$error_message = $result['refund_transaction_details'];
+		if ( empty( $order ) || ! $transaction_id ) {
+			$camptix->log( 'Could not refund because could not find order', null, array( 'payment_token' => $payment_token ), 'stripe' );
+			wp_die( 'Something went wrong, order could not be found.' );
+		}
 
-			if ( ! empty( $error_message ) ) {
-				$camptix->error( sprintf( __( 'Stripe error: %s', 'camptix-stripe-payment-gateway' ), $error_message ) );
-			}
+		$metadata = array(
+			'Refund reason' => filter_input( INPUT_POST, 'tix_refund_request_reason', FILTER_SANITIZE_STRING ),
+		);
+
+		// Create a new Idempotency token for the refund request.
+		// The same token can't be used for both a charge and a refund.
+		$idempotency_token = md5( 'tix-idempotency-token' . $payment_token . time() . rand( 1, 9999 ) );
+		$credentials       = $this->get_api_credentials();
+
+		$stripe = new CampTix_Stripe_API_Client( $idempotency_token, $credentials['api_secret_key'] );
+		$refund = $stripe->request_refund( $transaction_id, $metadata );
+
+		if ( is_wp_error( $refund ) ) {
+			$camptix->log( 'Stripe refund failed', $order['attendee_id'], $refund, 'stripe' );
+
+			return $camptix->payment_result(
+				$payment_token,
+				CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED,
+				array(
+					'errors'     => $refund->errors,
+					'error_data' => $refund->error_data,
+				)
+			);
 		}
 
 		$refund_data = array(
-			'transaction_id'             => $result['transaction_id'],
-			'refund_transaction_id'      => $result['refund_transaction_id'],
+			'transaction_id'             => $refund['charge'],
+			'refund_transaction_id'      => $refund['id'],
 			'refund_transaction_details' => array(
-				'raw' => $result['refund_transaction_details'],
+				'raw' => array(
+					'refund_transaction_id' => $refund['id'],
+					'refund'                => $refund,
+				),
 			),
 		);
 
-		return $camptix->payment_result( $payment_token, $result['status'], $refund_data );
-	}
-
-	/**
-	 * Sends a request to PayPal to refund a transaction
-	 *
-	 * @param string $payment_token
-	 *
-	 * @return array
-	 */
-	public function send_refund_request( $payment_token ) {
-		/** @var $camptix CampTix_Plugin */
-		global $camptix;
-
-		$result = array(
-			'token'          => $payment_token,
-			'transaction_id' => $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' ),
-		);
-
-		try {
-			$charge = \Stripe\Refund::create( array(
-				'charge' => $result['transaction_id'],
-			) );
-
-			$result['refund_transaction_id']      = $charge->id;
-			$result['refund_transaction_details'] = $charge;
-			$result['status']                     = CampTix_Plugin::PAYMENT_STATUS_REFUNDED;
-		} catch ( Exception $e ) {
-			$result['refund_transaction_id']      = false;
-			$result['refund_transaction_details'] = $e->getMessage();
-			$result['status']                     = CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED;
-
-			$camptix->log( 'Error during RefundTransaction.', null, $e->getMessage() );
-		}
-
-		return $result;
+		return $camptix->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_REFUNDED, $refund_data );
 	}
 }
 
 camptix_register_addon( 'CampTix_Payment_Method_Stripe' );
+
+/**
+ * Class CampTix_Stripe_API_Client
+ *
+ * A simple client for the Stripe API to handle the simple needs of CampTix.
+ */
+class CampTix_Stripe_API_Client {
+	/**
+	 * @var string
+	 */
+	protected $payment_token = '';
+
+	/**
+	 * @var string
+	 */
+	protected $api_secret_key = '';
+
+	/**
+	 * @var string
+	 */
+	protected $user_agent = '';
+
+	/**
+	 * @var string
+	 */
+	protected $currency = '';
+
+	/**
+	 * CampTix_Stripe_API_Client constructor.
+	 *
+	 * @param string $payment_token
+	 * @param string $api_secret_key
+	 */
+	public function __construct( $payment_token, $api_secret_key ) {
+		/* @var CampTix_Plugin $camptix */
+		global $camptix;
+
+		$camptix_options = $camptix->get_options();
+
+		$this->payment_token  = $payment_token;
+		$this->api_secret_key = $api_secret_key;
+		$this->user_agent     = 'CampTix/' . $camptix->version;
+		$this->currency       = $camptix_options['currency'];
+	}
+
+	/**
+	 * Get the API's endpoint URL for the given request type.
+	 *
+	 * @param string $request_type 'charge' or 'refund'.
+	 *
+	 * @return string
+	 */
+	protected function get_request_url( $request_type ) {
+		$request_url = '';
+
+		$api_base = 'https://api.stripe.com/';
+
+		switch ( $request_type ) {
+			case 'charge' :
+				$request_url = $api_base . 'v1/charges';
+				break;
+			case 'refund' :
+				$request_url = $api_base . 'v1/refunds';
+				break;
+		}
+
+		return $request_url;
+	}
+
+	/**
+	 * Send a request to the API and do basic processing on the response.
+	 *
+	 * @param string $type The type of API request. 'charge' or 'refund'.
+	 * @param array  $args Parameters that will populate the body of the request.
+	 *
+	 * @return array|WP_Error
+	 */
+	protected function send_request( $type, $args ) {
+		$request_url = $this->get_request_url( $type );
+
+		if ( ! $request_url ) {
+			return new WP_Error(
+				'camptix_stripe_invalid_request_type',
+				sprintf(
+					__( '%s is not a valid request type.', 'camptix' ),
+					esc_html( $type )
+				)
+			);
+		}
+
+		$request_args = array(
+			'user-agent' => $this->user_agent,
+
+			'body' => $args,
+
+			'headers' => array(
+				'Authorization'   => 'Bearer ' . $this->api_secret_key,
+				'Idempotency-Key' => $this->payment_token,
+			),
+		);
+
+		$response = wp_remote_post( $request_url, $request_args );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $response_code ) {
+			if ( ! is_array( $response_body ) || ! isset( $response_body['error'] ) ) {
+				return new WP_Error(
+					'camptix_stripe_unexpected_response',
+					__( 'An unexpected error occurred.', 'camptix' ),
+					$response
+				);
+			}
+
+			return $this->handle_error( $response_code, $response_body['error'] );
+		}
+
+		return $response_body;
+	}
+
+	/**
+	 * Parse error codes and messages from the API.
+	 *
+	 * @param int   $error_code
+	 * @param array $error_content
+	 *
+	 * @return WP_Error
+	 */
+	protected function handle_error( $error_code, $error_content ) {
+		$error = new WP_Error();
+
+		switch ( $error_content['type'] ) {
+			case 'card_error' :
+				if ( isset( $error_content['message'] ) ) {
+					$reason = $error_content['message'];
+				} elseif ( isset( $error_content['decline_code'] ) ) {
+					$reason = $error_content['decline_code'];
+				} elseif ( isset( $error_content['code'] ) ) {
+					$reason = $error_content['code'];
+				} else {
+					$reason = __( 'Unspecified error', 'camptix' );
+				}
+
+				$message = sprintf(
+					__( 'Card error: %s', 'camptix' ),
+					esc_html( $reason )
+				);
+				break;
+			default :
+				$message = sprintf( __( '%d error: %s', 'camptix' ), $error_code, esc_html( $error_content['type'] ) );
+				break;
+		}
+
+		$error->add(
+			sprintf( 'camptix_stripe_request_error_%d', $error_code ),
+			$message,
+			$error_content
+		);
+
+		return $error;
+	}
+
+	/**
+	 * Send a charge request to the API.
+	 *
+	 * @param int    $amount        The amount to charge. Should already be converted to its fractional unit.
+	 * @param string $source        The Stripe token.
+	 * @param string $description   The description of the transaction that the charge is for.
+	 * @param string $receipt_email The email address to send the receipt to.
+	 *
+	 * @return array|WP_Error
+	 */
+	public function request_charge( $amount, $source, $description, $receipt_email, $metadata = array() ) {
+		$statement_descriptor = sanitize_text_field( $description );
+		$statement_descriptor = str_replace( array( '<', '>', '"', "'" ), '', $statement_descriptor );
+		$statement_descriptor = mb_substr( $statement_descriptor, 0, 22 );
+
+		$args = array(
+			'amount'               => $amount,
+			'currency'             => $this->currency,
+			'description'          => $description,
+			'statement_descriptor' => $statement_descriptor,
+			'source'               => $source,
+			'receipt_email'        => $receipt_email,
+		);
+
+		if ( is_array( $metadata ) && ! empty( $metadata ) ) {
+			$args['metadata'] = $metadata;
+		}
+
+		return $this->send_request( 'charge', $args );
+	}
+
+	/**
+	 * Send a refund request to the API.
+	 *
+	 * @param string $transaction_id
+	 *
+	 * @return array|WP_Error
+	 */
+	public function request_refund( $transaction_id, $metadata = array() ) {
+		$args = array(
+			'charge' => $transaction_id,
+			'reason' => 'requested_by_customer',
+		);
+
+		if ( is_array( $metadata ) && ! empty( $metadata ) ) {
+			$args['metadata'] = $metadata;
+		}
+
+		return $this->send_request( 'refund', $args );
+	}
+}
