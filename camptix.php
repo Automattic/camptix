@@ -61,9 +61,6 @@ class CampTix_Plugin {
 	function __construct() {
 		do_action( 'camptix_pre_init' );
 
-		// Debug
-		// $this->js_version = rand( 1, 100000 );
-
 		require( dirname( __FILE__ ) . '/inc/class-camptix-addon.php' );
 		require( dirname( __FILE__ ) . '/inc/class-camptix-payment-method.php' );
 
@@ -465,9 +462,19 @@ class CampTix_Plugin {
 	 * Get a CSS file, @todo make it removable through an option.
 	 */
 	function enqueue_scripts() {
+		wp_register_style(
+			'camptix',
+			plugins_url( 'camptix.css', __FILE__ ),
+			array(),
+			filemtime( __DIR__ . '/camptix.css' )
+		);
 
-		wp_register_style( 'camptix', plugins_url( 'camptix.css', __FILE__ ), array(), $this->css_version );
-		wp_register_script( 'camptix', plugins_url( 'camptix.js', __FILE__ ), array( 'jquery' ), $this->js_version );
+		wp_register_script(
+			'camptix',
+			plugins_url( 'camptix.js', __FILE__ ),
+			array( 'jquery' ),
+			filemtime( __DIR__ . '/camptix.js' )
+		);
 
 		wp_localize_script( 'camptix', 'camptix_l10n', array(
 			'enterEmail' => __( 'Please enter the e-mail addresses in the forms above.', 'camptix' ),
@@ -499,10 +506,27 @@ class CampTix_Plugin {
 				( isset( $_REQUEST['page'] ) && in_array( $_REQUEST['page'], $pages ) )
 			) {
 				wp_enqueue_script( 'jquery-ui-datepicker' );
-				wp_enqueue_style( 'jquery-ui', plugins_url( '/external/jquery-ui.css', __FILE__ ), array(), $this->version );
+				wp_enqueue_style(
+					'jquery-ui',
+					plugins_url( '/external/jquery-ui.css', __FILE__ ),
+					array(),
+					filemtime( __DIR__ . '/external/jquery-ui.css' )
+				);
 
-				wp_enqueue_style( 'camptix-admin', plugins_url( '/admin.css', __FILE__ ), array(), $this->css_version );
-				wp_enqueue_script( 'camptix-admin', plugins_url( '/admin.js', __FILE__ ), array( 'jquery', 'jquery-ui-datepicker', 'backbone' ), $this->js_version );
+				wp_enqueue_style(
+					'camptix-admin',
+					plugins_url( '/admin.css', __FILE__ ),
+					array(),
+					filemtime( __DIR__ . '/admin.css' )
+				);
+
+				wp_enqueue_script(
+					'camptix-admin',
+					plugins_url( '/admin.js', __FILE__ ),
+					array( 'jquery', 'jquery-ui-datepicker', 'backbone' ),
+					filemtime( __DIR__ . '/admin.js' )
+				);
+
 				wp_dequeue_script( 'autosave' );
 			}
 		}
