@@ -174,6 +174,65 @@ body.admin-bar #tix {
 }
 
 /**
+Checkout form styles
+ */
+#tix-preferred-payment-option {
+	display: none;
+}
+
+.tix-payment-method {
+	display: block;
+	float: right;
+}
+
+.tix-payment-method .tix-payment-tab {
+	display: block;
+	float: left;
+	border: none;
+	color: #0a0a0a;
+	background: none;
+	font-size: 16px;
+	line-height: 24px;
+	border-bottom: 2px solid #0a0a0a;
+	cursor: pointer;
+	padding: 10px;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+}
+
+.tix-payment-method .tix-payment-tab:hover {
+	background: #eafaff;
+}
+
+.tix-payment-method .tix-payment-tab.tix-tab-selected {
+	color: #117aaa;
+	border-bottom: 5px solid;
+	padding-bottom: 7px;
+}
+
+.tix-payment-method-container {
+	display: block;
+	float: right;
+	width: 100%;
+	padding-top: 50px;
+}
+
+#tix .tix-submit .tix-checkout-button {
+	background: #00a1c8;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	border: 0px none #00a1c8;
+	border-radius: 2px;
+	padding-top: 7px;
+	padding-bottom: 7px;
+}
+
+#tix .tix-submit .tix-checkout-button:hover {
+	background: #00aace;;
+	border-color: #00aace;;
+}
+
+/**
  * === RTL Styles ===
  * Should always be at the EOF, since they need to override
  * some of the default styles in RTL environments.

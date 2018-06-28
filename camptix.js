@@ -68,8 +68,9 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 	/**
 	 * Automatically prepend http:// to URL fields if the user didn't.
 	 *
-	 * Some browsers will reject input like "example.org" as invalid because it's missing the protocol. This
-	 * confuses users who don't realize that the protocol is required.
+	 * Some browsers will reject input like "example.org" as invalid because
+	 * it's missing the protocol. This confuses users who don't realize that
+	 * the protocol is required.
 	 */
 	tix.find( 'input[type=url]' ).on( 'blur', function( event ) {
 		var url = $( this ).val();
@@ -139,6 +140,14 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 			}
 		);
 	} );
+
+	$( document ).ready( function initCheckoutForm() {
+		$( '.tix-payment-tab' ).click( function( event ) {
+			$( '.tix-payment-tab' ).removeClass( 'tix-tab-selected' );
+			$( event.target ).addClass( 'tix-tab-selected' );
+
+		})
+	});
 
 	// Hide unknown attendee fields when reloading the page
 	$( document ).ready( function() {

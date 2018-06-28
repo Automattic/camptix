@@ -13,6 +13,7 @@
  */
 
 include( plugin_dir_path( __FILE__ ) . 'currencies.php' );
+include( plugin_dir_path( __FILE__ ) . 'views/checkout-form.php' );
 
 class CampTix_Plugin {
 	protected $options;
@@ -1232,6 +1233,8 @@ class CampTix_Plugin {
 		if ( apply_filters( 'camptix_enable_automatic_upgrades', true ) && $options['version'] < $this->version ) {
 			$this->upgrade( $options['version'] );
 		}
+
+		$options['preferred_payment_method'] = 'stripe';
 
 		return $options;
 	}
@@ -5531,20 +5534,7 @@ class CampTix_Plugin {
 				</table>
 				</div>
 				<?php endif; ?>
-
-				<p class="tix-submit">
-					<?php if ( $total > 0 ) : ?>
-					<select name="tix_payment_method">
-						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
-							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
-					<?php else : ?>
-						<input type="submit" value="<?php esc_attr_e( 'Claim Tickets &rarr;', 'camptix' ); ?>" />
-					<?php endif; ?>
-					<br class="tix-clear" />
-				</p>
+				<?php render_checkout_form( $total ); ?>
 			</form>
 		</div><!-- #tix -->
 		<?php
@@ -5553,6 +5543,9 @@ class CampTix_Plugin {
 		return $contents;
 	}
 
+	function get_form_data() {
+		return $this->form_data;
+	}
 	/**
 	 * Allows buyer to access all purchased tickets.
 	 */
