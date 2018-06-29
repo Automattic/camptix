@@ -5,6 +5,10 @@ class CampTix_Currency {
 	public $version = 20180627;
 
 	/**
+	 * TODO: Take a decision on the format of currency, if we want to show localized format or a standard format, and
+	 * then sort the currencies in alphabetical order so that they are easy to find.
+	*/
+	/**
 	 * @return array List of currencies with their labels. We are keeping combination
 	 * of all currencies supported by union of payment gateways to have a single source of truth.
 	 */
@@ -15,23 +19,23 @@ class CampTix_Currency {
 				'format' => '%s AED',
 			),
 			'AFN' => array(
-				'label'  => __( 'Afghan afghani', 'camptix' ),
+				'label'  => __( 'Afghan Afghani', 'camptix' ),
 				'format' => 'AFN %s',
 			),
 			'ALL' => array(
-				'label'  => __( 'Albanian lek', 'camptix' ),
+				'label'  => __( 'Albanian Lek', 'camptix' ),
 				'format' => 'L %s',
 			),
 			'AMD' => array(
-				'label'  => __( 'Armenian dram', 'camptix' ),
+				'label'  => __( 'Armenian Dram', 'camptix' ),
 				'format' => 'AMD %s',
 			),
 			'ANG' => array(
-				'label'  => __( 'Netherlands Antillean guilder', 'camptix' ),
+				'label'  => __( 'Netherlands Antillean Guilder', 'camptix' ),
 				'format' => 'ANG %s',
 			),
 			'AOA' => array(
-				'label'  => __( 'Angolan kwanza', 'camptix' ),
+				'label'  => __( 'Angolan Kwanza', 'camptix' ),
 				'format' => 'Kz %s',
 			),
 			'AUD' => array(
@@ -567,7 +571,9 @@ class CampTix_Currency {
 	public static function get_currencies() {
 		// from https://stackoverflow.com/a/4260168/1845153
 		$supported_currency_labels = array_intersect_key(
-			self::get_currency_list(), array_flip( self::get_supported_currency_list() ) );
+			self::get_currency_list(),
+			array_flip( self::get_supported_currency_list() )
+		);
 		$currencies = apply_filters( 'camptix_currencies', $supported_currency_labels );
 		return $currencies;
 	}
