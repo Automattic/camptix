@@ -299,7 +299,6 @@ var CampTixStripe = new function() {
 	};
 
 	self.stripe_token_callback = function( token ) {
-		console.log( token );
 
 		self.add_stripe_token_hidden_fields( token.id, token.receipt_email || token.email );
 		self.form.submit();
