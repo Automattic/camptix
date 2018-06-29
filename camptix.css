@@ -173,6 +173,10 @@ body.admin-bar #tix {
 	display: block;
 }
 
+.tix-submit select[name=tix_payment_method] {
+	margin-right: 10px;
+}
+
 /**
  * === RTL Styles ===
  * Should always be at the EOF, since they need to override
