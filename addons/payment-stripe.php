@@ -216,8 +216,8 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 
 		?>
 
-		<select id="camptix-predef-select" name="<?php echo esc_attr( $args['name'] ); ?>">
-			<option value=""><?php _e( 'None', 'camptix-stripe-payment-gateway' ); ?></option>
+		<select id="camptix-stripe-predef-select" name="<?php echo esc_attr( $args['name'] ); ?>">
+			<option value=""><?php _e( 'None', 'camptix' ); ?></option>
 
 			<?php foreach ( $accounts as $key => $account ) : ?>
 				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $args['value'], $key ); ?>>
@@ -229,7 +229,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		<!-- Let's disable the rest of the fields unless None is selected -->
 		<script>
 			jQuery( document ).ready( function( $ ) {
-				var select = $('#camptix-predef-select')[0];
+				var select = $('#camptix-stripe-predef-select')[0];
 
 				$( select ).on( 'change', function() {
 					$( '[name^="camptix_payment_options_stripe"]' ).each( function() {
