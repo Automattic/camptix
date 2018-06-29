@@ -105,8 +105,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		/* translators: used between list items, there is a space after the comma */
 		$description = implode( __( ', ', 'camptix' ), $item_summary );
 
-		wp_register_script( 'stripe-checkout', 'https://checkout.stripe.com/checkout.js', array(), false, true );
-		wp_enqueue_script( 'camptix-stripe', plugins_url( 'camptix-stripe.js', __DIR__ . '/camptix-stripe-gateway.php' ), array( 'stripe-checkout', 'jquery' ), '20170322', true );
+		wp_enqueue_script( 'stripe-checkout', 'https://checkout.stripe.com/checkout.js', array(), false, true );
 
 		try {
 			$amount = $this->get_fractional_unit_amount( $this->camptix_options['currency'], $camptix->order['total'] );
@@ -114,7 +113,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			$amount = null;
 		}
 
-		wp_localize_script( 'camptix-stripe', 'CampTixStripeData', array(
+		wp_localize_script( 'stripe-checkout', 'CampTixStripeData', array(
 			'public_key'    => $credentials['api_public_key'],
 			'name'          => $this->camptix_options['event_name'],
 			'description'   => trim( $description ),
