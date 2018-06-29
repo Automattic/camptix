@@ -4143,9 +4143,14 @@ class CampTix_Plugin {
 	/**
 	 * A text input for a question.
 	 */
-	function question_field_text( $name, $value ) {
+	function question_field_text( $name, $value, $q, $required=false ) {
 		?>
-		<input name="<?php echo esc_attr( $name ); ?>" type="text" value="<?php echo esc_attr( $value ); ?>" />
+		<input
+				name="<?php echo esc_attr( $name ); ?>"
+				type="text"
+				value="<?php echo esc_attr( $value ); ?>"
+				<?php if ( $required ) echo 'required' ?>
+		/>
 		<?php
 	}
 
@@ -5477,7 +5482,9 @@ class CampTix_Plugin {
 								<tr class="tix-row-first-name">
 									<td class="tix-required tix-left"><?php _e( 'First Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['first_name'] ) ? $this->form_data['tix_attendee_info'][$i]['first_name'] : apply_filters( 'camptix_attendee_info_default_value', '', 'first_name', $this->form_data, $ticket, $i ); ?>
-									<td class="tix-right"><input name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][first_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
+									<td class="tix-right">
+										<input name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][first_name]" type="text" value="<?php echo esc_attr( $value ); ?>" required />
+									</td>
 								</tr>
 								<?php $first = ob_get_clean(); ?>
 
@@ -5485,7 +5492,9 @@ class CampTix_Plugin {
 								<tr class="tix-row-last-name">
 									<td class="tix-required tix-left"><?php _e( 'Last Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['last_name'] ) ? $this->form_data['tix_attendee_info'][$i]['last_name'] : apply_filters( 'camptix_attendee_info_default_value', '', 'last_name', $this->form_data, $ticket, $i ); ?>
-									<td class="tix-right"><input name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][last_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
+									<td class="tix-right">
+										<input name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][last_name]" type="text" value="<?php echo esc_attr( $value ); ?>" required />
+									</td>
 								</tr>
 								<?php $last = ob_get_clean(); ?>
 
@@ -5497,7 +5506,7 @@ class CampTix_Plugin {
 									<td class="tix-required tix-left"><?php _e( 'E-mail', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['email'] ) ? $this->form_data['tix_attendee_info'][$i]['email'] : apply_filters( 'camptix_attendee_info_default_value', '', 'email', $this->form_data, $ticket, $i ); ?>
 									<td class="tix-right">
-										<input class="tix-field-email" name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][email]" type="email" value="<?php echo esc_attr( $value ); ?>" />
+										<input class="tix-field-email" name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][email]" type="email" value="<?php echo esc_attr( $value ); ?>" required />
 										<?php $tix_receipt_email = isset( $this->form_data['tix_receipt_email'] ) ? $this->form_data['tix_receipt_email'] : 1; ?>
 
 										<?php if ( $this->tickets_selected_count > 1 ) : ?>
@@ -5533,7 +5542,7 @@ class CampTix_Plugin {
 												<?php if ( $required ) echo ' <span class="tix-required-star">*</span>'; ?>
 											</td>
 											<td class="tix-right">
-												<?php do_action( "camptix_question_field_{$type}", $name, $value, $question ); ?>
+												<?php do_action( "camptix_question_field_{$type}", $name, $value, $question, $required ); ?>
 											</td>
 										</tr>
 									<?php endforeach; ?>
