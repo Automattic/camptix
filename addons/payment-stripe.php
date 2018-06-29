@@ -186,14 +186,14 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	public function payment_settings_fields() {
 		// Allow pre-defined accounts if any are defined by plugins.
 		if ( count( $this->get_predefined_accounts() ) > 0 ) {
-			$this->add_settings_field_helper( 'api_predef', __( 'Predefined Account', 'camptix-stripe-payment-gateway' ), array( $this, 'field_api_predef' ) );
+			$this->add_settings_field_helper( 'api_predef', __( 'Predefined Account', 'camptix' ), array( $this, 'field_api_predef' ) );
 		}
 
 		// Settings fields are not needed when a predefined account is chosen.
 		// These settings fields should *never* expose predefined credentials.
 		if ( ! $this->get_predefined_account() ) {
-			$this->add_settings_field_helper( 'api_secret_key', __( 'Secret Key',      'camptix-stripe-payment-gateway' ), array( $this, 'field_text' ) );
-			$this->add_settings_field_helper( 'api_public_key', __( 'Publishable Key', 'camptix-stripe-payment-gateway' ), array( $this, 'field_text' ) );
+			$this->add_settings_field_helper( 'api_secret_key', __( 'Secret Key',      'camptix' ), array( $this, 'field_text' ) );
+			$this->add_settings_field_helper( 'api_public_key', __( 'Publishable Key', 'camptix' ), array( $this, 'field_text' ) );
 		}
 	}
 
@@ -346,7 +346,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		global $camptix;
 
 		if ( ! in_array( $this->camptix_options['currency'], $this->supported_currencies ) ) {
-			wp_die( __( 'The selected currency is not supported by this payment method.', 'camptix-stripe-payment-gateway' ) );
+			wp_die( __( 'The selected currency is not supported by this payment method.', 'camptix' ) );
 		}
 
 		$order = $this->get_order( $payment_token );
