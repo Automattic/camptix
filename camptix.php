@@ -1191,6 +1191,7 @@ class CampTix_Plugin {
 			'version' => 0,
 			'reservations_enabled' => false,
 			'refunds_enabled' => false,
+			'wrap_subpages' => false,
 			'refund_all_enabled' => false,
 			'archived' => false,
 			'payment_methods' => array(),
@@ -1529,7 +1530,10 @@ class CampTix_Plugin {
 				$this->add_settings_field_helper( 'refunds_enabled', __( 'Enable Refunds', 'camptix' ), 'field_enable_refunds', false,
 					__( "This will allows your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
 				);
-
+				
+				$this->add_settings_field_helper( 'wrap_subpages', __( 'Wrap Subpages', 'camptix' ), 'field_yesno', false,
+				    __( "Setting this to yes will cause all additional pages of content created by the shortcode to still have the rest of the page content on it, otherwise it will be stripped for cleaner output.", 'camptix' )
+				);
 				break;
 			case 'payment':
 				foreach ( $this->get_available_payment_methods() as $key => $payment_method ) {
@@ -1655,7 +1659,7 @@ class CampTix_Plugin {
 		if ( isset( $input['refunds_date_end'], $input['refunds_enabled'] ) && (bool) $input['refunds_enabled'] && strtotime( $input['refunds_date_end'] ) )
 			$output['refunds_date_end'] = $input['refunds_date_end'];
 
-		$yesno_fields = array( 'refunds_enabled' );
+		$yesno_fields = array( 'refunds_enabled', 'wrap_subpages' );
 
 		// Beta features checkboxes
 		if ( $this->beta_features_enabled )
@@ -5396,7 +5400,9 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		if ( empty( $this->options['wrap_subpages'] ) ) {
+    		$post->post_content = $this->shortcode_str;
+		}  
 
 		if ( isset( $this->error_flags['no_tickets_selected'], $_GET['tix_action'] ) && 'checkout' == $_GET['tix_action'] )
 			return $this->form_start();
@@ -5622,17 +5628,18 @@ class CampTix_Plugin {
 
 				<p class="tix-submit">
 					<?php if ( $total > 0 ) : ?>
-					<select name="tix_payment_method">
-						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
-							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
+                        <select name="tix_payment_method">
+    						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
+    							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
+    						<?php endforeach; ?>
+    					</select>
+    					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
 					<?php else : ?>
 						<input type="submit" value="<?php esc_attr_e( 'Claim Tickets &rarr;', 'camptix' ); ?>" />
 					<?php endif; ?>
 					<br class="tix-clear" />
 				</p>
+				
 			</form>
 		</div><!-- #tix -->
 		<?php
@@ -5648,7 +5655,9 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		if ( empty( $this->options['wrap_subpages'] ) ) {
+    		$post->post_content = $this->shortcode_str;
+		}  
 
 		ob_start();
 
@@ -5786,7 +5795,9 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		if ( empty( $this->options['wrap_subpages'] ) ) {
+    		$post->post_content = $this->shortcode_str;
+		}  
 
 		ob_start();
 		if ( ! isset( $_REQUEST['tix_edit_token'] ) || empty( $_REQUEST['tix_edit_token'] ) || ! ctype_alnum( $_REQUEST['tix_edit_token'] ) ) {
@@ -5972,7 +5983,9 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		if ( empty( $this->options['wrap_subpages'] ) ) {
+    		$post->post_content = $this->shortcode_str;
+		}  
 
 		if ( ! $this->options['refunds_enabled'] || ! isset( $_REQUEST['tix_access_token'] ) || ! ctype_alnum( $_REQUEST['tix_access_token'] ) ) {
 			$this->error_flags['invalid_access_token'] = true;
@@ -6147,7 +6160,9 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		if ( empty( $this->options['wrap_subpages'] ) ) {
+    		$post->post_content = $this->shortcode_str;
+		}  
 
 		ob_start();
 		?>
@@ -6564,7 +6579,9 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		if ( empty( $this->options['wrap_subpages'] ) ) {
+    		$post->post_content = $this->shortcode_str;
+		}  
 
 		$attendees = array();
 		$errors = array();
