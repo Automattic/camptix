@@ -329,9 +329,20 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 						<?php foreach ( $questions as $question ) :
 							if ( ! empty ( $attendee_answers[ $question->ID ] ) ) : ?>
-                                <div class="tix-field tix-<?php echo esc_attr( $question->post_name ); ?>">
-									<?php echo esc_html( $attendee_answers[ $question->ID ] ); ?>
-                                </div>
+								<div class="tix-field tix-<?php echo esc_attr( $question->post_name ); ?>">
+									<?php
+									$answer = $attendee_answers[ $question->ID ];
+
+									/**
+									 * Make sure values stored as arrays are displayed
+									 * as a comma separated list.
+									 */
+									if ( is_array( $answer ) ) {
+										$answer = implode( ', ', $answer );
+									}
+
+									echo esc_html( $answer ); ?>
+								</div>
 							<?php endif; ?>
 						<?php endforeach; ?>
 
@@ -373,12 +384,12 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 		$size = 96;
 
 		return sprintf(
-			'<div 
-                class="avatar avatar-placeholder" 
-                data-url="%s" 
-                data-url2x="%s" 
-                data-size="%s" 
-                data-alt="%s" 
+			'<div
+                class="avatar avatar-placeholder"
+                data-url="%s"
+                data-url2x="%s"
+                data-size="%s"
+                data-alt="%s"
                 data-appear-top-offset="500"
                 ></div>',
 			get_avatar_url( $id_or_email ),
