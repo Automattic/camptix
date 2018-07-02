@@ -11,6 +11,8 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'register_personal_data_exporters' ) );
 		add_filter( 'wp_privacy_personal_data_erasers', array( $this, 'register_personal_data_erasers' ) );
 		add_filter( 'wp_privacy_anonymize_data', array( $this, 'data_anonymizers' ), 10, 3 );
+
+		add_action( 'admin_init', array( $this, 'add_privacy_policy_content' ) );
 	}
 
 	/**
@@ -447,6 +449,28 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		}
 
 		return $anonymous;
+	}
+
+	/**
+	 * Suggested content additions for a privacy policy.
+	 *
+	 * @return void
+	 */
+	public function add_privacy_policy_content() {
+		if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
+			return;
+		}
+
+		$content = array();
+
+		/* *** */
+
+		$content = implode( "\n\n", $content );
+
+		wp_add_privacy_policy_content(
+			'CampTix',
+			wp_kses_post( wpautop( $content, false ) )
+		);
 	}
 }
 
