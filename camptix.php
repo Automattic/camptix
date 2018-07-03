@@ -5457,6 +5457,14 @@ class CampTix_Plugin {
 
 		do_action( 'camptix_form_attendee_info_errors', $this->error_flags );
 
+		/**
+		 * Action: Fires before rendering the Attendee Info form.
+		 *
+		 * @param array $order   Data about the current order.
+		 * @param array $options CampTix options.
+		 */
+		do_action( 'camptix_form_attendee_info_before', $this->order, $this->options );
+
 		ob_start();
 		$total = 0;
 		$i = 1;

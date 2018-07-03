@@ -49,7 +49,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			$this->get_payment_options()
 		);
 
-		add_filter( 'camptix_register_registration_info_header', array( $this, 'camptix_register_registration_info_header' ) );
+		add_filter( 'camptix_form_attendee_info_before', array( $this, 'camptix_form_attendee_info_before' ) );
 		add_filter( 'camptix_payment_result', array( $this, 'camptix_payment_result' ), 10, 3 );
 	}
 
@@ -82,18 +82,21 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		);
 	}
 
-	// Bit hacky, but it'll work.
-	public function camptix_register_registration_info_header( $filter ) {
-		global $camptix;
-
-		if ( ! $camptix->order['total'] ) {
-			return $filter;
+	/**
+	 * Set up the data for Stripe and enqueue the assets.
+	 *
+	 * @param array $order   Data about the current order.
+	 * @param array $options CampTix options.
+	 */
+	public function camptix_form_attendee_info_before( $order, $options ) {
+		if ( ! $order['total'] ) {
+			return;
 		}
 
 		$credentials  = $this->get_api_credentials();
 
 		$item_summary = array();
-		foreach ( $camptix->order['items'] as $item ) {
+		foreach ( $order['items'] as $item ) {
 			$item_summary[] = sprintf(
 				/* translators: 1: Name of ticket; 2: Quantity of ticket; */
 				__( '%1$s x %2$d', 'camptix' ),
@@ -105,25 +108,29 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		/* translators: used between list items, there is a space after the comma */
 		$description = implode( __( ', ', 'camptix' ), $item_summary );
 
-		wp_enqueue_script( 'stripe-checkout', 'https://checkout.stripe.com/checkout.js', array(), false, true );
+		wp_enqueue_script(
+			'stripe-checkout',
+			'https://checkout.stripe.com/checkout.js',
+			array(),
+			false,
+			true
+		);
 
 		try {
-			$amount = $this->get_fractional_unit_amount( $this->camptix_options['currency'], $camptix->order['total'] );
+			$amount = $this->get_fractional_unit_amount( $options['currency'], $order['total'] );
 		} catch ( Exception $exception ) {
 			$amount = null;
 		}
 
 		wp_localize_script( 'stripe-checkout', 'CampTixStripeData', array(
 			'public_key'    => $credentials['api_public_key'],
-			'name'          => $this->camptix_options['event_name'],
+			'name'          => $options['event_name'],
 			'description'   => trim( $description ),
 			'amount'        => $amount,
-			'currency'      => $this->camptix_options['currency'],
+			'currency'      => $options['currency'],
 			'token'         => ! empty( $_POST['tix_stripe_token'] )         ? wp_unslash( $_POST['tix_stripe_token'] )         : '',
 			'receipt_email' => ! empty( $_POST['tix_stripe_reciept_email'] ) ? wp_unslash( $_POST['tix_stripe_reciept_email'] ) : '',
 		) );
-
-		return $filter;
 	}
 
 	/**
