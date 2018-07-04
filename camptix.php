@@ -12,8 +12,8 @@
  * License:     GPLv2
  */
 
-
 include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+include( plugin_dir_path( __FILE__ ) . 'views/payment-options.php' );
 
 class CampTix_Plugin {
 	protected $options;
@@ -5653,27 +5653,25 @@ class CampTix_Plugin {
 					</tr>
 				</table>
 				</div>
-				<?php endif; ?>
+				<?php endif;
+				$selected_payment_method = isset( $this->form_data['tix_payment_method'] ) ? $this->form_data['tix_payment_method'] : null;
+				echo apply_filters( 'tix_render_payment_options', '', $total, $this->get_enabled_payment_methods(), $selected_payment_method );
+				?>
 
-				<p class="tix-submit">
-					<?php if ( $total > 0 ) : ?>
-					<select name="tix_payment_method">
-						<?php foreach ( $this->get_enabled_payment_methods() as $payment_method_key => $payment_method ) : ?>
-							<option <?php selected( ! empty( $this->form_data['tix_payment_method'] ) && $this->form_data['tix_payment_method'] == $payment_method_key ); ?> value="<?php echo esc_attr( $payment_method_key ); ?>"><?php echo esc_html( $payment_method['name'] ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<input type="submit" value="<?php esc_attr_e( 'Checkout &rarr;', 'camptix' ); ?>" />
-					<?php else : ?>
-						<input type="submit" value="<?php esc_attr_e( 'Claim Tickets &rarr;', 'camptix' ); ?>" />
-					<?php endif; ?>
-					<br class="tix-clear" />
-				</p>
 			</form>
 		</div><!-- #tix -->
 		<?php
 		$contents = ob_get_contents();
 		ob_end_clean();
 		return $contents;
+	}
+
+
+	/**
+	 *  Getter for $form_data .
+	 */
+	function get_form_data() {
+		return $this->form_data;
 	}
 
 	/**
