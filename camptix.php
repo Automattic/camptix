@@ -12,6 +12,9 @@
  * License:     GPLv2
  */
 
+
+include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
 class CampTix_Plugin {
 	protected $options;
 	protected $notices;
@@ -7844,6 +7847,17 @@ class CampTix_Plugin {
 	}
 
 	/**
+	 * Show deprecated warning for payment-stripe addon
+	 */
+	function show_stripe_deprecated_warning() {
+		?>
+		<div class="error notice">
+			<p><?php _e( 'Plugin Camptix-Stripe is deprecated. Please deactivate it by going into the plugins menu. Stripe payment gateway functionality is now available in core CampTix plugin.' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Runs during camptix_load_addons, includes the necessary files to register default addons.
 	 */
 	function load_default_addons() {
@@ -7856,6 +7870,13 @@ class CampTix_Plugin {
 			'payment-paypal' => $this->get_default_addon_path( 'payment-paypal.php' ),
 			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),
 		);
+
+		if( !is_plugin_active( 'camptix-stripe/camptix-stripe-gateway.php' ) ) {
+			$default_addons['payment-stripe'] = $this->get_default_addon_path( 'payment-stripe.php');
+		} else {
+			add_action( 'admin_notices', array( $this, 'show_stripe_deprecated_warning' ) );
+		}
+
 
 		if ( function_exists( 'wp_privacy_anonymize_data' ) && function_exists( 'wp_privacy_anonymize_ip' ) ) {
 			$default_addons['privacy'] = $this->get_default_addon_path( 'privacy.php' );
