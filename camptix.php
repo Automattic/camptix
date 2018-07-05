@@ -1894,7 +1894,7 @@ class CampTix_Plugin {
 	 * display. Don't send my output anywhere but the screen, because I will
 	 * print &nbsp; and other things.
 	 */
-	function append_currency( $price, $nbsp = true, $currency_key = false ) {
+	function append_currency( $amount, $nbsp = true, $currency_key = false ) {
 		$currencies = $this->get_currencies();
 		$currency = $currencies[ $this->options['currency'] ];
 		if ( $currency_key )
@@ -1907,16 +1907,18 @@ class CampTix_Plugin {
 			setlocale( LC_MONETARY, $currency['locale'] );
 		}
 
-		$with_currency = money_format( '%n', $price );
+		$formatted_amount = money_format( '%n', $amount );
 
 		if ( isset( $currency['format'] ) && $currency['format'] ) {
-			$with_currency = sprintf( $currency['format'], number_format( (float) $price, 2 ) );
+			$formatted_amount = sprintf( $currency['format'], number_format( (float) $amount, 2 ) );
 		}
 
-		if ( $nbsp )
-			$with_currency = str_replace( ' ', '&nbsp;', $with_currency );
+		$formatted_amount = apply_filters( 'tix_append_currency', $formatted_amount, $currency, $amount );
 
-		return $with_currency;
+		if ( $nbsp )
+			$formatted_amount = str_replace( ' ', '&nbsp;', $formatted_amount );
+
+		return $formatted_amount;
 	}
 
 	/*
