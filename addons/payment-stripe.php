@@ -49,7 +49,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			$this->get_payment_options()
 		);
 
-		add_filter( 'camptix_form_attendee_info_before', array( $this, 'camptix_form_attendee_info_before' ) );
+		add_action( 'camptix_form_attendee_info_before', array( $this, 'camptix_form_attendee_info_before' ), 10, 2 );
 		add_filter( 'camptix_payment_result', array( $this, 'camptix_payment_result' ), 10, 3 );
 	}
 
