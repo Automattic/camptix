@@ -7788,7 +7788,6 @@ class CampTix_Plugin {
 			'field-tshirt'   => $this->get_default_addon_path( 'field-tshirt.php' ),
 			'shortcodes'     => $this->get_default_addon_path( 'shortcodes.php' ),
 			'payment-paypal' => $this->get_default_addon_path( 'payment-paypal.php' ),
-			'payment-stripe' => $this->get_default_addon_path( 'payment-stripe.php' ),
 			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),
 		);
 
