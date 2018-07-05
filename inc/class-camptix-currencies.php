@@ -566,6 +566,9 @@ class CampTix_Currency {
 	}
 
 	/**
+	 * Returns all the currencies that are supported by loaded payment addons, and which are also defined
+	 * in `get_currency_list` method above.
+	 *
 	 * @return array list of currencies with their labels, which are currently supported.
 	 */
 	public static function get_currencies() {

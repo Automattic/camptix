@@ -57,9 +57,12 @@ abstract class CampTix_Payment_Method extends CampTix_Addon {
 	}
 
 	/**
+	 * Add currencies supported by this plugin to the global list of currencies. Payment addons should not override
+	 * this method, but instead define an array `$supported_currencies`
+	 *
 	 * @param $currencies
 	 *
-	 * @return array Add currencies supported by this plugin to the global list of currencies
+	 * @return array
 	 */
 	function add_supported_currency( $currencies ) {
 		return array_merge( $this->supported_currencies, $currencies );
