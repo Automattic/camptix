@@ -13,6 +13,7 @@
  */
 
 include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+include( plugin_dir_path( __FILE__ ) . 'inc/class-camptix-currencies.php' );
 include( plugin_dir_path( __FILE__ ) . 'views/payment-options.php' );
 
 class CampTix_Plugin {
@@ -1695,11 +1696,26 @@ class CampTix_Plugin {
 		if ( isset( $input['version'] ) )
 			$output['version'] = $input['version'];
 
-		// Enabled payment methods.
+		// Enabled/disabled payment methods.
 		if ( isset( $input['payment_methods'] ) ) {
-			foreach ( $this->get_available_payment_methods() as $key => $method )
+			$selected_currency_supported = false;
+			foreach ( $this->get_available_payment_methods() as $key => $method ) {
 				if ( isset( $input['payment_methods'][ $key ] ) )
 					$output['payment_methods'][ $key ] = (bool) $input['payment_methods'][ $key ];
+				if ( $output['payment_methods'][ $key]
+					 && $this->get_payment_method_by_id( $key )->supports_currency( $this->options['currency'] ) ){
+					// currently selected currency must be supported by atleast 1 payment method
+					$selected_currency_supported = true;
+				}
+			}
+			if ( ! $selected_currency_supported ){
+				add_settings_error(
+					'camptix',
+					'current_currency_not_supported',
+					__( 'Currently selected currency must be supported by atleast one enabled payment method' )
+				);
+				$output['payment_methods'] = $this->options['payment_methods'];
+			}
 		}
 
 		// E-mail templates
@@ -1851,112 +1867,7 @@ class CampTix_Plugin {
 	 * @link http://goo.gl/Gp0ri (paypal currency codes)
 	 */
 	function get_currencies() {
-		$currencies = apply_filters( 'camptix_currencies', array(
-			'AUD' => array(
-				'label' => __( 'Australian Dollar', 'camptix' ),
-				'locale' => 'en_AU.UTF-8',
-			),
-			'CAD' => array(
-				'label' => __( 'Canadian Dollar', 'camptix' ),
-				'locale' => 'en_CA.UTF-8',
-			),
-			'EUR' => array(
-				'label' => __( 'Euro', 'camptix' ),
-				'format' => '€ %s',
-			),
-			'GBP' => array(
-				'label' => __( 'Pound Sterling', 'camptix' ),
-				'locale' => 'en_GB.UTF-8',
-			),
-			'JPY' => array(
-				'label' => __( 'Japanese Yen', 'camptix' ),
-				'locale' => 'ja_JP.UTF-8',
-			),
-			'USD' => array(
-				'label' => __( 'U.S. Dollar', 'camptix' ),
-				'locale' => 'en_US.UTF-8',
-			),
-			'NZD' => array(
-				'label' => __( 'N.Z. Dollar', 'camptix' ),
-				'locale' => 'en_NZ.UTF-8',
-			),
-			'CHF' => array(
-				'label' => __( 'Swiss Franc', 'camptix' ),
-				'locale' => 'fr_CH.UTF-8',
-			),
-			'HKD' => array(
-				'label' => __( 'Hong Kong Dollar', 'camptix' ),
-				'locale' => 'zh_HK.UTF-8',
-			),
-			'SGD' => array(
-				'label' => __( 'Singapore Dollar', 'camptix' ),
-				'format' => '$ %s',
-			),
-			'SEK' => array(
-				'label' => __( 'Swedish Krona', 'camptix' ),
-				'locale' => 'sv_SE.UTF-8',
-			),
-			'DKK' => array(
-				'label' => __( 'Danish Krone', 'camptix' ),
-				'locale' => 'da_DK.UTF-8',
-			),
-			'PLN' => array(
-				'label' => __( 'Polish Zloty', 'camptix' ),
-				'locale' => 'pl_PL.UTF-8',
-			),
-			'NOK' => array(
-				'label' => __( 'Norwegian Krone', 'camptix' ),
-				'locale' => 'no_NO.UTF-8',
-			),
-			'HUF' => array(
-				'label' => __( 'Hungarian Forint', 'camptix' ),
-				'locale' => 'hu_HU.UTF-8',
-			),
-			'CZK' => array(
-				'label' => __( 'Czech Koruna', 'camptix' ),
-				'locale' => 'hcs_CZ.UTF-8',
-			),
-			'ILS' => array(
-				'label' => __( 'Israeli New Sheqel', 'camptix' ),
-				'locale' => 'he_IL.UTF-8',
-			),
-			'MXN' => array(
-				'label' => __( 'Mexican Peso', 'camptix' ),
-				'format' => '$ %s',
-			),
-			'BRL' => array(
-				'label' => __( 'Brazilian Real', 'camptix' ),
-				'locale' => 'pt_BR.UTF-8',
-			),
-			'MYR' => array(
-				'label' => __( 'Malaysian Ringgit', 'camptix' ),
-				'format' => 'RM %s',
-			),
-			'PHP' => array(
-				'label' => __( 'Philippine Peso', 'camptix' ),
-				'format' => '₱ %s',
-			),
-			'PKR' => array(
-				'label' => __( 'Pakistani Rupee', 'camptix' ),
-				'format' => '₨ %s',
-			),
-			'TWD' => array(
-				'label' => __( 'New Taiwan Dollar', 'camptix' ),
-				'locale' => 'zh_TW.UTF-8',
-			),
-			'THB' => array(
-				'label' => __( 'Thai Baht', 'camptix' ),
-				'format' => '฿ %s',
-			),
-			'TRY' => array(
-				'label' => __( 'Turkish Lira', 'camptix' ),
-				'locale' => 'tr_TR.UTF-8',
-			),
-			'ZAR' => array(
-				'label' => __( 'South African Rand', 'camptix' ),
-				'format' => 'R %s',
-			),
-		) );
+		$currencies = apply_filters( 'camptix_currencies', CampTix_Currency::get_currencies() );
 
 		uasort( $currencies, array( $this, 'sort_currencies' ) );
 
@@ -1984,7 +1895,7 @@ class CampTix_Plugin {
 	 * display. Don't send my output anywhere but the screen, because I will
 	 * print &nbsp; and other things.
 	 */
-	function append_currency( $price, $nbsp = true, $currency_key = false ) {
+	function append_currency( $amount, $nbsp = true, $currency_key = false ) {
 		$currencies = $this->get_currencies();
 		$currency = $currencies[ $this->options['currency'] ];
 		if ( $currency_key )
@@ -1997,16 +1908,18 @@ class CampTix_Plugin {
 			setlocale( LC_MONETARY, $currency['locale'] );
 		}
 
-		$with_currency = money_format( '%n', $price );
+		$formatted_amount = money_format( '%n', $amount );
 
 		if ( isset( $currency['format'] ) && $currency['format'] ) {
-			$with_currency = sprintf( $currency['format'], number_format( (float) $price, 2 ) );
+			$formatted_amount = sprintf( $currency['format'], number_format( (float) $amount, 2 ) );
 		}
 
-		if ( $nbsp )
-			$with_currency = str_replace( ' ', '&nbsp;', $with_currency );
+		$formatted_amount = apply_filters( 'tix_append_currency', $formatted_amount, $currency, $amount );
 
-		return $with_currency;
+		if ( $nbsp )
+			$formatted_amount = str_replace( ' ', '&nbsp;', $formatted_amount );
+
+		return $formatted_amount;
 	}
 
 	/*
@@ -4233,9 +4146,14 @@ class CampTix_Plugin {
 	/**
 	 * A text input for a question.
 	 */
-	function question_field_text( $name, $value ) {
+	function question_field_text( $name, $value, $q, $required=false ) {
 		?>
-		<input name="<?php echo esc_attr( $name ); ?>" type="text" value="<?php echo esc_attr( $value ); ?>" />
+		<input
+				name="<?php echo esc_attr( $name ); ?>"
+				type="text"
+				value="<?php echo esc_attr( $value ); ?>"
+				<?php if ( $required ) echo 'required' ?>
+		/>
 		<?php
 	}
 
@@ -5567,7 +5485,9 @@ class CampTix_Plugin {
 								<tr class="tix-row-first-name">
 									<td class="tix-required tix-left"><?php _e( 'First Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['first_name'] ) ? $this->form_data['tix_attendee_info'][$i]['first_name'] : apply_filters( 'camptix_attendee_info_default_value', '', 'first_name', $this->form_data, $ticket, $i ); ?>
-									<td class="tix-right"><input name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][first_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
+									<td class="tix-right">
+										<input name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][first_name]" type="text" value="<?php echo esc_attr( $value ); ?>" required />
+									</td>
 								</tr>
 								<?php $first = ob_get_clean(); ?>
 
@@ -5575,7 +5495,9 @@ class CampTix_Plugin {
 								<tr class="tix-row-last-name">
 									<td class="tix-required tix-left"><?php _e( 'Last Name', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['last_name'] ) ? $this->form_data['tix_attendee_info'][$i]['last_name'] : apply_filters( 'camptix_attendee_info_default_value', '', 'last_name', $this->form_data, $ticket, $i ); ?>
-									<td class="tix-right"><input name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][last_name]" type="text" value="<?php echo esc_attr( $value ); ?>" /></td>
+									<td class="tix-right">
+										<input name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][last_name]" type="text" value="<?php echo esc_attr( $value ); ?>" required />
+									</td>
 								</tr>
 								<?php $last = ob_get_clean(); ?>
 
@@ -5587,7 +5509,7 @@ class CampTix_Plugin {
 									<td class="tix-required tix-left"><?php _e( 'E-mail', 'camptix' ); ?> <span class="tix-required-star">*</span></td>
 									<?php $value = isset( $this->form_data['tix_attendee_info'][$i]['email'] ) ? $this->form_data['tix_attendee_info'][$i]['email'] : apply_filters( 'camptix_attendee_info_default_value', '', 'email', $this->form_data, $ticket, $i ); ?>
 									<td class="tix-right">
-										<input class="tix-field-email" name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][email]" type="email" value="<?php echo esc_attr( $value ); ?>" />
+										<input class="tix-field-email" name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][email]" type="email" value="<?php echo esc_attr( $value ); ?>" required />
 										<?php $tix_receipt_email = isset( $this->form_data['tix_receipt_email'] ) ? $this->form_data['tix_receipt_email'] : 1; ?>
 
 										<?php if ( $this->tickets_selected_count > 1 ) : ?>
@@ -5623,7 +5545,7 @@ class CampTix_Plugin {
 												<?php if ( $required ) echo ' <span class="tix-required-star">*</span>'; ?>
 											</td>
 											<td class="tix-right">
-												<?php do_action( "camptix_question_field_{$type}", $name, $value, $question ); ?>
+												<?php do_action( "camptix_question_field_{$type}", $name, $value, $question, $required ); ?>
 											</td>
 										</tr>
 									<?php endforeach; ?>
@@ -7866,6 +7788,7 @@ class CampTix_Plugin {
 			'field-tshirt'   => $this->get_default_addon_path( 'field-tshirt.php' ),
 			'shortcodes'     => $this->get_default_addon_path( 'shortcodes.php' ),
 			'payment-paypal' => $this->get_default_addon_path( 'payment-paypal.php' ),
+			'payment-stripe' => $this->get_default_addon_path( 'payment-stripe.php' ),
 			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),
 		);
 
