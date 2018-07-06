@@ -561,8 +561,7 @@ class CampTix_Currency {
 	 * @return array currency code of all supported currencies.
 	 */
 	private static function get_supported_currency_list() {
-		$supported_currencies = array();
-		return apply_filters( 'camptix_supported_currencies', $supported_currencies );
+		return apply_filters( 'camptix_supported_currencies', array() );
 	}
 
 	/**
@@ -577,7 +576,9 @@ class CampTix_Currency {
 			self::get_currency_list(),
 			array_flip( self::get_supported_currency_list() )
 		);
+
 		$currencies = apply_filters( 'camptix_currencies', $supported_currency_labels );
+
 		return $currencies;
 	}
 }

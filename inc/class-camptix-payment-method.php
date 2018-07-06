@@ -50,9 +50,9 @@ abstract class CampTix_Payment_Method extends CampTix_Addon {
 		if (
 				array_key_exists( 'payment_methods', $this->camptix_options )
 				&& array_key_exists( $this->id, $this->camptix_options['payment_methods'] )
-				&& $this->camptix_options['payment_methods'][$this->id]
+				&& $this->camptix_options['payment_methods'][ $this->id ]
 		) {
-			add_filter( 'camptix_supported_currencies', array($this, 'add_supported_currency' ) );
+			add_filter( 'camptix_supported_currencies', array( $this, 'add_supported_currency' ) );
 		}
 	}
 
