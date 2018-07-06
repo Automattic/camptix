@@ -1900,27 +1900,35 @@ class CampTix_Plugin {
 	 */
 	function append_currency( $amount, $nbsp = true, $currency_key = false ) {
 		$currencies = $this->get_currencies();
-		$currency = $currencies[ $this->options['currency'] ];
-		if ( $currency_key )
-			$currency = $currencies[ $currency_key ];
 
-		if ( ! $currency )
-			$currency = array( 'label' => __( 'U.S. Dollar', 'camptix' ), 'locale' => 'en_US.UTF-8' );
-
-		if ( isset( $currency['locale'] ) ) {
-			setlocale( LC_MONETARY, $currency['locale'] );
+		if ( ! $currency_key ) {
+			if ( isset( $this->options['currency'] ) ) {
+				$currency_key = $this->options['currency'];
+			} else {
+				$currency_key = 'USD';
+			}
 		}
 
-		$formatted_amount = money_format( '%n', $amount );
+		$currency = $currencies[ $currency_key ];
 
-		if ( isset( $currency['format'] ) && $currency['format'] ) {
+		// money_format is not available on Windows and some other systems
+		if ( isset( $currency['locale'] ) && function_exists( 'money_format' ) ) {
+			setlocale( LC_MONETARY, $currency['locale'] );
+			$formatted_amount = money_format( '%n', $amount );
+
+		} elseif ( isset( $currency['format'] ) && $currency['format'] ) {
 			$formatted_amount = sprintf( $currency['format'], number_format( (float) $amount, 2 ) );
+
+		} else {
+			$formatted_amount = $currency_key . ' ' . $amount;
+
 		}
 
 		$formatted_amount = apply_filters( 'tix_append_currency', $formatted_amount, $currency, $amount );
 
-		if ( $nbsp )
+		if ( $nbsp ) {
 			$formatted_amount = str_replace( ' ', '&nbsp;', $formatted_amount );
+		}
 
 		return $formatted_amount;
 	}
