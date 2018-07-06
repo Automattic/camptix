@@ -709,6 +709,7 @@ class CampTix_Stripe_API_Client {
 	 * @param string $source        The Stripe token.
 	 * @param string $description   The description of the transaction that the charge is for.
 	 * @param string $receipt_email The email address to send the receipt to.
+	 * @param array  $metadata      Associative array of extra data to store with the transaction.
 	 *
 	 * @return array|WP_Error
 	 */
@@ -737,6 +738,7 @@ class CampTix_Stripe_API_Client {
 	 * Send a refund request to the API.
 	 *
 	 * @param string $transaction_id
+	 * @param array  $metadata       Associative array of extra data to store with the transaction.
 	 *
 	 * @return array|WP_Error
 	 */
