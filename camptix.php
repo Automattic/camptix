@@ -1902,10 +1902,10 @@ class CampTix_Plugin {
 		$currencies = $this->get_currencies();
 
 		if ( ! $currency_key ) {
-			if ( isset( $this->options[ 'currency' ] ) ) {
+			if ( isset( $this->options['currency'] ) ) {
 				$currency_key = $this->options['currency'];
 			} else {
-				$currency_key = 'USD' ;
+				$currency_key = 'USD';
 			}
 		}
 
@@ -1926,8 +1926,9 @@ class CampTix_Plugin {
 
 		$formatted_amount = apply_filters( 'tix_append_currency', $formatted_amount, $currency, $amount );
 
-		if ( $nbsp )
+		if ( $nbsp ) {
 			$formatted_amount = str_replace( ' ', '&nbsp;', $formatted_amount );
+		}
 
 		return $formatted_amount;
 	}
