@@ -12,7 +12,6 @@
  * License:     GPLv2
  */
 
-include( plugin_dir_path( __FILE__ ) . 'inc/class-camptix-currencies.php' );
 include( plugin_dir_path( __FILE__ ) . 'views/payment-options.php' );
 
 class CampTix_Plugin {
@@ -63,6 +62,8 @@ class CampTix_Plugin {
 	 */
 	function __construct() {
 		do_action( 'camptix_pre_init' );
+
+		require_once( plugin_dir_path( __FILE__ ) . 'inc/class-camptix-currencies.php' );
 
 		require( dirname( __FILE__ ) . '/inc/class-camptix-addon.php' );
 		require( dirname( __FILE__ ) . '/inc/class-camptix-payment-method.php' );
