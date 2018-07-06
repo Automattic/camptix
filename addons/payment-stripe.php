@@ -141,7 +141,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			'amount'        => $amount,
 			'currency'      => $options['currency'],
 			'token'         => ! empty( $_POST['tix_stripe_token'] )         ? wp_unslash( $_POST['tix_stripe_token'] )         : '',
-			'receipt_email' => ! empty( $_POST['tix_stripe_reciept_email'] ) ? wp_unslash( $_POST['tix_stripe_reciept_email'] ) : '',
+			'receipt_email' => ! empty( $_POST['tix_stripe_receipt_email'] ) ? wp_unslash( $_POST['tix_stripe_receipt_email'] ) : '',
 		) );
 	}
 
@@ -383,7 +383,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		$amount        = $this->get_fractional_unit_amount( $this->camptix_options['currency'], $order['total'] );
 		$source        = wp_unslash( $_POST['tix_stripe_token'] );
 		$description   = $this->camptix_options['event_name'];
-		$receipt_email = isset( $_POST['tix_stripe_reciept_email'] ) ? wp_unslash( $_POST['tix_stripe_reciept_email'] ) : false;
+		$receipt_email = isset( $_POST['tix_stripe_receipt_email'] ) ? wp_unslash( $_POST['tix_stripe_receipt_email'] ) : false;
 		$metadata      = array();
 
 		foreach ( $order['items'] as $item ) {

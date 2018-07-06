@@ -313,8 +313,8 @@ var CampTixStripe = new function() {
 		if ( email ) {
 			jQuery('<input>').attr({
 				type: 'hidden',
-				id: 'tix_stripe_reciept_email',
-				name: 'tix_stripe_reciept_email',
+				id: 'tix_stripe_receipt_email',
+				name: 'tix_stripe_receipt_email',
 				value: email,
 			}).appendTo( self.form );
 		}
