@@ -1911,18 +1911,10 @@ class CampTix_Plugin {
 
 		$currency = $currencies[ $currency_key ];
 
-		if ( isset( $currency['locale'] ) ) {
-			// money_format not available on Windows and some other systems
-			if ( function_exists( 'money_format' ) ) {
-				setlocale( LC_MONETARY, $currency['locale'] );
-				$formatted_amount = money_format( '%n', $amount );
-			} else {
-				/**
-				 * set formatted amount manually, because if `locale` is defined for currency then `format` may not be
-				 * defined
-				 */
-				$formatted_amount = ( $currency_key ? $currency_key . ' ' : '' ) . $amount;
-			}
+		// money_format is not available on Windows and some other systems
+		if ( isset( $currency['locale'] ) && function_exists( 'money_format' ) ) {
+			setlocale( LC_MONETARY, $currency['locale'] );
+			$formatted_amount = money_format( '%n', $amount );
 
 		} elseif ( isset( $currency['format'] ) && $currency['format'] ) {
 			$formatted_amount = sprintf( $currency['format'], number_format( (float) $amount, 2 ) );
