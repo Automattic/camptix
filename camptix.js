@@ -317,6 +317,18 @@ var CampTixStripe = new function() {
 				name: 'tix_stripe_receipt_email',
 				value: email,
 			}).appendTo( self.form );
+
+			/**
+			 * for backward compatibility. we renamed `tix_stripe_reciept_email`
+			 * to `tix_stripe_receipt_email` in 1.7, but older stripe plugin
+			 * would still be expecting `tix_stripe_reciept_email`
+			 */
+			jQuery( '<input>' ).attr({
+				type: 'hidden',
+				id: 'tix_stripe_reciept_email',
+				name: 'tix_stripe_reciept_email',
+				value: email,
+			}).appendTo( self.form );
 		}
 
 	};
