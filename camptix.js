@@ -278,7 +278,7 @@ var CampTixStripe = new function() {
 
 		var StripeHandler = StripeCheckout.configure({
 			key: self.data.public_key,
-			image: 'https://s.w.org/about/images/desktops/wp-blue-1024x768.png', //'https://stripe.com/img/documentation/checkout/marketplace.png',
+			image: self.data.image,
 			locale: 'auto',
 			amount: parseInt( this.data.amount ),
 			currency: self.data.currency,

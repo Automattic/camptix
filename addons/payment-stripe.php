@@ -124,9 +124,19 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			$amount = null;
 		}
 
+		/**
+		 * Filter: Modify the URL of the image used for the Stripe checkout overlay.
+		 *
+		 * By default, the Site Icon URL will be used for this image if one is available.
+		 *
+		 * @param string $checkout_image_url
+		 */
+		$checkout_image_url = apply_filters( 'camptix_stripe_checkout_image_url', get_site_icon_url() );
+
 		wp_localize_script( 'stripe-checkout', 'CampTixStripeData', array(
 			'public_key'    => $credentials['api_public_key'],
 			'name'          => $options['event_name'],
+			'image'         => ( $checkout_image_url ) ? esc_url( $checkout_image_url ) : '',
 			'description'   => trim( $description ),
 			'amount'        => $amount,
 			'currency'      => $options['currency'],
