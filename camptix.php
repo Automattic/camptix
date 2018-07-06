@@ -12,7 +12,6 @@
  * License:     GPLv2
  */
 
-include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 include( plugin_dir_path( __FILE__ ) . 'inc/class-camptix-currencies.php' );
 include( plugin_dir_path( __FILE__ ) . 'views/payment-options.php' );
 
@@ -7767,20 +7766,23 @@ class CampTix_Plugin {
 	}
 
 	/**
-	 * Show deprecated warning for payment-stripe addon
+	 * Show a deprecation warning for the CampTix Stripe Payment Gateway plugin.
 	 */
 	function show_stripe_deprecated_warning() {
-		?>
+		if ( current_user_can( 'deactivate_plugins' ) ) : ?>
 		<div class="error notice">
-			<p><?php _e( 'Plugin Camptix-Stripe is deprecated. Please deactivate it by going into the plugins menu. Stripe payment gateway functionality is now available in core CampTix plugin.' ); ?></p>
+			<p><?php _e( 'The CampTix Stripe Payment Gateway plugin is now deprecated because its functionality has been integrated into CampTix. Please deactivate the plugin.' ); ?></p>
 		</div>
-		<?php
+		<?php endif;
 	}
 
 	/**
 	 * Runs during camptix_load_addons, includes the necessary files to register default addons.
 	 */
 	function load_default_addons() {
+		// Needed for `is_plugin_active()`.
+		include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+
 		$default_addons = array(
 			'field-twitter'  => $this->get_default_addon_path( 'field-twitter.php' ),
 			'field-url'      => $this->get_default_addon_path( 'field-url.php' ),
@@ -7791,12 +7793,11 @@ class CampTix_Plugin {
 			'logging-meta'   => $this->get_default_addon_path( 'logging-meta.php' ),
 		);
 
-		if( !is_plugin_active( 'camptix-stripe/camptix-stripe-gateway.php' ) ) {
-			$default_addons['payment-stripe'] = $this->get_default_addon_path( 'payment-stripe.php');
-		} else {
+		if ( is_plugin_active( 'camptix-stripe/camptix-stripe-gateway.php' ) ) {
 			add_action( 'admin_notices', array( $this, 'show_stripe_deprecated_warning' ) );
+		} else {
+			$default_addons['payment-stripe'] = $this->get_default_addon_path( 'payment-stripe.php');
 		}
-
 
 		if ( function_exists( 'wp_privacy_anonymize_data' ) && function_exists( 'wp_privacy_anonymize_ip' ) ) {
 			$default_addons['privacy'] = $this->get_default_addon_path( 'privacy.php' );
@@ -7806,7 +7807,6 @@ class CampTix_Plugin {
 		 * The following addons are available but inactive by default. Use the 'camptix_default_addons' filter
 		 * to enable them, otherwise your changes may be overwritten during an update to the plugin.
 		 *
-		 * 'payment-stripe' => $this->get_default_addon_path( 'payment-stripe.php' ),
 		 * 'logging-file'   => $this->get_default_addon_path( 'logging-file.php' ),
 		 * 'logging-json'   => $this->get_default_addon_path( 'logging-file-json.php' ),
 		 * 'require-login'  => $this->get_default_addon_path( 'require-login.php' ),
