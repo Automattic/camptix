@@ -150,7 +150,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	 *
 	 * Stripe wants amounts in the fractional unit (e.g., pennies), not the base unit (e.g., dollars).
 	 *
-	 * The data here comes from https://en.wikipedia.org/wiki/List_of_circulating_currencies.
+	 * The data here comes from https://stripe.com/docs/currencies
 	 *
 	 * @param string $order_currency
 	 * @param int    $base_unit_amount
