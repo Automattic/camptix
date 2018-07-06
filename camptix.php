@@ -12,8 +12,6 @@
  * License:     GPLv2
  */
 
-include( plugin_dir_path( __FILE__ ) . 'views/payment-options.php' );
-
 class CampTix_Plugin {
 	protected $options;
 	protected $notices;
@@ -5338,6 +5336,8 @@ class CampTix_Plugin {
 	 * Step 2: asks for attendee information on chosen tickets.
 	 */
 	function form_attendee_info() {
+		require_once( plugin_dir_path( __FILE__ ) . 'views/payment-options.php' );
+
 		global $post;
 
 		// Clean things up before and after the shortcode.
@@ -5585,6 +5585,7 @@ class CampTix_Plugin {
 		<?php
 		$contents = ob_get_contents();
 		ob_end_clean();
+
 		return $contents;
 	}
 
