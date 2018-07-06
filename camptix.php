@@ -1697,21 +1697,26 @@ class CampTix_Plugin {
 		// Enabled/disabled payment methods.
 		if ( isset( $input['payment_methods'] ) ) {
 			$selected_currency_supported = false;
+
 			foreach ( $this->get_available_payment_methods() as $key => $method ) {
-				if ( isset( $input['payment_methods'][ $key ] ) )
+				if ( isset( $input['payment_methods'][ $key ] ) ) {
 					$output['payment_methods'][ $key ] = (bool) $input['payment_methods'][ $key ];
+				}
 				if ( $output['payment_methods'][ $key]
-					 && $this->get_payment_method_by_id( $key )->supports_currency( $this->options['currency'] ) ){
-					// currently selected currency must be supported by atleast 1 payment method
+					 && $this->get_payment_method_by_id( $key )->supports_currency( $this->options['currency'] )
+				) {
+					// Currently selected currency must be supported by at least 1 payment method.
 					$selected_currency_supported = true;
 				}
 			}
-			if ( ! $selected_currency_supported ){
+
+			if ( ! $selected_currency_supported ) {
 				add_settings_error(
 					'camptix',
 					'current_currency_not_supported',
-					__( 'Currently selected currency must be supported by atleast one enabled payment method' )
+					__( 'Currently selected currency must be supported by at least one enabled payment method.' )
 				);
+
 				$output['payment_methods'] = $this->options['payment_methods'];
 			}
 		}
@@ -5577,6 +5582,15 @@ class CampTix_Plugin {
 				</div>
 				<?php endif;
 				$selected_payment_method = isset( $this->form_data['tix_payment_method'] ) ? $this->form_data['tix_payment_method'] : null;
+
+				/**
+				 * Filter: Modify the rendered HTML of the payment options and checkout button.
+				 *
+				 * @param string $html                    The rendered payment options and checkout button.
+				 * @param float  $total                   The total price of the order.
+				 * @param array  $enabled_payment_methods The available payment methods.
+				 * @param string $selected_payment_method If the existing form data contains a payment method that was previously selected.
+				 */
 				echo apply_filters( 'tix_render_payment_options', '', $total, $this->get_enabled_payment_methods(), $selected_payment_method );
 				?>
 
@@ -5589,9 +5603,8 @@ class CampTix_Plugin {
 		return $contents;
 	}
 
-
 	/**
-	 *  Getter for $form_data .
+	 * Getter for $form_data.
 	 */
 	function get_form_data() {
 		return $this->form_data;
