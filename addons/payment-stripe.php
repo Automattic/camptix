@@ -148,8 +148,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	/**
 	 * Convert an amount in the currency's base unit to its equivalent fractional unit.
 	 *
-	 * Stripe wants amounts in the fractional unit (e.g., pennies), not the base unit (e.g., dollars). Zero-decimal
-	 * currencies are not included yet, see `$supported_currencies`.
+	 * Stripe wants amounts in the fractional unit (e.g., pennies), not the base unit (e.g., dollars).
 	 *
 	 * The data here comes from https://en.wikipedia.org/wiki/List_of_circulating_currencies.
 	 *
@@ -163,6 +162,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		$fractional_amount = null;
 
 		$currency_multipliers = array(
+			// Zero-decimal currencies
 			1    => array(
 				'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF',
 				'XOF', 'XPF',
@@ -183,7 +183,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 
 		foreach ( $currency_multipliers as $multiplier => $currencies ) {
 			if ( in_array( $order_currency, $currencies, true ) ) {
-				$fractional_amount = (int) $base_unit_amount * $multiplier;
+				$fractional_amount = floatval( $base_unit_amount ) * $multiplier;
 			}
 		}
 
@@ -191,7 +191,7 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			throw new Exception( "Unknown currency multiplier for $order_currency." );
 		}
 
-		return $fractional_amount;
+		return intval( $fractional_amount );
 	}
 
 	/**
