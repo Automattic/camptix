@@ -253,7 +253,7 @@ var CampTixStripe = new function() {
 		// Verify Stripe is the selected method.
 		var method = self.form.find('[name="tix_payment_method"]').val() || 'stripe';
 
-		if ( 'stripe' != method ) {
+		if ( 'stripe' !== method ) {
 			return;
 		}
 
@@ -269,7 +269,6 @@ var CampTixStripe = new function() {
 	};
 
 	self.stripe_checkout = function() {
-
 		var emails = jQuery.uniqueSort(
 			self.form.find('input[type="email"]')
 				.filter( function () { return this.value.length; })
@@ -285,8 +284,7 @@ var CampTixStripe = new function() {
 			description: self.data.description,
 			name: self.data.name,
 			zipCode: true,
-			email: ( emails.length == 1 ? emails[0] : '' ) || '',
-
+			email: ( emails.length === 1 ? emails[0] : '' ) || '',
 			token: self.stripe_token_callback,
 		});
 
@@ -299,8 +297,8 @@ var CampTixStripe = new function() {
 	};
 
 	self.stripe_token_callback = function( token ) {
-
 		self.add_stripe_token_hidden_fields( token.id, token.receipt_email || token.email );
+
 		self.form.submit();
 	};
 
