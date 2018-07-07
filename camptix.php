@@ -1899,6 +1899,8 @@ class CampTix_Plugin {
 	 * print &nbsp; and other things.
 	 */
 	function append_currency( $amount, $nbsp = true, $currency_key = false ) {
+		$amount = floatval( $amount );
+
 		$currencies = $this->get_currencies();
 
 		if ( ! $currency_key ) {
@@ -1911,17 +1913,14 @@ class CampTix_Plugin {
 
 		$currency = $currencies[ $currency_key ];
 
-		// money_format is not available on Windows and some other systems
+		// `money_format` is not available on Windows and some other systems.
 		if ( isset( $currency['locale'] ) && function_exists( 'money_format' ) ) {
 			setlocale( LC_MONETARY, $currency['locale'] );
-			$formatted_amount = money_format( "%." . $currency['decimal_point'] . "n", $amount );
-
+			$formatted_amount = money_format( "%.{$currency['decimal_point']}n", $amount );
 		} elseif ( isset( $currency['format'] ) && $currency['format'] ) {
-			$formatted_amount = sprintf( $currency['format'], number_format( (float) $amount, $currency['decimal_point'] ) );
-
+			$formatted_amount = sprintf( $currency['format'], number_format( $amount, $currency['decimal_point'] ) );
 		} else {
 			$formatted_amount = $currency_key . ' ' . number_format( $amount, $currency['decimal_point'] );
-
 		}
 
 		$formatted_amount = apply_filters( 'tix_append_currency', $formatted_amount, $currency, $amount );
