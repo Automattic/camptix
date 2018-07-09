@@ -2,8 +2,8 @@
 
 class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	public $id          = 'stripe';
-	public $name        = 'Stripe';
-	public $description = 'Stripe';
+	public $name        = 'Credit Card (Stripe)';
+	public $description = 'Credit card processing, powered by Stripe.';
 
 	/**
 	 * See https://support.stripe.com/questions/which-currencies-does-stripe-support.
