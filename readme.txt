@@ -2,8 +2,8 @@
 Contributors:      automattic, kovshenin, andreamiddleton, iandunn, coreymckrill
 Tags:              ticketing, event ticketing
 Requires at least: 3.5
-Tested up to:      4.7.3
-Stable tag:        1.6.0
+Tested up to:      4.9.7
+Stable tag:        1.7.0
 Donate link:       http://wordpressfoundation.org/donate/
 License:           GPLv2 or later
 License URI:       http://www.gnu.org/licenses/gpl-2.0.html
@@ -48,6 +48,19 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 7. Mass e-mail attendees
 
 == Changelog ==
+
+= 1.7.0 (2018-07-09) =
+* [NEW] Added support for Stripe as a payment method.
+* [NEW] Added support for many new currencies, including INR, PKR, and ZAR. The Stripe payment method must be enabled in order to use them.
+* [NEW] Added support for WordPress Core's personal data export and erasure tools.
+* [NEW] Added data handling details for WordPress Core's privacy policy tool.
+* [NEW] Allowed sanitized HTML in ticket title and excerpt.
+* [NEW] Added the `camptix_shortcode_contents` filter hook to support modifying camptix shortcode output.
+* [NEW] Added the `camptix_attendee_form_before_questions` and `camptix_attendee_form_after_questions` action hooks, which can be used to insert additional form elements.
+* [NEW] Added the `camptix_form_attendee_info_errors` action hook for adding custom error messages on the Attendee Info form.
+* [FIX] Added a workaround for systems (such as Windows) where the `money_format()` function is not available.
+* [FIX] The `logged_out_message` parameter in the `camptix_private` shortcode was not functional.
+* [Full changelog](https://github.com/Automattic/camptix/compare/69dc5368bd0df25d4a41b7bde7217f0c8c809c9a...343e2f31d35cd9bcb467f59fd43dbc5481a3f71b)
 
 = 1.6.0 (2017-03-10) =
 * [NEW] Enabled compatibility with language packs. [See status of translation locales](https://translate.wordpress.org/projects/wp-plugins/camptix).

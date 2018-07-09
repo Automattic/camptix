@@ -3,7 +3,7 @@
  * Plugin Name: CampTix Event Ticketing
  * Plugin URI:  http://wordcamp.org
  * Description: Simple and flexible event ticketing for WordPress.
- * Version:     1.6.0
+ * Version:     1.7.0
  * Text Domain: camptix
  * Domain Path: /languages/
  *
@@ -24,9 +24,9 @@ class CampTix_Plugin {
 	public $error_flags;
 	public $debug;
 	public $beta_features_enabled;
-	public $version     = 20140325;
-	public $css_version = 20150311;
-	public $js_version  = 20161128;
+	public $version     = 20180709;
+	public $css_version = 20180709;
+	public $js_version  = 20180709;
 	public $caps;
 
 	public $addons = array();
