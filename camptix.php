@@ -1546,6 +1546,8 @@ class CampTix_Plugin {
 		wp_enqueue_script( 'jquery-ui' );
 		$section = $this->get_setup_section();
 
+		add_action( 'admin_notices', array( $this, 'admin_notice_supported_currencies' ) );
+
 		switch ( $section ) {
 			case 'general':
 				add_settings_section( 'general', __( 'General Configuration', 'camptix' ), array( $this, 'menu_setup_section_general' ), 'camptix_options' );
@@ -1696,28 +1698,10 @@ class CampTix_Plugin {
 
 		// Enabled/disabled payment methods.
 		if ( isset( $input['payment_methods'] ) ) {
-			$selected_currency_supported = false;
-
 			foreach ( $this->get_available_payment_methods() as $key => $method ) {
 				if ( isset( $input['payment_methods'][ $key ] ) ) {
 					$output['payment_methods'][ $key ] = (bool) $input['payment_methods'][ $key ];
 				}
-				if ( $output['payment_methods'][ $key]
-					 && $this->get_payment_method_by_id( $key )->supports_currency( $this->options['currency'] )
-				) {
-					// Currently selected currency must be supported by at least 1 payment method.
-					$selected_currency_supported = true;
-				}
-			}
-
-			if ( ! $selected_currency_supported ) {
-				add_settings_error(
-					'camptix',
-					'current_currency_not_supported',
-					__( 'Currently selected currency must be supported by at least one enabled payment method.' )
-				);
-
-				$output['payment_methods'] = $this->options['payment_methods'];
 			}
 		}
 
@@ -1759,6 +1743,44 @@ class CampTix_Plugin {
 		$this->log( 'Options updated.', 0, $log_data );
 
 		return $output;
+	}
+
+	/**
+	 * Show an admin notice when the selected currency is not supported by any enabled payment methods.
+	 *
+	 * @return void
+	 */
+	public function admin_notice_supported_currencies() {
+		global $pagenow;
+		$page = filter_input( INPUT_GET, 'page' );
+
+		if ( 'edit.php' !== $pagenow || 'camptix_options' !== $page ) {
+			return;
+		}
+
+		$options    = $this->get_options();
+		$currencies = $this->get_currencies();
+
+		if ( ! array_key_exists( $options['currency'], $currencies ) ) {
+			$base_url = add_query_arg(
+				array(
+					'post_type' => 'tix_ticket',
+					'page'      => 'camptix_options',
+				),
+				admin_url( 'edit.php' )
+			);
+			?>
+			<div class="notice notice-warning">
+				<?php
+				echo wpautop( sprintf(
+					__( 'The <a href="%1$s">currently selected currency</a> is not supported by any of the <a href="%2$s">enabled payment methods</a>.' ),
+					esc_url( add_query_arg( 'tix_section', 'general', $base_url ) ),
+					esc_url( add_query_arg( 'tix_section', 'payment', $base_url ) )
+				) );
+				?>
+			</div>
+			<?php
+		}
 	}
 
 	function get_beta_features() {
@@ -1850,16 +1872,30 @@ class CampTix_Plugin {
 	 * The currency field for the Settings API.
 	 */
 	function field_currency( $args ) {
+		$currencies = $this->get_currencies();
 		?>
-		<select name="<?php echo esc_attr( $args['name'] ); ?>">
-			<?php foreach ( $this->get_currencies() as $key => $currency ) : ?>
-				<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $args['value'] ); ?>><?php
-					echo esc_html( $currency['label'] );
-					echo " (" . esc_html( $this->append_currency( 10000, true, $key ) ) . ")";
-				?></option>
-			<?php endforeach; ?>
-		</select>
-		<p class="description"><?php _e( 'Make sure you select a currency that is supported by all the payment methods you plan to use.', 'camptix' ); ?></p>
+			<select name="<?php echo esc_attr( $args['name'] ); ?>">
+				<?php if ( ! array_key_exists( $args['value'], $currencies ) ) : ?>
+					<option value="<?php echo esc_attr( $args['value'] ); ?>" selected >
+						<?php
+						printf(
+							__( '%s: No payment method', 'camptix' ),
+							esc_html( $args['value'] )
+						);
+						?>
+					</option>
+				<?php endif; ?>
+				<?php foreach ( $currencies as $key => $currency ) : ?>
+					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $args['value'] ); ?>><?php
+						echo esc_html( $currency['label'] );
+						echo " (" . esc_html( $this->append_currency( 10000, true, $key ) ) . ")";
+					?></option>
+				<?php endforeach; ?>
+			</select>
+
+			<p class="description">
+				<?php _e( 'If you don\'t see your desired currency in the list, make sure you have at least one payment method enabled that supports it.', 'camptix' ); ?>
+			</p>
 		<?php
 	}
 
@@ -1912,6 +1948,10 @@ class CampTix_Plugin {
 		}
 
 		$currency = $currencies[ $currency_key ];
+
+		if ( ! isset( $currency['decimal_point'] ) ) {
+			$currency['decimal_point'] = 2;
+		}
 
 		// `money_format` is not available on Windows and some other systems.
 		if ( isset( $currency['locale'] ) && function_exists( 'money_format' ) ) {
@@ -7816,7 +7856,7 @@ class CampTix_Plugin {
 		);
 
 		if ( is_plugin_active( 'camptix-stripe/camptix-stripe-gateway.php' ) ) {
-			add_action( 'admin_notices', array( $this, 'show_stripe_deprecated_warning' ) );
+			add_action( 'camptix_admin_notices', array( $this, 'show_stripe_deprecated_warning' ) );
 		} else {
 			$default_addons['payment-stripe'] = $this->get_default_addon_path( 'payment-stripe.php');
 		}
