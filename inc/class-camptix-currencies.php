@@ -15,7 +15,7 @@ class CampTix_Currency {
 	 * @return array An associative array of currencies.
 	 *               Key = ISO 4217 currency code. Value = Array of currency properties.
 	 */
-	protected static function get_currency_list() {
+	public static function get_currency_list() {
 		return array(
 			'AED' => array(
 				'label'         => __( 'United Arab Emirates Dirham', 'camptix' ),

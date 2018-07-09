@@ -1937,7 +1937,7 @@ class CampTix_Plugin {
 	function append_currency( $amount, $nbsp = true, $currency_key = false ) {
 		$amount = floatval( $amount );
 
-		$currencies = $this->get_currencies();
+		$currencies = CampTix_Currency::get_currency_list();
 
 		if ( ! $currency_key ) {
 			if ( isset( $this->options['currency'] ) ) {
