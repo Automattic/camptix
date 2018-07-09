@@ -44,9 +44,12 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	public function camptix_init() {
 		$this->options = array_merge(
 			array(
-				'api_secret_key' => '',
-				'api_public_key' => '',
-				'api_predef'     => '',
+				'api_predef'          => '',
+				'api_secret_key'      => '',
+				'api_public_key'      => '',
+				'api_test_secret_key' => '',
+				'api_test_public_key' => '',
+				'sandbox'             => true,
 			),
 			$this->get_payment_options()
 		);
@@ -78,9 +81,14 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	public function get_api_credentials() {
 		$options = array_merge( $this->options, $this->get_predefined_account( $this->options['api_predef'] ) );
 
+		$prefix = 'api_';
+		if ( true === $options['sandbox'] ) {
+			$prefix = 'api_test_';
+		}
+
 		return array(
-			'api_public_key' => $options['api_public_key'],
-			'api_secret_key' => $options['api_secret_key'],
+			'api_public_key' => $options[ $prefix . 'public_key' ],
+			'api_secret_key' => $options[ $prefix . 'secret_key' ],
 		);
 	}
 
@@ -214,6 +222,14 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		if ( ! $this->get_predefined_account() ) {
 			$this->add_settings_field_helper( 'api_secret_key', __( 'Secret Key',      'camptix' ), array( $this, 'field_text' ) );
 			$this->add_settings_field_helper( 'api_public_key', __( 'Publishable Key', 'camptix' ), array( $this, 'field_text' ) );
+			$this->add_settings_field_helper( 'api_test_secret_key', __( 'Test Secret Key',      'camptix' ), array( $this, 'field_text' ) );
+			$this->add_settings_field_helper( 'api_test_public_key', __( 'Test Publishable Key', 'camptix' ), array( $this, 'field_text' ) );
+			$this->add_settings_field_helper( 'sandbox',       __( 'Sandbox Mode',  'camptix' ), array( $this, 'field_yesno' ),
+				sprintf(
+					__( 'When Sandbox Mode is enabled, the Test keys will be used for transactions. <a href="%s">Read more</a> about testing transactions with Stripe.', 'camptix' ),
+					'https://stripe.com/docs/testing'
+				)
+			);
 		}
 	}
 
@@ -328,8 +344,20 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			$output['api_secret_key'] = $input['api_secret_key'];
 		}
 
+		if ( isset( $input['api_test_secret_key'] ) ) {
+			$output['api_test_secret_key'] = $input['api_test_secret_key'];
+		}
+
 		if ( isset( $input['api_public_key'] ) ) {
 			$output['api_public_key'] = $input['api_public_key'];
+		}
+
+		if ( isset( $input['api_test_public_key'] ) ) {
+			$output['api_test_public_key'] = $input['api_test_public_key'];
+		}
+
+		if ( isset( $input['sandbox'] ) ) {
+			$output['sandbox'] = (bool) $input['sandbox'];
 		}
 
 		if ( isset( $input['api_predef'] ) ) {
@@ -337,8 +365,10 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 			// We do not store predefined credentials in options, only code.
 			if ( $this->get_predefined_account( $input['api_predef'] ) ) {
 				$output = array_merge( $output, array(
-					'api_secret_key' => '',
-					'api_public_key' => '',
+					'api_secret_key'      => '',
+					'api_public_key'      => '',
+					'api_test_secret_key' => '',
+					'api_test_public_key' => '',
 				) );
 			} else {
 				$input['api_predef'] = '';
