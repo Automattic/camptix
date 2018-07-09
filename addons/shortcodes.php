@@ -334,14 +334,15 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 									$answer = $attendee_answers[ $question->ID ];
 
 									/**
-									 * Make sure values stored as arrays are displayed
-									 * as a comma separated list.
+									 * Make sure values stored as arrays are displayed as a comma separated list.
 									 */
 									if ( is_array( $answer ) ) {
-										$answer = implode( ', ', $answer );
+										/* translators: used between list items, there is a space after the comma */
+										$answer = implode( __( ', ', 'camptix' ), $answer );
 									}
 
-									echo esc_html( $answer ); ?>
+									echo esc_html( $answer );
+									?>
 								</div>
 							<?php endif; ?>
 						<?php endforeach; ?>
