@@ -60,6 +60,7 @@ For more information, visit the [Getting Started](https://github.com/automattic/
 * [NEW] Added the `camptix_form_attendee_info_errors` action hook for adding custom error messages on the Attendee Info form.
 * [FIX] Added a workaround for systems (such as Windows) where the `money_format()` function is not available.
 * [FIX] The `logged_out_message` parameter in the `camptix_private` shortcode was not functional.
+* [FIX] The `camptix_attendees` shortcode did not handle array values. Now it converts the array to a comma separated string on render.
 * [Full changelog](https://github.com/Automattic/camptix/compare/69dc5368bd0df25d4a41b7bde7217f0c8c809c9a...343e2f31d35cd9bcb467f59fd43dbc5481a3f71b)
 
 = 1.6.0 (2017-03-10) =
