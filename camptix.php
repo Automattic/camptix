@@ -3986,16 +3986,24 @@ class CampTix_Plugin {
 	function metabox_ticket_options() {
 		$reserved = 0;
 		$reservations = $this->get_reservations( get_the_ID() );
-		foreach ( $reservations as $reservation_token => $reservation )
+		foreach ( $reservations as $reservation_token => $reservation ) {
 			$reserved += $reservation['quantity'] - $this->get_purchased_tickets_count( get_the_ID(), $reservation_token );
+		}
 
 		$purchased = $this->get_purchased_tickets_count( get_the_ID() );
 		$min_quantity = $reserved + $purchased;
+
+		$decimal_point = 2;
+		$currency      = $this->options['currency'];
+		$currencies    = $this->get_currencies();
+		if ( isset( $currencies[ $currency ]['decimal_point'] ) ) {
+			$decimal_point = intval( $currencies[ $currency ]['decimal_point'] );
+		}
 		?>
 		<div class="misc-pub-section">
 			<span class="left"><?php _e( 'Price:', 'camptix' ); ?></span>
 			<?php if ( $purchased <= 0 ) : ?>
-			<input type="text" name="tix_price" class="small-text" value="<?php echo esc_attr( number_format( (float) get_post_meta( get_the_ID(), 'tix_price', true ), 2, '.', '' ) ); ?>" autocomplete="off" /> <?php echo esc_html( $this->options['currency'] ); ?>
+			<input type="text" name="tix_price" class="small-text" value="<?php echo esc_attr( number_format( (float) get_post_meta( get_the_ID(), 'tix_price', true ), $decimal_point, '.', '' ) ); ?>" autocomplete="off" /> <?php echo esc_html( $this->options['currency'] ); ?>
 			<?php else: ?>
 			<span><?php echo esc_html( $this->append_currency( get_post_meta( get_the_ID(), 'tix_price', true ) ) ); ?></span><br />
 			<p class="description" style="margin-top: 10px;"><?php _e( 'You can not change the price because one or more tickets have already been purchased.', 'camptix' ); ?></p>
