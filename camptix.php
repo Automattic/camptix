@@ -1843,7 +1843,7 @@ class CampTix_Plugin {
 		<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="0" <?php checked( $args['value'], false ); ?>> <?php _e( 'No', 'camptix' ); ?></label>
 
 		<?php if ( isset( $args['description'] ) ) : ?>
-		<p class="description"><?php echo esc_html( $args['description'] ); ?></p>
+		<p class="description"><?php echo wp_kses_data( $args['description'] ); ?></p>
 		<?php endif; ?>
 		<?php
 	}
