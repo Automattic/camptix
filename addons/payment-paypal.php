@@ -96,7 +96,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 
 		?>
 
-		<select id="camptix-predef-select" name="<?php echo esc_attr( $args['name'] ); ?>">
+		<select id="camptix-paypal-predef-select" name="<?php echo esc_attr( $args['name'] ); ?>">
 			<option value=""><?php _e( 'None', 'camptix' ); ?></option>
 
 			<?php foreach ( $accounts as $key => $account ) : ?>
@@ -109,7 +109,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		<!-- Let's disable the rest of the fields unless None is selected -->
 		<script>
 			jQuery( document ).ready( function( $ ) {
-				var select = $('#camptix-predef-select')[0];
+				var select = $('#camptix-paypal-predef-select')[0];
 
 				$( select ).on( 'change', function() {
 					$( '[name^="camptix_payment_options_paypal"]' ).each( function() {

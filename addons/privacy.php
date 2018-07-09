@@ -11,6 +11,8 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'register_personal_data_exporters' ) );
 		add_filter( 'wp_privacy_personal_data_erasers', array( $this, 'register_personal_data_erasers' ) );
 		add_filter( 'wp_privacy_anonymize_data', array( $this, 'data_anonymizers' ), 10, 3 );
+
+		add_action( 'admin_init', array( $this, 'add_privacy_policy_content' ) );
 	}
 
 	/**
@@ -447,6 +449,86 @@ class CampTix_Addon_Privacy extends CampTix_Addon {
 		}
 
 		return $anonymous;
+	}
+
+	/**
+	 * Suggested content additions for a privacy policy.
+	 *
+	 * @return void
+	 */
+	public function add_privacy_policy_content() {
+		if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
+			return;
+		}
+
+		$content = array();
+
+		$content[] = '<p class="privacy-policy-tutorial">' .
+		             __( 'This sample language includes the basics around what personal data your CampTix instance may be collecting, storing and sharing, as well as who may have access to that data. Depending on what settings are enabled and which additional plugins are used, the specific information used by your CampTix instance will vary. We recommend consulting with a lawyer when deciding what information to disclose on your privacy policy.', 'camptix' ) .
+		             '</p>';
+
+		$content[] = '<h2>' .
+		             __( 'What personal data we collect and why we collect it', 'camptix' ) .
+		             '</h2>';
+
+		$content[] = __( 'When you register for one of our events, we’ll ask you to provide information including your name and email address. We may also ask for additional information necessary for a specific event, such as home address, phone number, meal preference, t-shirt size, agreement to the code of conduct, areas of interest, and/or interest in attending associate events. We may use this information to:', 'camptix' );
+
+		$content[] = '<ul>' .
+		             '<li>' . __( 'Send you information about your ticket and the event', 'camptix' ) . '</li>' .
+		             '<li>' . __( 'Respond to your requests, including refunds and complaints', 'camptix' ) . '</li>' .
+		             '<li>' . __( 'Process your payments and prevent fraud', 'camptix' ) . '</li>' .
+		             '<li>' . __( 'Comply with any legal obligations we have, such as calculating taxes', 'camptix' ) . '</li>' .
+		             '<li>' . __( 'Send you updates about the ticketed event and other associated events, if you choose to receive them', 'camptix' ) . '</li>' .
+		             '</ul>';
+
+		$content[] = '<h3>' .
+		             __( 'Cookies', 'camptix' ) .
+		             '</h3>';
+
+		$content[] = __( 'We use cookies to keep track of the number of unique visitors to the Tickets page, and for managing access to content on the site that is restricted to ticket holders.', 'camptix' );
+
+		$content[] = '<h2>' .
+		             __( 'Who has access', 'camptix' ) .
+		             '</h2>';
+
+		$content[] = __( 'Members of our team have access to the information you provide us. For example, all Event Organizers can access:', 'camptix' );
+
+		$content[] = '<ul>' .
+		             '<li>' . __( 'Registration information such as which tickets were purchased and when they were purchased', 'camptix' ) . '</li>' .
+		             '<li>' . __( 'Attendee information like your name, email address, and other relevant event attendance details', 'camptix' ) . '</li>' .
+		             '</ul>';
+
+		$content[] = __( 'Our team members have access to this information to help organize the event, process refunds and support you.', 'camptix' );
+
+		$content[] = '<h2>' .
+		             __( 'What we share with others', 'camptix' ) .
+		             '</h2>';
+
+		$content[] = '<p class="privacy-policy-tutorial">' .
+		             __( 'In this section you should list who you’re sharing data with, and for what purpose. This could include, but may not be limited to, analytics, marketing, payment gateways, shipping providers, and third party embeds.', 'camptix' ) .
+		             '</p>';
+
+		$content[] = '<h3>' .
+		             __( 'Payments', 'camptix' ) .
+		             '</h3>';
+
+		$content[] = '<p class="privacy-policy-tutorial">' .
+		             __( 'In this subsection you should list which third party payment processors you’re using to take payments on your store since these may handle customer data. We’ve included PayPal as an example, but you should remove this if you’re not using PayPal.', 'camptix' ) .
+		             '</p>';
+
+		$content[] = __( 'We accept payments through PayPal. When processing payments, some of your data will be passed to PayPal, including information required to process or support the payment, such as the purchase total and billing information.', 'camptix' );
+
+		$content[] = sprintf(
+			wp_kses( __( 'Please see the <a href="%s">PayPal Privacy Policy</a> for more details.', 'camptix' ), array( 'a' => array( 'href' => true ) ) ),
+			'https://www.paypal.com/us/webapps/mpp/ua/privacy-full'
+		);
+
+		$content = implode( "\n\n", $content );
+
+		wp_add_privacy_policy_content(
+			'CampTix',
+			wp_kses_post( wpautop( $content, false ) )
+		);
 	}
 }
 
