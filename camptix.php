@@ -4194,23 +4194,23 @@ class CampTix_Plugin {
 	 * Runs before question fields are printed, initialize controls actions here.
 	 */
 	function question_fields_init() {
-		add_action( 'camptix_question_field_text', array( $this, 'question_field_text' ), 10, 2 );
-		add_action( 'camptix_question_field_select', array( $this, 'question_field_select' ), 10, 3 );
-		add_action( 'camptix_question_field_checkbox', array( $this, 'question_field_checkbox' ), 10, 3 );
-		add_action( 'camptix_question_field_textarea', array( $this, 'question_field_textarea' ), 10, 2 );
-		add_action( 'camptix_question_field_radio', array( $this, 'question_field_radio' ), 10, 3 );
+		add_action( 'camptix_question_field_text',     array( $this, 'question_field_text' ),     10, 4 );
+		add_action( 'camptix_question_field_select',   array( $this, 'question_field_select' ),   10, 4 );
+		add_action( 'camptix_question_field_checkbox', array( $this, 'question_field_checkbox' ), 10, 4 );
+		add_action( 'camptix_question_field_textarea', array( $this, 'question_field_textarea' ), 10, 4 );
+		add_action( 'camptix_question_field_radio',    array( $this, 'question_field_radio' ),    10, 4 );
 	}
 
 	/**
 	 * A text input for a question.
 	 */
-	function question_field_text( $name, $value, $q, $required=false ) {
+	function question_field_text( $name, $value, $question, $required = false ) {
 		?>
 		<input
 				name="<?php echo esc_attr( $name ); ?>"
 				type="text"
 				value="<?php echo esc_attr( $value ); ?>"
-				<?php if ( $required ) echo 'required' ?>
+				<?php if ( $required ) echo 'required'; ?>
 		/>
 		<?php
 	}
@@ -4218,10 +4218,10 @@ class CampTix_Plugin {
 	/**
 	 * A drop-down select for a question.
 	 */
-	function question_field_select( $name, $user_value, $question ) {
+	function question_field_select( $name, $user_value, $question, $required = false ) {
 		$values = get_post_meta( $question->ID, 'tix_values', true );
 		?>
-		<select name="<?php echo esc_attr( $name ); ?>" />
+		<select name="<?php echo esc_attr( $name ); ?>" <?php if ( $required ) echo 'required'; ?>>
 			<?php foreach ( (array) $values as $question_value ) : ?>
 				<option <?php selected( $question_value, $user_value ); ?> value="<?php echo esc_attr( $question_value ); ?>"><?php echo esc_html( $question_value ); ?></option>
 			<?php endforeach; ?>
@@ -4232,7 +4232,7 @@ class CampTix_Plugin {
 	/**
 	 * A single or multiple checkbox for a question.
 	 */
-	function question_field_checkbox( $name, $user_value, $question ) {
+	function question_field_checkbox( $name, $user_value, $question, $required = false ) {
 		$values = get_post_meta( $question->ID, 'tix_values', true );
 		$user_value_esc = array_map( 'esc_attr', (array) $user_value );
 		?>
@@ -4249,7 +4249,10 @@ class CampTix_Plugin {
 				</label><br />
 			<?php endforeach; ?>
 		<?php else : ?>
-			<label><input <?php checked( $user_value, 'Yes' ); ?> name="<?php echo esc_attr( $name ); ?>" type="checkbox" value="Yes" /> <?php _e( 'Yes', 'camptix' ); ?></label>
+			<label>
+				<input <?php checked( $user_value, 'Yes' ); ?> name="<?php echo esc_attr( $name ); ?>" type="checkbox" value="Yes" <?php if ( $required ) echo 'required'; ?> />
+				<?php _e( 'Yes', 'camptix' ); ?>
+			</label>
 		<?php endif; ?>
 		<?php
 	}
@@ -4257,20 +4260,23 @@ class CampTix_Plugin {
 	/**
 	 * A textarea input for questions.
 	 */
-	function question_field_textarea( $name, $value ) {
+	function question_field_textarea( $name, $value, $question, $required = false ) {
 		?>
-		<textarea name="<?php echo esc_attr( $name ); ?>"><?php echo esc_textarea( $value ); ?></textarea>
+		<textarea name="<?php echo esc_attr( $name ); ?>" <?php if ( $required ) echo 'required'; ?>><?php echo esc_textarea( $value ); ?></textarea>
 		<?php
 	}
 
 	/**
 	 * A radio input for questions.
 	 */
-	function question_field_radio( $name, $user_value, $question ) {
+	function question_field_radio( $name, $user_value, $question, $required = false ) {
 		$values = get_post_meta( $question->ID, 'tix_values', true );
 		?>
 		<?php foreach ( (array) $values as $question_value ) : ?>
-			<label><input <?php checked( $question_value, $user_value ); ?> name="<?php echo esc_attr( $name ); ?>" type="radio" value="<?php echo esc_attr( $question_value ); ?>" /> <?php echo esc_html( $question_value ); ?></label><br />
+			<label>
+				<input <?php checked( $question_value, $user_value ); ?> name="<?php echo esc_attr( $name ); ?>" type="radio" value="<?php echo esc_attr( $question_value ); ?>" <?php if ( $required ) echo 'required'; ?> />
+				<?php echo esc_html( $question_value ); ?>
+			</label><br />
 		<?php endforeach; ?>
 		<?php
 	}
