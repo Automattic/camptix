@@ -13,7 +13,7 @@ class CampTix_Addon_URL_Field extends CampTix_Addon {
 		global $camptix;
 		add_filter( 'camptix_question_field_types', array( $this, 'question_field_types' ) );
 		add_action( 'camptix_attendees_shortcode_init', array( $this, 'attendees_shortcode_init' ) );
-		add_action( 'camptix_question_field_url', array( $this, 'question_field_url' ), 10, 2 );
+		add_action( 'camptix_question_field_url', array( $this, 'question_field_url' ), 10, 4 );
 		add_action( 'camptix_attendees_shortcode_item', array( $this, 'attendees_shortcode_item' ), 10, 1 );
 	}
 
@@ -26,9 +26,9 @@ class CampTix_Addon_URL_Field extends CampTix_Addon {
 	/**
 	 * A url input for a question.
 	 */
-	function question_field_url( $name, $value ) {
+	function question_field_url( $name, $value, $question, $required = false ) {
 		?>
-		<input name="<?php echo esc_attr( $name ); ?>" type="url" value="<?php echo esc_attr( $value ); ?>" />
+		<input name="<?php echo esc_attr( $name ); ?>" type="url" value="<?php echo esc_attr( $value ); ?>" <?php if ( $required ) echo 'required'; ?> />
 		<?php
 	}
 

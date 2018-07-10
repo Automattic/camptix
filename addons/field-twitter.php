@@ -17,7 +17,7 @@ class CampTix_Addon_Twitter_Field extends CampTix_Addon {
 		global $camptix;
 		add_filter( 'camptix_question_field_types', array( $this, 'question_field_types' ) );
 		add_action( 'camptix_attendees_shortcode_init', array( $this, 'attendees_shortcode_init' ) );
-		add_action( 'camptix_question_field_twitter', array( $camptix, 'question_field_text' ), 10, 2 );
+		add_action( 'camptix_question_field_twitter', array( $camptix, 'question_field_text' ), 10, 4 );
 		add_action( 'camptix_attendees_shortcode_item', array( $this, 'attendees_shortcode_item' ), 10, 1 );
 	}
 
