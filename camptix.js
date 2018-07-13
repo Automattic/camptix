@@ -233,8 +233,15 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 
 /**
  * Class for utility functions
+ * Methods of this class are intended to be over written if needed for a customization.
+ *
+ * For egs, to over write `getSelectedPaymentOption`, do it like so:
+ *
+ * CampTixUtilities.getSelectedPaymentOption = function() {
+ * 		// code for selecting payment method
+ * 	}
  */
-var Tix = new function() {
+var CampTixUtilities = new function() {
 
 	/**
 	 * Gets the currently selected payment option. If a new payment options
@@ -244,10 +251,10 @@ var Tix = new function() {
 	 * @returns {*|string}
 	 */
 	this.getSelectedPaymentOption = function() {
-		return jQuery('#tix [name="tix_payment_method"]').val() || 'stripe';
+		return jQuery( '#tix [name="tix_payment_method"]' ).val() || 'stripe';
 	}
 };
-window.Tix = Tix;
+window.CampTixUtilities = CampTixUtilities;
 
 /**
  * Functionality for the Stripe payment gateway.
