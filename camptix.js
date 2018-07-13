@@ -277,7 +277,7 @@ var CampTixStripe = new function() {
 
 	self.form_handler = function(e) {
 		// Verify Stripe is the selected method.
-		var method = Tix.getSelectedPaymentOption();
+		var method = CampTixUtilities.getSelectedPaymentOption();
 
 		if ( 'stripe' !== method ) {
 			return;
