@@ -230,6 +230,8 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 
 }(jQuery));
 
+window.CampTixStripeData = window.CampTixStripeData || {};
+
 /**
  * Functionality for the Stripe payment gateway.
  */
