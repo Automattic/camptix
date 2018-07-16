@@ -68,8 +68,9 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 	/**
 	 * Automatically prepend http:// to URL fields if the user didn't.
 	 *
-	 * Some browsers will reject input like "example.org" as invalid because it's missing the protocol. This
-	 * confuses users who don't realize that the protocol is required.
+	 * Some browsers will reject input like "example.org" as invalid because
+	 * it's missing the protocol. This confuses users who don't realize that
+	 * the protocol is required.
 	 */
 	tix.find( 'input[type=url]' ).on( 'blur', function( event ) {
 		var url = $( this ).val();
@@ -233,6 +234,31 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 window.CampTixStripeData = window.CampTixStripeData || {};
 
 /**
+ * Class for utility functions
+ * Methods of this class are intended to be over written if needed for a customization.
+ *
+ * For egs, to over write `getSelectedPaymentOption`, do it like so:
+ *
+ * CampTixUtilities.getSelectedPaymentOption = function() {
+ * 		// code for selecting payment method
+ * 	}
+ */
+var CampTixUtilities = new function() {
+
+	/**
+	 * Gets the currently selected payment option. If a new payment options
+	 * layout is implemented, then over write this function to select proper
+	 * payment option
+	 *
+	 * @returns {*|string}
+	 */
+	this.getSelectedPaymentOption = function() {
+		return jQuery( '#tix [name="tix_payment_method"]' ).val() || 'stripe';
+	}
+};
+window.CampTixUtilities = CampTixUtilities;
+
+/**
  * Functionality for the Stripe payment gateway.
  */
 var CampTixStripe = new function() {
@@ -253,7 +279,7 @@ var CampTixStripe = new function() {
 
 	self.form_handler = function(e) {
 		// Verify Stripe is the selected method.
-		var method = self.form.find('[name="tix_payment_method"]').val() || 'stripe';
+		var method = CampTixUtilities.getSelectedPaymentOption();
 
 		if ( 'stripe' !== method ) {
 			return;
