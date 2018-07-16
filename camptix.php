@@ -6603,7 +6603,7 @@ class CampTix_Plugin {
 
 		if ( isset( $_POST['tix_payment_method'] ) && array_key_exists( $_POST['tix_payment_method'], $this->get_enabled_payment_methods() ) )
 			$payment_method = $_POST['tix_payment_method'];
-		elseif ( ! empty( $this->order['price'] ) && $this->order['price'] > 0 ) {
+		elseif ( ! empty( $this->order['total'] ) && $this->order['total'] > 0 ) {
 			$this->error_flags['invalid_payment_method'] = true;
 		}
 
