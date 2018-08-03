@@ -1626,7 +1626,7 @@ class CampTix_Plugin {
 		<p><?php _e( 'Customize your confirmation e-mail templates.', 'camptix' ); ?></p>
 
 		<p>
-			<?php _e( 'You can use the following shortcodes inside the message: [event_name], [ticket_url], [receipt], and [buyer_full_name].', 'camptix' ); ?>
+			<?php _e( 'You can use the following shortcodes inside the message: [buyer_full_name], [first_name], [last_name], [email], [event_name], [ticket_url], and [receipt].', 'camptix' ); ?>
 		</p>
 
 		<?php if ( self::html_mail_enabled() ) : ?>
