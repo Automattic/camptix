@@ -660,6 +660,7 @@ class CampTix_Stripe_API_Client {
 
 		$request_args = array(
 			'user-agent' => $this->user_agent,
+			'timeout'    => 30, // The default of 5 seconds can result in frequent timeouts.
 
 			'body' => $args,
 
