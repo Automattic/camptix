@@ -762,7 +762,7 @@ class CampTix_Stripe_API_Client {
 		);
 
 		if ( is_array( $metadata ) && ! empty( $metadata ) ) {
-			$args['metadata'] = $metadata;
+			$args['metadata'] = $this->clean_metadata( $metadata );
 		}
 
 		return $this->send_request( 'charge', $args );
@@ -783,9 +783,59 @@ class CampTix_Stripe_API_Client {
 		);
 
 		if ( is_array( $metadata ) && ! empty( $metadata ) ) {
-			$args['metadata'] = $metadata;
+			$args['metadata'] = $this->clean_metadata( $metadata );
 		}
 
 		return $this->send_request( 'refund', $args );
 	}
+
+	/**
+	 * Trim a string to a certain number of characters
+	 * @param    string     $string  original string
+	 * @param    int        $chars   max number of characters
+	 * @param    string     $suffix  suffix to append if string exceeds $chars
+	 * @return   string
+	 */
+	private function trim_string( $string, $chars = 500, $suffix = '...' ) {
+		if ( strlen( $string ) > $chars ) {
+			if ( function_exists( 'mb_substr' ) ) {
+				$string = mb_substr( $string, 0, ( $chars - mb_strlen( $suffix ) ) ) . $suffix;
+			} else {
+				$string = substr( $string, 0, ( $chars - strlen( $suffix ) ) ) . $suffix;
+			}
+		}
+		return $string;
+	}
+
+	/**
+	 * Clean up an array of metadata before passing to stripe
+	 * @see      https://stripe.com/docs/api#metadata
+	 * @param    array     $metadata  assoc. array of metadata
+	 * @return   array
+	 */
+	private function clean_metadata( $metadata = array() ) {
+
+		$cleaned = array();
+		foreach ( $metadata as $key => $val ) {
+
+			// only allowed 20 keys
+			// return stop when we get to 20
+			if ( count( $cleaned ) > 20 ) {
+				return $cleaned;
+			}
+
+			// trim the key to 40 chars
+			$key = $this->trim_string( $key, 40, '' );
+
+			// trim the val to 500
+			$val = $this->trim_string( $val );
+
+			$cleaned[ $key ] = $val;
+
+		}
+
+		return $cleaned;
+
+	}
+
 }
