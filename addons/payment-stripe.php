@@ -750,7 +750,7 @@ class CampTix_Stripe_API_Client {
 	public function request_charge( $amount, $source, $description, $receipt_email, $metadata = array() ) {
 		$statement_descriptor = sanitize_text_field( $description );
 		$statement_descriptor = str_replace( array( '<', '>', '"', "'" ), '', $statement_descriptor );
-		$statement_descriptor = mb_substr( $statement_descriptor, 0, 22 );
+		$statement_descriptor = $this->trim_string( $statement_descriptor, 22 );
 
 		$args = array(
 			'amount'               => $amount,
@@ -790,13 +790,15 @@ class CampTix_Stripe_API_Client {
 	}
 
 	/**
-	 * Trim a string to a certain number of characters
-	 * @param    string     $string  original string
-	 * @param    int        $chars   max number of characters
-	 * @param    string     $suffix  suffix to append if string exceeds $chars
-	 * @return   string
+	 * Trim a string to a certain number of characters.
+	 *
+	 * @param string $string The original string.
+	 * @param int    $chars  The max number of characters for the string.
+	 * @param string $suffix A suffix to append if the string exceeds the max.
+	 *
+	 * @return string
 	 */
-	private function trim_string( $string, $chars = 500, $suffix = '...' ) {
+	protected function trim_string( $string, $chars = 500, $suffix = '...' ) {
 		if ( strlen( $string ) > $chars ) {
 			if ( function_exists( 'mb_substr' ) ) {
 				$string = mb_substr( $string, 0, ( $chars - mb_strlen( $suffix ) ) ) . $suffix;
@@ -804,38 +806,37 @@ class CampTix_Stripe_API_Client {
 				$string = substr( $string, 0, ( $chars - strlen( $suffix ) ) ) . $suffix;
 			}
 		}
+
 		return $string;
 	}
 
 	/**
-	 * Clean up an array of metadata before passing to stripe
-	 * @see      https://stripe.com/docs/api#metadata
-	 * @param    array     $metadata  assoc. array of metadata
-	 * @return   array
+	 * Clean up an array of metadata before passing to Stripe.
+	 *
+	 * @see https://stripe.com/docs/api#metadata
+	 *
+	 * @param array $metadata An associative array of metadata.
+	 *
+	 * @return array
 	 */
-	private function clean_metadata( $metadata = array() ) {
-
+	protected function clean_metadata( $metadata = array() ) {
 		$cleaned = array();
-		foreach ( $metadata as $key => $val ) {
 
-			// only allowed 20 keys
-			// return stop when we get to 20
+		foreach ( $metadata as $key => $val ) {
+			// A Stripe transaction can only have 20 metadata keys.
 			if ( count( $cleaned ) > 20 ) {
 				return $cleaned;
 			}
 
-			// trim the key to 40 chars
+			// Trim the key to 40 chars.
 			$key = $this->trim_string( $key, 40, '' );
 
-			// trim the val to 500
+			// Trim the val to 500 chars.
 			$val = $this->trim_string( $val );
 
 			$cleaned[ $key ] = $val;
-
 		}
 
 		return $cleaned;
-
 	}
-
 }
