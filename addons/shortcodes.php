@@ -297,6 +297,14 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 
 					$attendees = array();
 					foreach ( $attendees_raw as $attendee ) {
+
+						// Skip attendees marked as private.
+						$privacy = get_post_meta( $attendee, 'tix_privacy', true );
+
+						if ( 'private' === $privacy ) {
+							continue;
+						}
+
 						$email               = get_post_meta( $attendee, 'tix_email', true );
 						$attendees[ $email ] = $attendee;
 					}
@@ -305,13 +313,6 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 						$attendee_answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
 						if ( $printed >= $attr['posts_per_page'] ) {
 							break;
-						}
-
-						// Skip attendees marked as private.
-						$privacy = get_post_meta( $attendee_id, 'tix_privacy', true );
-						if ( $privacy == 'private' ) {
-							$printed ++;
-							continue;
 						}
 
 						echo '<li>';
