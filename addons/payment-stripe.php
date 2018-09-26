@@ -512,19 +512,49 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 	 * @return int One of the CampTix_Plugin::PAYMENT_STATUS_{status} constants
 	 */
 	public function payment_refund( $payment_token ) {
-		if ( empty( $payment_token ) ) {
-			return false;
-		}
-
 		/** @var CampTix_Plugin $camptix */
 		global $camptix;
+
+		$result = $this->send_refund_request( $payment_token );
+
+		if ( CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED === $result['status'] ) {
+			$camptix->log( 'Stripe refund failed', $order['attendee_id'], $refund, 'stripe' );
+
+			return $camptix->payment_result(
+				$payment_token,
+				CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED,
+				$result
+			);
+		}
+
+		return $camptix->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_REFUNDED, $result );
+	}
+
+	/**
+	 * Send a request to Stripe to refund a transaction.
+	 *
+	 * @param string $payment_token
+	 *
+	 * @return array
+	 */
+	public function send_refund_request( $payment_token ) {
+		/** @var CampTix_Plugin $camptix */
+		global $camptix;
+
+		$result = array(
+			'status'                     => CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED,
+			'transaction_id'             => '',
+			'refund_transaction_id'      => '',
+			'refund_transaction_details' => '',
+		);
 
 		$order          = $this->get_order( $payment_token );
 		$transaction_id = $camptix->get_post_meta_from_payment_token( $payment_token, 'tix_transaction_id' );
 
 		if ( empty( $order ) || ! $transaction_id ) {
 			$camptix->log( 'Could not refund because could not find order', null, array( 'payment_token' => $payment_token ), 'stripe' );
-			wp_die( 'Something went wrong, order could not be found.' );
+
+			return $result;
 		}
 
 		$metadata = array(
@@ -540,30 +570,25 @@ class CampTix_Payment_Method_Stripe extends CampTix_Payment_Method {
 		$refund = $stripe->request_refund( $transaction_id, $metadata );
 
 		if ( is_wp_error( $refund ) ) {
-			$camptix->log( 'Stripe refund failed', $order['attendee_id'], $refund, 'stripe' );
-
-			return $camptix->payment_result(
-				$payment_token,
-				CampTix_Plugin::PAYMENT_STATUS_REFUND_FAILED,
-				array(
-					'errors'     => $refund->errors,
-					'error_data' => $refund->error_data,
-				)
+			$result['refund_transaction_details'] = array(
+				'errors'     => $refund->errors,
+				'error_data' => $refund->error_data,
 			);
+
+			return $result;
 		}
 
-		$refund_data = array(
-			'transaction_id'             => $refund['charge'],
-			'refund_transaction_id'      => $refund['id'],
-			'refund_transaction_details' => array(
-				'raw' => array(
-					'refund_transaction_id' => $refund['id'],
-					'refund'                => $refund,
-				),
+		$result['status']                     = CampTix_Plugin::PAYMENT_STATUS_REFUNDED;
+		$result['transaction_id']             = $refund['charge'];
+		$result['refund_transaction_id']      = $refund['id'];
+		$result['refund_transaction_details'] = array(
+			'raw' => array(
+				'refund_transaction_id' => $refund['id'],
+				'refund'                => $refund,
 			),
 		);
 
-		return $camptix->payment_result( $payment_token, CampTix_Plugin::PAYMENT_STATUS_REFUNDED, $refund_data );
+		return $result;
 	}
 }
 
