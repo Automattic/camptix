@@ -304,8 +304,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 		$payment_data = array(
 			'transaction_id' => $txn_id,
 			'transaction_details' => array(
-				// @todo maybe add more info about the payment
 				'raw' => $txn_details,
+				'checkout' => $payload,
 			),
 		);
 
@@ -323,7 +323,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 	 * the old-style notify URL. This method, runs during template_redirect and
 	 * ensures that IPNs on old attendees still work.
 	 *
-	 * @return mixed Null if returning early, or an integer matching one of the CampTix_Plugin::PAYMENT_STATUS_{status} constants 
+	 * @return mixed Null if returning early, or an integer matching one of the CampTix_Plugin::PAYMENT_STATUS_{status} constants
 	 */
 	function payment_notify_back_compat() {
 		/** @var $camptix CampTix_Plugin */
@@ -575,8 +575,8 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 				$payment_data = array(
 					'transaction_id' => $txn_id,
 					'transaction_details' => array(
-						// @todo maybe add more info about the payment
 						'raw' => $txn,
+						'checkout' => $checkout_details,
 					),
 				);
 
