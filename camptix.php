@@ -5407,7 +5407,7 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		$post->post_content = apply_filters( 'camptix_post_content_override', $this->shortcode_str, $post->post_content, $_GET['tix_action'] );
 
 		if ( isset( $this->error_flags['no_tickets_selected'], $_GET['tix_action'] ) && 'checkout' == $_GET['tix_action'] )
 			return $this->form_start();
@@ -5678,7 +5678,7 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		$post->post_content = apply_filters( 'camptix_post_content_override', $this->shortcode_str, $post->post_content, $_GET['tix_action'] );
 
 		ob_start();
 
@@ -5816,7 +5816,7 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		$post->post_content = apply_filters( 'camptix_post_content_override', $this->shortcode_str, $post->post_content, $_GET['tix_action'] );
 
 		ob_start();
 		if ( ! isset( $_REQUEST['tix_edit_token'] ) || empty( $_REQUEST['tix_edit_token'] ) || ! ctype_alnum( $_REQUEST['tix_edit_token'] ) ) {
@@ -6002,7 +6002,7 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		$post->post_content = apply_filters( 'camptix_post_content_override', $this->shortcode_str, $post->post_content, $_GET['tix_action'] );
 
 		if ( ! $this->options['refunds_enabled'] || ! isset( $_REQUEST['tix_access_token'] ) || ! ctype_alnum( $_REQUEST['tix_access_token'] ) ) {
 			$this->error_flags['invalid_access_token'] = true;
@@ -6177,7 +6177,7 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		$post->post_content = apply_filters( 'camptix_post_content_override', $this->shortcode_str, $post->post_content, $_GET['tix_action'] );
 
 		ob_start();
 		?>
@@ -6594,7 +6594,7 @@ class CampTix_Plugin {
 		global $post;
 
 		// Clean things up before and after the shortcode.
-		$post->post_content = $this->shortcode_str;
+		$post->post_content = apply_filters( 'camptix_post_content_override', $this->shortcode_str, $post->post_content, $_GET['tix_action'] );
 
 		$attendees = array();
 		$errors = array();

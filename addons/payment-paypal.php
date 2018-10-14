@@ -639,7 +639,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'tix_payment_method' => 'paypal',
 		), $camptix->get_tickets_url() );
 
-		$payload = array(
+		$payload = apply_filters( 'camptix_paypal_payload', array(
 			'METHOD'                                => 'SetExpressCheckout',
 			'PAYMENTREQUEST_0_PAYMENTACTION'        => 'Sale',
 			'PAYMENTREQUEST_0_ALLOWEDPAYMENTMETHOD' => 'InstantPaymentOnly', // @todo allow echecks with an option
@@ -648,7 +648,7 @@ class CampTix_Payment_Method_PayPal extends CampTix_Payment_Method {
 			'ALLOWNOTE'                             => 0,
 			'NOSHIPPING'                            => 1,
 			'SOLUTIONTYPE'                          => 'Sole',
-		);
+		));
 
 		// See https://developer.paypal.com/webapps/developer/docs/classic/api/merchant/SetExpressCheckout_API_Operation_NVP/
 		$locale_code = _x( 'default', 'PayPal locale code, leave default to guess', 'camptix' );
