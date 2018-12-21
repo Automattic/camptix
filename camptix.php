@@ -2791,6 +2791,8 @@ class CampTix_Plugin {
 			$report = '<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL . '<attendees>' . PHP_EOL;
 
 		$paged = 1;
+
+		// Ordering by ID ASC is important. Presence of buyer row depends on it. Buyer has to fetched, same or before rest of attendees rows are fetched.
 		while ( $attendees = get_posts( array(
 			'post_type' => 'tix_attendee',
 			'post_status' => array( 'publish', 'pending' ),
@@ -2800,7 +2802,6 @@ class CampTix_Plugin {
 			'order' => 'ASC',
 			'cache_results' => false,
 		) ) ) {
-
 			$attendee_ids = array();
 			foreach ( $attendees as $attendee )
 				$attendee_ids[] = $attendee->ID;
@@ -2810,24 +2811,24 @@ class CampTix_Plugin {
 			 */
 			$this->filter_post_meta = $this->prepare_metadata_for( $attendee_ids );
 			unset( $attendee_ids, $attendee );
+			$buyer_map = array();
+
 
 			foreach ( $attendees as $attendee ) {
 				$attendee_id = $attendee->ID;
 
-				$buyer = get_posts( array(
-					'post_type'      => 'tix_attendee',
-					'post_status'    => array( 'publish', 'pending' ),
-					'posts_per_page' => 1,
-					'orderby'        => 'ID',
-					'order'          => 'ASC',
+				$access_token = get_post_meta( $attendee->ID, 'tix_access_token', true );
 
-					'meta_query'     => array(
-						array(
-							'key'    => 'tix_access_token',
-							'value'  => get_post_meta( $attendee->ID, 'tix_access_token', true ),
-						),
-					),
-				) );
+				/**
+				 So when a buyer buys tickets for a bunch of attendees, access token for all those attendees would be same.
+				 Further, the buyer will always be inserted first into the database.
+				 Which means that when access token for a lot attendees is same, we can figure out the buyer by finding the first attendee with same access token.
+				 * **/
+				if ( ! isset( $buyer_map[ $access_token ] ) ) {
+					$buyer_map[ $access_token ] = $attendee->post_title;
+				}
+
+				$buyer = $buyer_map[ $access_token ];
 
 				$line = array(
 					'id' => $attendee_id,
@@ -2840,7 +2841,7 @@ class CampTix_Plugin {
 					'status' => ucfirst( $attendee->post_status ),
 					'txn_id' => get_post_meta( $attendee_id, 'tix_transaction_id', true ),
 					'coupon' => get_post_meta( $attendee_id, 'tix_coupon', true ),
-					'buyer_name' => empty( $buyer[0]->post_title ) ? '' : $buyer[0]->post_title,
+					'buyer_name' => empty( $buyer ) ? '' : $buyer,
 					'buyer_email' => get_post_meta( $attendee_id, 'tix_receipt_email', true ),
 					'payment_method' => $this->get_payment_method_name_by_attendee_id( $attendee_id ),
 				);
@@ -6591,6 +6592,7 @@ class CampTix_Plugin {
 	 * Step 3: Uses a payment method to perform a checkout.
 	 */
 	function form_checkout() {
+
 		global $post;
 
 		// Clean things up before and after the shortcode.
