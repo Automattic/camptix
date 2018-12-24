@@ -2813,7 +2813,6 @@ class CampTix_Plugin {
 			unset( $attendee_ids, $attendee );
 			$buyer_map = array();
 
-
 			foreach ( $attendees as $attendee ) {
 				$attendee_id = $attendee->ID;
 
@@ -2934,23 +2933,26 @@ class CampTix_Plugin {
 		);
 
 		foreach( $fields as $index => $field ) {
-			// Escape trigger characters at the start of a new field
-			$first_cell_character = mb_substr( $field, 0, 1 );
-			$is_trigger_character = in_array( $first_cell_character, $active_content_triggers, true );
-			$is_delimiter         = in_array( $first_cell_character, $delimiters,              true );
 
-			if ( $is_trigger_character || $is_delimiter ) {
-				$field = "'" . $field;
+			if ( ! is_string( $field ) ) {
+				continue;
 			}
 
-			// Escape trigger characters that follow delimiters
-			foreach ( $delimiters as $delimiter ) {
-				foreach ( $active_content_triggers as $trigger ) {
-					$field = str_replace( $delimiter . $trigger, $delimiter . "'" . $trigger, $field );
+			$escaped_field = '';
+
+			// Escape trigger characters that follow delimiters, or are at the start
+			$is_prev_char_delimiter = true;
+			for ( $i = 0; $i < strlen( $field ); $i++ ) {
+				$char = $field[ $i ];
+				if ( $is_prev_char_delimiter && in_array( $char, $active_content_triggers ) ) {
+					$escaped_field .= "'";
 				}
+				$escaped_field .= $char;
+				$is_prev_char_delimiter = in_array( $char, $delimiters );
 			}
 
-			$fields[ $index ] = $field;
+			$fields[ $index ] = $escaped_field;
+
 		}
 
 		return $fields;
