@@ -2791,27 +2791,17 @@ class CampTix_Plugin {
 			$report = '<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL . '<attendees>' . PHP_EOL;
 
 		$paged = 1;
+		$buyer_map = array();
 
 		// Ordering by ID ASC is important. Presence of buyer row depends on it. Buyer has to fetched, same or before rest of attendees rows are fetched.
 		while ( $attendees = get_posts( array(
 			'post_type' => 'tix_attendee',
 			'post_status' => array( 'publish', 'pending' ),
-			'posts_per_page' => 200,
+			'posts_per_page' => 500,
 			'paged' => $paged++,
 			'orderby' => 'ID',
 			'order' => 'ASC',
-			'cache_results' => false,
 		) ) ) {
-			$attendee_ids = array();
-			foreach ( $attendees as $attendee )
-				$attendee_ids[] = $attendee->ID;
-
-			/**
-			 * Magic here, to by-pass object caching. See Revenue report for more info.
-			 */
-			$this->filter_post_meta = $this->prepare_metadata_for( $attendee_ids );
-			unset( $attendee_ids, $attendee );
-			$buyer_map = array();
 
 			foreach ( $attendees as $attendee ) {
 				$attendee_id = $attendee->ID;
