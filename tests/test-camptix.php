@@ -41,13 +41,13 @@ class Test_CampTix_Plugin extends \WP_UnitTestCase {
 			'\'@HYPERLINK("http://malicious.example.org/wp-login.php","Please log back in to your account for more.")',
 			"'-2+3+cmd|' /C mstsc'!A0",
 			"'+2+3+cmd|' /C mspaint'!A0",
-			"';2+3+cmd|' /C calc'!A0",
+			";2+3+cmd|' /C calc'!A0",
 
 			// Cells split by delimiters
 			"foo ;'=cmd|' /C SoundRecorder'!A0",
 			"foo\n'-2+3+cmd|' /C explorer'!A0",
-			"'   '-2+3+cmd|' /C notepad'!A0",
-			"' '-2+3+cmd|' /C calc'!A0",
+			"   '-2+3+cmd|' /C notepad'!A0",
+			" '-2+3+cmd|' /C calc'!A0",
 
 			//mb_tests
 			"漢字はユニコ",
