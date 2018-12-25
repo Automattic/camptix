@@ -2830,7 +2830,7 @@ class CampTix_Plugin {
 					'status' => ucfirst( $attendee->post_status ),
 					'txn_id' => get_post_meta( $attendee_id, 'tix_transaction_id', true ),
 					'coupon' => get_post_meta( $attendee_id, 'tix_coupon', true ),
-					'buyer_name' => empty( $buyer ) ? '' : $buyer,
+					'buyer_name' => $buyer,
 					'buyer_email' => get_post_meta( $attendee_id, 'tix_receipt_email', true ),
 					'payment_method' => $this->get_payment_method_name_by_attendee_id( $attendee_id ),
 				);
