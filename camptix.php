@@ -2808,11 +2808,11 @@ class CampTix_Plugin {
 
 				$access_token = get_post_meta( $attendee->ID, 'tix_access_token', true );
 
-				/**
+				/*
 				 So when a buyer buys tickets for a bunch of attendees, access token for all those attendees would be same.
 				 Further, the buyer will always be inserted first into the database.
 				 Which means that when access token for a lot attendees is same, we can figure out the buyer by finding the first attendee with same access token.
-				 * **/
+				 */
 				if ( ! isset( $buyer_map[ $access_token ] ) ) {
 					$buyer_map[ $access_token ] = $attendee->post_title;
 				}
@@ -2933,12 +2933,12 @@ class CampTix_Plugin {
 			// Escape trigger characters that follow delimiters, or are at the start
 			$is_prev_char_delimiter = true;
 			for ( $i = 0; $i < strlen( $field ); $i++ ) {
-				$char = $field[ $i ];
-				if ( $is_prev_char_delimiter && in_array( $char, $active_content_triggers ) ) {
+				$current_char = $field[ $i ];
+				if ( $is_prev_char_delimiter && in_array( $current_char, $active_content_triggers ) ) {
 					$escaped_field .= "'";
 				}
-				$escaped_field .= $char;
-				$is_prev_char_delimiter = in_array( $char, $delimiters );
+				$escaped_field .= $current_char;
+				$is_prev_char_delimiter = in_array( $current_char, $delimiters );
 			}
 
 			$fields[ $index ] = $escaped_field;
@@ -6584,7 +6584,6 @@ class CampTix_Plugin {
 	 * Step 3: Uses a payment method to perform a checkout.
 	 */
 	function form_checkout() {
-
 		global $post;
 
 		// Clean things up before and after the shortcode.
