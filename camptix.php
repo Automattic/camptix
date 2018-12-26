@@ -2924,7 +2924,7 @@ class CampTix_Plugin {
 
 		foreach( $fields as $index => $field ) {
 
-			if ( ! is_string( $field ) ) {
+			if ( is_numeric( $field ) ) {
 				continue;
 			}
 
