@@ -2930,6 +2930,11 @@ class CampTix_Plugin {
 
 			$escaped_field = '';
 
+			$first_char = $field[0];
+			if ( in_array( $first_char, $delimiters ) ) {
+				$escaped_field .= "'";
+			}
+
 			// Escape trigger characters that follow delimiters, or are at the start
 			$is_prev_char_delimiter = true;
 			for ( $i = 0; $i < strlen( $field ); $i++ ) {
