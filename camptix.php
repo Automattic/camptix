@@ -2937,8 +2937,8 @@ class CampTix_Plugin {
 
 			// Escape trigger characters that follow delimiters, or are at the start
 			$is_prev_char_delimiter = true;
-			for ( $i = 0; $i < strlen( $field ); $i++ ) {
-				$current_char = $field[ $i ];
+			for ( $i = 0; $i < mb_strlen( $field ); $i++ ) {
+				$current_char = mb_substr( $field, $i, 1 );
 				if ( $is_prev_char_delimiter && in_array( $current_char, $active_content_triggers ) ) {
 					$escaped_field .= "'";
 				}
