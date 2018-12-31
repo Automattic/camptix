@@ -2930,7 +2930,7 @@ class CampTix_Plugin {
 
 			$escaped_field = '';
 
-			$first_char = $field[0];
+			$first_char = mb_substr( $field, 0, 1 );
 			if ( in_array( $first_char, $delimiters ) ) {
 				$escaped_field .= "'";
 			}
