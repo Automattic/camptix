@@ -39,22 +39,34 @@ class CampTix_Addon_URL_Field extends CampTix_Addon {
 
 	function attendees_shortcode_item( $attendee_id ) {
 		foreach ( $this->questions as $question ) {
-			if ( get_post_meta( $question->ID, 'tix_type', true ) != 'url' )
+			if ( get_post_meta( $question->ID, 'tix_type', true ) != 'url' ) {
 				continue;
+			}
 
 			$answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
-			if ( ! isset( $answers[ $question->ID ] ) )
+
+			if ( ! isset( $answers[ $question->ID ] ) ) {
 				continue;
+			}
 
 			$url = esc_url_raw( trim( $answers[ $question->ID ] ) );
-			if ( $url ) {
-				$parsed = parse_url( $url );
-				$label = $parsed['host'];
-				if ( isset( $parsed['path'] ) )
-					$label .= untrailingslashit( $parsed['path'] );
 
-				if ( substr( $label, 0, 4 ) == 'www.' )
+			if ( $url ) {
+				$parsed = wp_parse_url( $url );
+
+				if ( empty( $parsed['host'] ) ) {
+					continue;
+				}
+
+				$label = $parsed['host'];
+
+				if ( isset( $parsed['path'] ) ) {
+					$label .= untrailingslashit( $parsed['path'] );
+				}
+
+				if ( substr( $label, 0, 4 ) == 'www.' ) {
 					$label = substr( $label, 4 );
+				}
 
 				printf( '<a class="tix-field tix-attendee-url" href="%s">%s</a>', esc_url( $url ), esc_html( $label ) );
 			}
