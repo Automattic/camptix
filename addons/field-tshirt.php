@@ -111,18 +111,17 @@ class CampTix_Addon_Tshirt_Field extends CampTix_Addon {
 		) );
 
 		foreach ( $questions as $question ) {
-			foreach ( $question->tix_values as $size ) {
-				if ( empty( $size_counts[ $size ] ) ) {
-					$size_counts[ $size ] = 0;
-				}
-			}
-
 			foreach ( $attendees as $attendee ) {
 				if ( empty( $attendee->tix_questions[ $question->ID ] ) ) {
 					continue;
 				}
 
 				$size = $attendee->tix_questions[ $question->ID ];
+
+				if ( empty( $size_counts[ $size ] ) ) {
+					$size_counts[ $size ] = 0;
+				}
+
 				$size_counts[ $size ]++;
 			}
 		}
