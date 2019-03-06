@@ -286,20 +286,14 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 						),
 						$query_args
 					), $attr );
-					$attendees_raw = get_posts( $attendee_args );
+					$attendees = get_posts( $attendee_args );
 
-					if ( ! is_array( $attendees_raw ) || count( $attendees_raw ) < 1 ) {
+					if ( ! is_array( $attendees ) || count( $attendees ) < 1 ) {
 						break; // life saver!
 					}
 
 					// Disable object cache for prepared metadata.
-					$camptix->filter_post_meta = $camptix->prepare_metadata_for( $attendees_raw );
-
-					$attendees = array();
-					foreach ( $attendees_raw as $attendee ) {
-						$email               = get_post_meta( $attendee, 'tix_email', true );
-						$attendees[ $email ] = $attendee;
-					}
+					$camptix->filter_post_meta = $camptix->prepare_metadata_for( $attendees );
 
 					foreach ( $attendees as $attendee_id ) {
 						$attendee_answers = (array) get_post_meta( $attendee_id, 'tix_questions', true );
