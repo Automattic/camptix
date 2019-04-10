@@ -6605,6 +6605,7 @@ class CampTix_Plugin {
 			$this->error_flags['invalid_payment_method'] = true;
 		}
 
+		do_action( 'camptix_checkout_start', $_POST['tix_attendee_info'], $this->order );
 		foreach( (array) $_POST['tix_attendee_info'] as $i => $attendee_info ) {
 			$attendee = new stdClass;
 
