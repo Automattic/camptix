@@ -5526,6 +5526,8 @@ class CampTix_Plugin {
 					</tbody>
 				</table>
 
+				<?php do_action( 'camptix_form_attendee_after_order_summary', $this->order, $this->options ); ?>
+
 				<h2 id="tix-registration-information"><?php echo esc_html( apply_filters( 'camptix_register_registration_info_header', __( 'Registration Information', 'camptix' ) ) ); ?></h2>
 				<?php foreach ( $this->tickets_selected as $ticket_id => $count ) : ?>
 					<?php foreach ( range( 1, $count ) as $looping_count_times ) : ?>
@@ -5622,6 +5624,8 @@ class CampTix_Plugin {
 
 					<?php endforeach; // range ?>
 				<?php endforeach; // tickets_selected ?>
+
+				<?php do_action( 'camptix_form_attendee_after_registration_information', $this->order, $this->options ); ?>
 
 				<?php if ( $this->tickets_selected_count > 1 ) : ?>
 				<div class="tix-show-if-js">
