@@ -4938,8 +4938,10 @@ class CampTix_Plugin {
 	 */
 	function template_redirect() {
 		global $post;
-		if ( ! is_page() || ! stristr( $post->post_content, '[camptix' ) )
+
+		if ( ! is_page() || ! $post instanceof WP_Post || ! stristr( $post->post_content, '[camptix' ) ) {
 			return;
+		}
 
 		// Allow [camptix attr="value"] but not [camptix_attendees] etc.
 		if ( ! preg_match( "#\\[camptix(\s[^\\]]+)?\\]#", $post->post_content, $matches ) )
@@ -7062,6 +7064,8 @@ class CampTix_Plugin {
 		$transaction_details = null;
 		$attendees_status = $attendees[0]->post_status;
 		$status_changed = false;
+		$refund_transaction_id      = false;
+		$refund_transaction_details = false;
 
 		// If this is not the first payment result, let's get the old txn details before updating.
 		if ( $attendees_status != 'draft' ) {
@@ -7074,6 +7078,14 @@ class CampTix_Plugin {
 
 		if ( ! empty( $data['transaction_details'] ) )
 			$transaction_details = $data['transaction_details'];
+
+		if ( ! empty( $data['refund_transaction_id'] ) ) {
+			$refund_transaction_id = $data['refund_transaction_id'];
+		}
+
+		if ( ! empty( $data['refund_transaction_details'] ) ) {
+			$refund_transaction_details = $data['refund_transaction_details'];
+		}
 
 		foreach ( $attendees as $attendee ) {
 
@@ -7105,9 +7117,9 @@ class CampTix_Plugin {
 			if ( self::PAYMENT_STATUS_REFUNDED == $result ) {
 				$attendee->post_status = 'refund';
 				wp_update_post( $attendee );
-				update_post_meta( $attendee->ID, 'tix_refund_transaction_id', $data['refund_transaction_id'] );
-				update_post_meta( $attendee->ID, 'tix_refund_transaction_details', $data['refund_transaction_details'] );
-				$this->log( sprintf( 'Refunded %s by user request in %s.', $transaction_id, $data['refund_transaction_id'] ), $attendee->ID, $data, 'refund' );
+				update_post_meta( $attendee->ID, 'tix_refund_transaction_id', $refund_transaction_id );
+				update_post_meta( $attendee->ID, 'tix_refund_transaction_details', $refund_transaction_details );
+				$this->log( sprintf( 'Refunded %s by user request in %s.', $transaction_id, $refund_transaction_id ), $attendee->ID, $data, 'refund' );
 			}
 
 			if ( self::PAYMENT_STATUS_REFUND_FAILED == $result ) {
