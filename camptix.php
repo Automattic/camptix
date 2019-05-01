@@ -5609,7 +5609,7 @@ class CampTix_Plugin {
 
 										<tr class="<?php echo esc_attr( $class_name ); ?>">
 											<td class="<?php if ( $required ) echo 'tix-required'; ?> tix-left">
-												<?php echo esc_html( apply_filters( 'the_title', $question->post_title ) ); ?>
+												<?php echo make_clickable( esc_html( apply_filters( 'the_title', $question->post_title ) ) ); ?>
 												<?php if ( $required ) echo ' <span class="tix-required-star">*</span>'; ?>
 											</td>
 											<td class="tix-right">
