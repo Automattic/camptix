@@ -176,7 +176,7 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 	var lazyLoad = {
 		cache: {
 			$document:  $( document ),
-			$attendees: $( '#tix-attendees' )
+			$attendees: $( '.tix-attendee-list' )
 		},
 
         /**
