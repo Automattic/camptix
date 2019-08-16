@@ -3191,7 +3191,7 @@ class CampTix_Plugin {
 						<# }); #>
 					</select>
 					<# } else if ( data.type == 'text' ) { #>
-					<input type="text" class="segment-value regular-text" value="{{ data.model.value }}" />
+					<input placeholder="{{ data.placeholder }}" type="text" class="segment-value regular-text" value="{{ data.model.value }}" />
 					<# } #>
 				</div>
 
@@ -3226,7 +3226,8 @@ class CampTix_Plugin {
 				caption: 'Purchase date',
 				option_value: 'date',
 				type: 'text',
-				ops: [ 'before', 'after' ]
+				ops: [ 'before', 'after' ],
+				placeholder: 'YYYY-MM-DD',
 			}));
 
 			<?php foreach ( $this->get_all_questions() as $question ) : ?>

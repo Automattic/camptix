@@ -63,7 +63,8 @@ window.camptix = window.camptix || { models: {}, views: {}, collections: {} };
 					model: this.model.toJSON(),
 					fields: camptix.collections.segmentFields.toJSON(),
 					ops: selectedField.get( 'ops' ),
-					type: selectedField.get( 'type' )
+					type: selectedField.get( 'type' ),
+					placeholder: selectedField.get('placeholder')
 				};
 
 				if ( data.type == 'select' ) {
@@ -130,7 +131,8 @@ window.camptix = window.camptix || { models: {}, views: {}, collections: {} };
 				caption: '',
 				option_value: '',
 				ops: [ 'is', 'is not' ],
-				values: []
+				values: [],
+				placeholder: ''
 			}
 		});
 
