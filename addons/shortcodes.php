@@ -473,11 +473,11 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 			}
 
 			if ( empty( $email ) ) {
-				return $camptix->error( __( 'Please enter the e-mail address that was used to register for your ticket.', 'camptix' ) );
+				return $camptix->error( __( 'Please enter the email address that was used to register for your ticket.', 'camptix' ) );
 			}
 
 			if ( ! is_email( $email ) )
-				return $camptix->error( __( 'The e-mail address you have entered does not seem to be valid.', 'camptix' ) );
+				return $camptix->error( __( 'The email address you have entered does not seem to be valid.', 'camptix' ) );
 
 			$attendees = get_posts( array(
 				'posts_per_page' => 50, // sane enough?
@@ -639,7 +639,7 @@ class CampTix_Addon_Shortcodes extends CampTix_Addon {
 						<th class="tix-left" colspan="2"><?php _e( 'Have a ticket? Sign in', 'camptix' ); ?></th>
 					</tr>
 					<tr>
-						<td class="tix-left"><?php _e( 'E-mail', 'camptix' ); ?></td>
+						<td class="tix-left"><?php _e( 'Email', 'camptix' ); ?></td>
 						<td class="tix-right"><input name="tix_email" value="<?php echo esc_attr( $email ); ?>" type="text" /></td>
 					</tr>
 				</table>
