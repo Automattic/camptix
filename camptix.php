@@ -482,9 +482,18 @@ class CampTix_Plugin {
 			'enterEmail' => __( 'Please enter the e-mail addresses in the forms above.', 'camptix' ),
 			'ajaxURL'    => admin_url( 'admin-ajax.php' ),
 		) );
-
 		// Let's play by the rules and print this in the <head> section.
 		wp_enqueue_style( 'camptix' );
+
+
+		if ( (bool) $this->options['select2_enabled'] ) {
+			wp_register_style( 'select2', plugins_url( '/external/select2/css/select2.min.css', __FILE__ ), array(), $this->version );
+			wp_register_script( 'select2', plugins_url( '/external/select2/js/select2.min.js', __FILE__ ), array(), $this->version );
+
+			wp_enqueue_style( 'select2' );
+			wp_enqueue_script( 'select2' );
+		}
+
 	}
 
 	function admin_enqueue_scripts() {
@@ -1555,7 +1564,10 @@ class CampTix_Plugin {
 				$this->add_settings_field_helper( 'currency', __( 'Currency', 'camptix' ), 'field_currency' );
 
 				$this->add_settings_field_helper( 'refunds_enabled', __( 'Enable Refunds', 'camptix' ), 'field_enable_refunds', false,
-					__( "This will allows your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
+					__( "This will allow your customers to refund their tickets purchase by filling out a simple refund form.", 'camptix' )
+				);
+				$this->add_settings_field_helper( 'select2_enabled', __( 'Enable Select2', 'camptix' ), 'field_enable_select2', false,
+					__( "This will render all the dropdown answers as a searchable dropdown instead of normal select dropdown", 'camptix' )
 				);
 
 				break;
@@ -1683,7 +1695,7 @@ class CampTix_Plugin {
 		if ( isset( $input['refunds_date_end'], $input['refunds_enabled'] ) && (bool) $input['refunds_enabled'] && strtotime( $input['refunds_date_end'] ) )
 			$output['refunds_date_end'] = $input['refunds_date_end'];
 
-		$yesno_fields = array( 'refunds_enabled' );
+		$yesno_fields = array( 'refunds_enabled', 'select2_enabled' );
 
 		// Beta features checkboxes
 		if ( $this->beta_features_enabled )
@@ -1864,6 +1876,17 @@ class CampTix_Plugin {
 
 		<?php if ( isset( $args['description'] ) ) : ?>
 		<p class="description"><?php echo wp_kses_post( $args['description'] ); ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	function field_enable_select2( $args ) {?>
+		<div id="tix-select2-enabled-radios">
+			<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="1" <?php checked( $args['value'], true ); ?>> <?php _e( 'Yes', 'camptix' ); ?></label>
+			<label class="tix-yes-no description"><input type="radio" name="<?php echo esc_attr( $args['name'] ); ?>" value="0" <?php checked( $args['value'], false ); ?>> <?php _e( 'No', 'camptix' ); ?></label>
+		</div>
+		<?php if ( isset( $args['description'] ) ) : ?>
+			<p class="description"><?php echo wp_kses_post( $args['description'] ); ?></p>
 		<?php endif; ?>
 		<?php
 	}
@@ -5539,7 +5562,8 @@ class CampTix_Plugin {
 							$questions = $this->get_sorted_questions( $ticket->ID );
 						?>
 						<input type="hidden" name="tix_attendee_info[<?php echo esc_attr( $i ); ?>][ticket_id]" value="<?php echo intval( $ticket->ID ); ?>" />
-						<table class="tix_tickets_table tix-attendee-form">
+						<table class="tix_tickets_table tix-attendee-form <?php echo ( isset($this->options['select2_enabled']) && (bool) ( $this->options['select2_enabled'] ) ) ?
+							'tix-select2-enabled' : '' ?>">
 							<tbody>
 								<tr>
 									<th colspan="2">

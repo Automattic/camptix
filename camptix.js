@@ -227,7 +227,13 @@ var docCookies={getItem:function(e){return decodeURIComponent(document.cookie.re
 		}
 	};
 
-	$( document ).ready( lazyLoad.init )
+	$( document ).ready( lazyLoad.init );
+
+	$( document ).ready( function loadSelect2() {
+		if( ! tix.length || ! $.fn.hasOwnProperty( 'select2' ) )
+			return;
+		$( '#tix .tix-select2-enabled select' ).select2();
+	})
 
 }(jQuery));
 
