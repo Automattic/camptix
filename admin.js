@@ -160,6 +160,7 @@ window.camptix = window.camptix || { models: {}, views: {}, collections: {} };
 				question: '',
 				values: '',
 				required: false,
+				include_in_email: false,
 				order: 0,
 				json: ''
 			}
@@ -427,7 +428,8 @@ window.camptix = window.camptix || { models: {}, views: {}, collections: {} };
 					// Make sure post_id and required are correct types, not integers.
 					question.set( {
 						post_id: parseInt( question.get( 'post_id' ), 10 ),
-						required: !! parseInt( question.get( 'required' ), 10 )
+						required: !! parseInt( question.get( 'required' ), 10 ),
+						include_in_email: !! parseInt( question.get( 'include_in_email' ), 10 )
 					}, { silent: true } );
 
 					var found = camptix.questions.where( { post_id: parseInt( question.get( 'post_id' ), 10 ) } );

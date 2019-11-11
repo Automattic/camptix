@@ -1460,6 +1460,7 @@ class CampTix_Plugin {
 						// Save attributes, including the key for future use.
 						update_post_meta( $question_id, 'tix_values', $question['values'] );
 						update_post_meta( $question_id, 'tix_required', $question['required'] );
+						update_post_meta( $question_id, 'tix_include_in_email', $question['include_in_email'] );
 						update_post_meta( $question_id, 'tix_type', $question['type'] );
 						update_post_meta( $question_id, 'tix_key', $key );
 
@@ -4363,6 +4364,14 @@ class CampTix_Plugin {
 							<label><input data-model-attribute="required" data-model-attribute-type="checkbox" id="tix-add-question-required" type="checkbox" value="1" /> <?php _e( 'This field is required', 'camptix' ); ?></label>
 						</td>
 					</tr>
+					<tr valign="top">
+						<th scope="row">
+							<label><?php _e( 'Include in Email', 'camptix' ); ?></label>
+						</th>
+						<td>
+							<label><input data-model-attribute="include_in_email" data-model-attribute-type="checkbox" id="tix-add-question-include_in_email" type="checkbox" value="1" /> <?php _e( 'Include this field in the email confirmation', 'camptix' ); ?></label>
+						</td>
+					</tr>
 				</table>
 				<p class="submit">
 					<a href="#" class="button tix-add"><?php _e( 'Add Question', 'camptix' ); ?></a>
@@ -4392,6 +4401,7 @@ class CampTix_Plugin {
 										<input type="hidden" data-model-attribute="type" value="<?php echo esc_attr( get_post_meta( $question->ID, 'tix_type', true ) ); ?>" />
 										<input type="hidden" data-model-attribute="question" value="<?php echo esc_attr( $question->post_title ); ?>" />
 										<input type="hidden" data-model-attribute="required" value="<?php echo intval( get_post_meta( $question->ID, 'tix_required', true ) ); ?>" />
+										<input type="hidden" data-model-attribute="include_in_email" value="<?php echo intval( get_post_meta( $question->ID, 'tix_include_in_email', true ) ); ?>" />
 										<input type="hidden" data-model-attribute="values" value="<?php echo esc_attr( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?>" />
 									</label>
 								</li>
@@ -4438,6 +4448,7 @@ class CampTix_Plugin {
 					type: '<?php echo esc_js( get_post_meta( $question->ID, 'tix_type', true ) ); ?>',
 					question: '<?php echo esc_js( apply_filters( 'the_title', $question->post_title ) ); ?>',
 					required: <?php echo esc_js( (int) (bool) get_post_meta( $question->ID, 'tix_required', true ) ); ?>,
+					include_in_email: <?php echo esc_js( (int) (bool) get_post_meta( $question->ID, 'tix_include_in_email', true ) ); ?>,
 					values: '<?php echo esc_js( implode( ', ', (array) get_post_meta( $question->ID, 'tix_values', true ) ) ); ?>'
 				} ) );
 			<?php endforeach; ?>
@@ -4713,9 +4724,11 @@ class CampTix_Plugin {
 					'type' => $question['type'],
 					'values' => $question_values,
 					'required' => isset( $question['required'] ),
+					'include_in_email' => isset( $question['include_in_email'] ),
 				);
 
 				$clean_question['required'] = (bool) $question['required'];
+				$clean_question['include_in_email'] = (bool) $question['include_in_email'];
 				$question = $clean_question;
 				unset( $clean_question );
 
@@ -4747,6 +4760,7 @@ class CampTix_Plugin {
 				// Question meta
 				update_post_meta( $question_id, 'tix_values', $question['values'] );
 				update_post_meta( $question_id, 'tix_required', $question['required'] );
+				update_post_meta( $question_id, 'tix_include_in_email', $question['include_in_email'] );
 				update_post_meta( $question_id, 'tix_type', $question['type'] );
 
 				// Don't add duplicate questions to the ticket/order.
@@ -5600,11 +5614,12 @@ class CampTix_Plugin {
 									<?php foreach ( $questions as $question ) : ?>
 
 										<?php
-											$name       = sprintf( 'tix_attendee_questions[%d][%s]', $i, $question->ID );
-											$value      = isset( $this->form_data['tix_attendee_questions'][ $i ][ $question->ID ] ) ? $this->form_data['tix_attendee_questions'][ $i ][ $question->ID ] : '';
-											$type       = get_post_meta( $question->ID, 'tix_type', true );
-											$required   = get_post_meta( $question->ID, 'tix_required', true );
-											$class_name = 'tix-row-question-' . $question->ID;
+											$name             = sprintf( 'tix_attendee_questions[%d][%s]', $i, $question->ID );
+											$value            = isset( $this->form_data['tix_attendee_questions'][ $i ][ $question->ID ] ) ? $this->form_data['tix_attendee_questions'][ $i ][ $question->ID ] : '';
+											$type             = get_post_meta( $question->ID, 'tix_type', true );
+											$required         = get_post_meta( $question->ID, 'tix_required', true );
+											$include_in_email = get_post_meta( $question->ID, 'tix_include_in_email', true );
+											$class_name       = 'tix-row-question-' . $question->ID;
 										?>
 
 										<tr class="<?php echo esc_attr( $class_name ); ?>">
@@ -5967,11 +5982,12 @@ class CampTix_Plugin {
 						<?php if ( apply_filters( 'camptix_ask_questions', true, array( (int) $ticket_id => 1 ), (int) $ticket_id, 1, $questions ) ) : ?>
 							<?php foreach ( $questions as $question ) : ?>
 								<?php
-									$name       = sprintf( 'tix_ticket_questions[%d]', $question->ID );
-									$value      = isset( $answers[ $question->ID ] ) ? $answers[ $question->ID ] : '';
-									$type       = get_post_meta( $question->ID, 'tix_type', true );
-									$required   = get_post_meta( $question->ID, 'tix_required', true );
-									$class_name = 'tix-row-question-' . $question->ID;
+									$name             = sprintf( 'tix_ticket_questions[%d]', $question->ID );
+									$value            = isset( $answers[ $question->ID ] ) ? $answers[ $question->ID ] : '';
+									$type             = get_post_meta( $question->ID, 'tix_type', true );
+									$required         = get_post_meta( $question->ID, 'tix_required', true );
+									$include_in_email = get_post_meta( $question->ID, 'tix_include_in_email', true );
+									$class_name       = 'tix-row-question-' . $question->ID;
 								?>
 
 								<tr class="<?php echo esc_attr( $class_name ); ?>">
@@ -7253,7 +7269,44 @@ class CampTix_Plugin {
 		if ( isset( $order['coupon'] ) && $order['coupon'] )
 			$receipt_content .= sprintf( '* ' . __( 'Coupon used: %s', 'camptix' ) . "\n", $order['coupon'] );
 
-		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' ), $this->append_currency( $order['total'], false ) );
+		$receipt_content .= sprintf( "* " . __( 'Total: %s', 'camptix' )."\n", $this->append_currency( $order['total'], false ) ) ;
+		$receipt_content .= "\n\n";
+
+		foreach ( $order['items'] as $item ) {
+
+			$question_ids = (array) get_post_meta( $item['id'], 'tix_question_id' );
+			$order = (array) get_post_meta( $item['id'], 'tix_questions_order', true );
+
+			// Make sure we have at least some questions
+			if ( empty( $question_ids ) )
+				return array();
+
+			$questions = get_posts( array(
+				'post_type' => 'tix_question',
+				'post_status' => 'publish',
+				'posts_per_page' => -1,
+				'post__in' => $question_ids,
+			) );
+
+			foreach ( $attendees as $attendee ) {
+				$answers = get_post_meta( $attendee->ID, 'tix_questions', true );
+				foreach ( $questions as $question ) {
+					// if question is to be included in email
+					$include_in_email = get_post_meta( $question->ID, 'tix_include_in_email', true );
+					if ( $include_in_email ) {
+						// grab the questions name
+						$question_name = $question->post_title;
+						// grab the value from the attendee post meta
+						$answer = $answers[$question->ID];
+						// append them to receipt content
+						$receipt_content .= esc_html( $question_name.': '.$answer )."\n";
+					}
+				}
+				break;
+			}
+
+		}
+
 		$signature = apply_filters( 'camptix_ticket_email_signature', __( 'Let us know if you have any questions!', 'camptix' ) );
 
 		// Set the tmp receipt for shortcodes use.
